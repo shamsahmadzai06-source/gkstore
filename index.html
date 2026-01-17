@@ -12,22 +12,9 @@
     <meta name="apple-mobile-web-app-title" content="GK Trading">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="application-name" content="GK Trading">
-    <meta name="msapplication-TileColor" content="#000000">
-    <meta name="msapplication-TileImage" content="icons/ms-icon-144x144.png">
-    <meta name="msapplication-config" content="browserconfig.xml">
-    
-    <!-- iOS Specific -->
-    <link rel="apple-touch-icon" href="icons/apple-icon-180x180.png">
-    <link rel="apple-touch-startup-image" href="splash/apple-splash-2048-2732.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-    <link rel="apple-touch-startup-image" href="splash/apple-splash-2732-2048.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
-    
-    <!-- Manifest -->
-    <link rel="manifest" href="manifest.json">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📱</text></svg>">
     
     <!-- Stylesheets -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -91,53 +78,10 @@
             position: relative;
         }
 
-        /* PWA Install Prompt */
-        .pwa-install-prompt {
+        /* PWA Install Button */
+        .pwa-install-btn {
             position: fixed;
-            bottom: 70px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, var(--pink-500), var(--violet-500));
-            color: white;
-            padding: 12px 20px;
-            border-radius: 50px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 1000;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            animation: slideUp 0.5s ease-out;
-            max-width: 90%;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .pwa-install-prompt button {
-            background: white;
-            color: var(--pink-500);
-            border: none;
-            padding: 6px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .pwa-install-prompt button:hover {
-            transform: scale(1.05);
-        }
-
-        .pwa-install-prompt button.close {
-            background: transparent;
-            color: white;
-            padding: 5px;
-            margin-left: 5px;
-        }
-
-        /* Install Floating Button */
-        .install-button {
-            position: fixed;
-            bottom: 70px;
+            bottom: 80px;
             right: 20px;
             width: 50px;
             height: 50px;
@@ -149,38 +93,127 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            z-index: 999;
+            z-index: 1000;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s;
+            transition: all 0.3s;
+            animation: slideUp 0.5s ease-out;
         }
 
-        .install-button:hover {
+        .pwa-install-btn:hover {
             transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(236, 72, 153, 0.4);
         }
 
-        .install-button.hidden {
+        .pwa-install-btn.hidden {
             display: none;
         }
 
-        /* PWA Status Bar */
-        .pwa-status-bar {
+        /* PWA Install Prompt */
+        .pwa-prompt {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(24, 24, 27, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--zinc-700);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1001;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.5s ease-out;
+            max-width: 90%;
+        }
+
+        .pwa-prompt.hidden {
+            display: none;
+        }
+
+        .pwa-prompt-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pwa-prompt-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--pink-500), var(--violet-500));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 18px;
+        }
+
+        .pwa-prompt-text {
+            flex: 1;
+        }
+
+        .pwa-prompt-text h4 {
+            margin: 0;
+            font-size: 14px;
+            color: white;
+        }
+
+        .pwa-prompt-text p {
+            margin: 4px 0 0;
+            font-size: 12px;
+            color: var(--zinc-400);
+        }
+
+        .pwa-prompt-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pwa-prompt-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pwa-prompt-btn.install {
+            background: linear-gradient(135deg, var(--pink-500), var(--violet-500));
+            color: white;
+        }
+
+        .pwa-prompt-btn.cancel {
+            background: var(--zinc-800);
+            color: white;
+            border: 1px solid var(--zinc-700);
+        }
+
+        .pwa-prompt-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Offline Indicator */
+        .offline-indicator {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            height: 30px;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: var(--red-500);
             color: white;
+            text-align: center;
+            padding: 8px;
             font-size: 12px;
-            z-index: 1001;
-            padding: 0 10px;
+            font-weight: 600;
+            z-index: 1002;
+            animation: slideDown 0.3s ease-out;
         }
 
-        .pwa-status-bar.hidden {
+        .offline-indicator.hidden {
             display: none;
         }
 
@@ -1061,6 +1094,17 @@
             .text-xl {
                 font-size: 1.125rem;
             }
+            
+            .pwa-prompt {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+            }
+            
+            .pwa-prompt-content {
+                flex-direction: column;
+                text-align: center;
+            }
         }
 
         /* RTL support */
@@ -1727,15 +1771,36 @@
         <!-- App will be rendered here -->
     </div>
 
+    <!-- PWA Elements -->
+    <div id="pwa-install-btn" class="pwa-install-btn hidden">
+        <i class="fas fa-download"></i>
+    </div>
+
+    <div id="pwa-prompt" class="pwa-prompt hidden">
+        <div class="pwa-prompt-content">
+            <div class="pwa-prompt-icon">GK</div>
+            <div class="pwa-prompt-text">
+                <h4>Install GK Trading</h4>
+                <p>Install app for better experience</p>
+            </div>
+        </div>
+        <div class="pwa-prompt-buttons">
+            <button class="pwa-prompt-btn cancel">Later</button>
+            <button class="pwa-prompt-btn install">Install</button>
+        </div>
+    </div>
+
+    <div id="offline-indicator" class="offline-indicator hidden">
+        <i class="fas fa-wifi-slash"></i> You are offline
+    </div>
+
     <script>
         // PWA State
-        const PWA_STATE = {
+        const PWA = {
             deferredPrompt: null,
-            isInstalled: false,
-            showInstallPrompt: false,
             isStandalone: window.matchMedia('(display-mode: standalone)').matches || 
-                         window.navigator.standalone ||
-                         document.referrer.includes('android-app://')
+                        window.navigator.standalone,
+            isOnline: navigator.onLine
         };
 
         // App State
@@ -2140,236 +2205,122 @@
         ];
 
         // ======== PWA FUNCTIONS ========
-        // Initialize PWA
         function initPWA() {
-            // Check if app is already installed
-            if (PWA_STATE.isStandalone) {
+            console.log('Initializing PWA...');
+            
+            // Check if already installed
+            if (PWA.isStandalone) {
                 console.log('App is running in standalone mode');
-                PWA_STATE.isInstalled = true;
+                return;
             }
 
             // Listen for beforeinstallprompt event
             window.addEventListener('beforeinstallprompt', (e) => {
                 console.log('beforeinstallprompt event fired');
-                // Prevent Chrome 67 and earlier from automatically showing the prompt
                 e.preventDefault();
-                // Stash the event so it can be triggered later
-                PWA_STATE.deferredPrompt = e;
+                PWA.deferredPrompt = e;
                 
-                // Show install button/prompt
-                if (!PWA_STATE.isInstalled) {
-                    setTimeout(() => {
-                        PWA_STATE.showInstallPrompt = true;
-                        renderPWAInstallPrompt();
-                    }, 3000);
-                }
+                // Show install button after a delay
+                setTimeout(() => {
+                    showInstallButton();
+                }, 3000);
             });
 
             // Listen for app installed event
-            window.addEventListener('appinstalled', (e) => {
+            window.addEventListener('appinstalled', () => {
                 console.log('App was installed');
-                PWA_STATE.isInstalled = true;
-                PWA_STATE.showInstallPrompt = false;
-                renderPWAInstallPrompt();
+                hideInstallButton();
+                hideInstallPrompt();
+                PWA.deferredPrompt = null;
             });
 
-            // Check if app is already installed
-            if (window.matchMedia('(display-mode: standalone)').matches) {
-                PWA_STATE.isInstalled = true;
-            }
+            // Network status
+            window.addEventListener('online', () => {
+                PWA.isOnline = true;
+                updateOfflineIndicator();
+            });
 
-            // Register service worker
+            window.addEventListener('offline', () => {
+                PWA.isOnline = false;
+                updateOfflineIndicator();
+            });
+
+            // Initialize service worker
+            initServiceWorker();
+            
+            // Update offline indicator
+            updateOfflineIndicator();
+        }
+
+        function initServiceWorker() {
             if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('/service-worker.js').then(
-                        (registration) => {
-                            console.log('ServiceWorker registration successful');
-                        },
-                        (err) => {
-                            console.log('ServiceWorker registration failed: ', err);
-                        }
-                    );
+                navigator.serviceWorker.register('/sw.js').catch(error => {
+                    console.log('Service Worker registration failed:', error);
                 });
             }
         }
 
-        // Show PWA install prompt
-        function showPWAInstallPrompt() {
-            if (PWA_STATE.deferredPrompt) {
-                PWA_STATE.deferredPrompt.prompt();
+        function showInstallButton() {
+            const installBtn = document.getElementById('pwa-install-btn');
+            if (installBtn && PWA.deferredPrompt && !PWA.isStandalone) {
+                installBtn.classList.remove('hidden');
+                installBtn.addEventListener('click', showInstallPrompt);
+            }
+        }
+
+        function hideInstallButton() {
+            const installBtn = document.getElementById('pwa-install-btn');
+            if (installBtn) {
+                installBtn.classList.add('hidden');
+            }
+        }
+
+        function showInstallPrompt() {
+            const prompt = document.getElementById('pwa-prompt');
+            if (prompt) {
+                prompt.classList.remove('hidden');
                 
-                PWA_STATE.deferredPrompt.userChoice.then((choiceResult) => {
+                // Add event listeners to buttons
+                const installBtn = prompt.querySelector('.install');
+                const cancelBtn = prompt.querySelector('.cancel');
+                
+                installBtn.addEventListener('click', installApp);
+                cancelBtn.addEventListener('click', hideInstallPrompt);
+            }
+        }
+
+        function hideInstallPrompt() {
+            const prompt = document.getElementById('pwa-prompt');
+            if (prompt) {
+                prompt.classList.add('hidden');
+            }
+        }
+
+        function installApp() {
+            if (PWA.deferredPrompt) {
+                PWA.deferredPrompt.prompt();
+                
+                PWA.deferredPrompt.userChoice.then((choiceResult) => {
                     if (choiceResult.outcome === 'accepted') {
                         console.log('User accepted the install prompt');
-                        PWA_STATE.isInstalled = true;
                     } else {
                         console.log('User dismissed the install prompt');
                     }
-                    PWA_STATE.deferredPrompt = null;
-                    PWA_STATE.showInstallPrompt = false;
-                    renderPWAInstallPrompt();
+                    PWA.deferredPrompt = null;
+                    hideInstallPrompt();
+                    hideInstallButton();
                 });
             }
         }
 
-        // Render PWA install prompt
-        function renderPWAInstallPrompt() {
-            // Remove existing prompt if any
-            const existingPrompt = document.querySelector('.pwa-install-prompt');
-            const existingButton = document.querySelector('.install-button');
-            if (existingPrompt) existingPrompt.remove();
-            if (existingButton) existingButton.remove();
-
-            // Show install button if not installed and not in standalone mode
-            if (!PWA_STATE.isInstalled && PWA_STATE.deferredPrompt && !PWA_STATE.isStandalone) {
-                // Create install floating button
-                const installButton = document.createElement('button');
-                installButton.className = 'install-button animate-slide-up';
-                installButton.innerHTML = '<i class="fas fa-download"></i>';
-                installButton.title = 'Install App';
-                installButton.onclick = showPWAInstallPrompt;
-                document.body.appendChild(installButton);
-            }
-        }
-
-        // Generate manifest dynamically
-        function generateManifest() {
-            const manifest = {
-                "name": "GK Video Trading Platform",
-                "short_name": "GK Trading",
-                "description": "Premium video account trading platform",
-                "start_url": "/",
-                "display": "standalone",
-                "background_color": "#000000",
-                "theme_color": "#000000",
-                "orientation": "portrait",
-                "scope": "/",
-                "icons": [
-                    {
-                        "src": "https://via.placeholder.com/192x192/ec4899/ffffff?text=GK",
-                        "sizes": "192x192",
-                        "type": "image/png",
-                        "purpose": "any maskable"
-                    },
-                    {
-                        "src": "https://via.placeholder.com/512x512/8b5cf6/ffffff?text=GK",
-                        "sizes": "512x512",
-                        "type": "image/png",
-                        "purpose": "any maskable"
-                    },
-                    {
-                        "src": "https://via.placeholder.com/180x180/ec4899/ffffff?text=GK",
-                        "sizes": "180x180",
-                        "type": "image/png",
-                        "purpose": "apple touch icon"
-                    }
-                ],
-                "screenshots": [
-                    {
-                        "src": "https://via.placeholder.com/1280x720/18181b/ec4899?text=GK+Trading",
-                        "sizes": "1280x720",
-                        "type": "image/png",
-                        "form_factor": "wide",
-                        "label": "GK Trading Platform"
-                    }
-                ],
-                "categories": ["business", "finance", "shopping"],
-                "shortcuts": [
-                    {
-                        "name": "Browse Accounts",
-                        "short_name": "Accounts",
-                        "description": "Browse available accounts",
-                        "url": "/?page=accounts",
-                        "icons": [
-                            {
-                                "src": "https://via.placeholder.com/96x96/8b5cf6/ffffff?text=A",
-                                "sizes": "96x96"
-                            }
-                        ]
-                    },
-                    {
-                        "name": "Contact Support",
-                        "short_name": "Contact",
-                        "description": "Contact support team",
-                        "url": "/?page=contact",
-                        "icons": [
-                            {
-                                "src": "https://via.placeholder.com/96x96/10b981/ffffff?text=C",
-                                "sizes": "96x96"
-                            }
-                        ]
-                    }
-                ]
-            };
-
-            // Create manifest link if not exists
-            let manifestLink = document.querySelector('link[rel="manifest"]');
-            if (!manifestLink) {
-                manifestLink = document.createElement('link');
-                manifestLink.rel = 'manifest';
-                document.head.appendChild(manifestLink);
-            }
-            
-            // Create blob URL for manifest
-            const manifestBlob = new Blob([JSON.stringify(manifest, null, 2)], {type: 'application/json'});
-            const manifestURL = URL.createObjectURL(manifestBlob);
-            manifestLink.href = manifestURL;
-        }
-
-        // Create offline fallback
-        function createOfflineFallback() {
-            const offlineHTML = `
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>GK Trading - Offline</title>
-                    <style>
-                        body {
-                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                            background: linear-gradient(135deg, #18181b, #000000);
-                            color: white;
-                            height: 100vh;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            text-align: center;
-                            padding: 20px;
-                        }
-                        .container {
-                            max-width: 400px;
-                        }
-                        h1 {
-                            color: #ec4899;
-                            margin-bottom: 20px;
-                        }
-                        .icon {
-                            font-size: 64px;
-                            margin-bottom: 20px;
-                            color: #8b5cf6;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="container">
-                        <div class="icon">📱</div>
-                        <h1>You're Offline</h1>
-                        <p>Please check your internet connection and try again.</p>
-                        <p>Some features may be unavailable offline.</p>
-                    </div>
-                </body>
-                </html>
-            `;
-            
-            // Store offline page in cache
-            if ('caches' in window) {
-                caches.open('gk-trading-v1').then(cache => {
-                    const response = new Response(offlineHTML, {
-                        headers: { 'Content-Type': 'text/html' }
-                    });
-                    cache.put('/offline.html', response);
-                });
+        function updateOfflineIndicator() {
+            const indicator = document.getElementById('offline-indicator');
+            if (indicator) {
+                if (PWA.isOnline) {
+                    indicator.classList.add('hidden');
+                } else {
+                    indicator.classList.remove('hidden');
+                }
             }
         }
 
@@ -3616,9 +3567,6 @@
                     container.addEventListener('scroll', handleAccountsScroll);
                 }
             }
-            
-            // Render PWA install prompt
-            renderPWAInstallPrompt();
         };
 
         // ======== NEW FUNCTION: HANDLE ACCOUNTS PAGE SCROLL ========
@@ -3644,10 +3592,10 @@
 
         // Initialize App
         const initApp = () => {
+            console.log('Initializing app...');
+            
             // Initialize PWA
             initPWA();
-            generateManifest();
-            createOfflineFallback();
             
             // Load language
             const savedLanguage = localStorage.getItem('app_language') || 'en';
@@ -3679,101 +3627,6 @@
             // Initial render
             renderApp();
         };
-
-        // ======== SERVICE WORKER CODE ========
-        // This would typically be in a separate service-worker.js file
-        // but we'll include it inline for this all-in-one solution
-        const serviceWorkerCode = `
-            // Service Worker for GK Trading Platform
-            const CACHE_NAME = 'gk-trading-v1';
-            const OFFLINE_URL = '/offline.html';
-            
-            const urlsToCache = [
-                '/',
-                '/offline.html',
-                'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-                'https://cdn.jsdelivr.net/npm/lucide-static@latest/font/lucide.css'
-            ];
-            
-            // Install event
-            self.addEventListener('install', event => {
-                event.waitUntil(
-                    caches.open(CACHE_NAME)
-                        .then(cache => cache.addAll(urlsToCache))
-                );
-            });
-            
-            // Activate event
-            self.addEventListener('activate', event => {
-                event.waitUntil(
-                    caches.keys().then(cacheNames => {
-                        return Promise.all(
-                            cacheNames.map(cacheName => {
-                                if (cacheName !== CACHE_NAME) {
-                                    return caches.delete(cacheName);
-                                }
-                            })
-                        );
-                    })
-                );
-            });
-            
-            // Fetch event
-            self.addEventListener('fetch', event => {
-                // Skip cross-origin requests
-                if (!event.request.url.startsWith(self.location.origin)) {
-                    return;
-                }
-                
-                event.respondWith(
-                    caches.match(event.request)
-                        .then(response => {
-                            if (response) {
-                                return response;
-                            }
-                            
-                            return fetch(event.request)
-                                .then(response => {
-                                    // Check if we received a valid response
-                                    if (!response || response.status !== 200 || response.type !== 'basic') {
-                                        return response;
-                                    }
-                                    
-                                    // Clone the response
-                                    const responseToCache = response.clone();
-                                    
-                                    caches.open(CACHE_NAME)
-                                        .then(cache => {
-                                            cache.put(event.request, responseToCache);
-                                        });
-                                    
-                                    return response;
-                                })
-                                .catch(() => {
-                                    // If offline and request is for a page, show offline page
-                                    if (event.request.mode === 'navigate') {
-                                        return caches.match(OFFLINE_URL);
-                                    }
-                                });
-                        })
-                );
-            });
-        `;
-
-        // Create service worker if not exists
-        if ('serviceWorker' in navigator) {
-            // Create a blob URL for the service worker code
-            const blob = new Blob([serviceWorkerCode], { type: 'application/javascript' });
-            const swURL = URL.createObjectURL(blob);
-            
-            navigator.serviceWorker.register(swURL)
-                .then(registration => {
-                    console.log('Service Worker registered with scope:', registration.scope);
-                })
-                .catch(error => {
-                    console.log('Service Worker registration failed:', error);
-                });
-        }
 
         // Initialize on load
         document.addEventListener('DOMContentLoaded', initApp);
