@@ -1,0 +1,3782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GK Video Trading Platform</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GK Trading">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="GK Trading">
+    <meta name="msapplication-TileColor" content="#000000">
+    <meta name="msapplication-TileImage" content="icons/ms-icon-144x144.png">
+    <meta name="msapplication-config" content="browserconfig.xml">
+    
+    <!-- iOS Specific -->
+    <link rel="apple-touch-icon" href="icons/apple-icon-180x180.png">
+    <link rel="apple-touch-startup-image" href="splash/apple-splash-2048-2732.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="splash/apple-splash-2732-2048.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide-static@latest/font/lucide.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --pink-500: #ec4899;
+            --pink-600: #db2777;
+            --violet-500: #8b5cf6;
+            --violet-600: #7c3aed;
+            --amber-500: #f59e0b;
+            --amber-600: #d97706;
+            --emerald-500: #10b981;
+            --emerald-600: #059669;
+            --blue-500: #3b82f6;
+            --blue-600: #2563eb;
+            --red-500: #ef4444;
+            --red-600: #dc2626;
+            --zinc-900: #18181b;
+            --zinc-800: #27272a;
+            --zinc-700: #3f3f46;
+            --zinc-600: #52525b;
+            --zinc-500: #71717a;
+            --zinc-400: #a1a1aa;
+            --zinc-300: #d4d4d8;
+            --zinc-200: #e4e4e7;
+            --zinc-100: #f4f4f5;
+            --zinc-50: #fafafa;
+            --white: #ffffff;
+            --black: #000000;
+        }
+
+        html {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: var(--black);
+            color: var(--white);
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        #app {
+            height: 100%;
+            width: 100%;
+            position: relative;
+        }
+
+        /* PWA Install Prompt */
+        .pwa-install-prompt {
+            position: fixed;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--pink-500), var(--violet-500));
+            color: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.5s ease-out;
+            max-width: 90%;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .pwa-install-prompt button {
+            background: white;
+            color: var(--pink-500);
+            border: none;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .pwa-install-prompt button:hover {
+            transform: scale(1.05);
+        }
+
+        .pwa-install-prompt button.close {
+            background: transparent;
+            color: white;
+            padding: 5px;
+            margin-left: 5px;
+        }
+
+        /* Install Floating Button */
+        .install-button {
+            position: fixed;
+            bottom: 70px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--pink-500), var(--violet-500));
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 999;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .install-button:hover {
+            transform: scale(1.1);
+        }
+
+        .install-button.hidden {
+            display: none;
+        }
+
+        /* PWA Status Bar */
+        .pwa-status-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            z-index: 1001;
+            padding: 0 10px;
+        }
+
+        .pwa-status-bar.hidden {
+            display: none;
+        }
+
+        /* Common Components */
+        .hidden {
+            display: none !important;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .flex-col {
+            flex-direction: column;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-center {
+            justify-content: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .absolute {
+            position: absolute;
+        }
+
+        .relative {
+            position: relative;
+        }
+
+        .fixed {
+            position: fixed;
+        }
+
+        .inset-0 {
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .h-full {
+            height: 100%;
+        }
+
+        .min-h-screen {
+            min-height: 100vh;
+        }
+
+        .p-4 {
+            padding: 1rem;
+        }
+
+        .p-6 {
+            padding: 1.5rem;
+        }
+
+        .p-8 {
+            padding: 2rem;
+        }
+
+        .px-4 {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .py-2 {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .py-6 {
+            padding-top: 1.5rem;
+            padding-bottom: 1.5rem;
+        }
+
+        .mb-2 {
+            margin-bottom: 0.5rem;
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+
+        .mb-6 {
+            margin-bottom: 1.5rem;
+        }
+
+        .mb-8 {
+            margin-bottom: 2rem;
+        }
+
+        .mt-2 {
+            margin-top: 0.5rem;
+        }
+
+        .gap-2 {
+            gap: 0.5rem;
+        }
+
+        .gap-4 {
+            gap: 1rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-white {
+            color: var(--white);
+        }
+
+        .text-zinc-400 {
+            color: var(--zinc-400);
+        }
+
+        .text-zinc-300 {
+            color: var(--zinc-300);
+        }
+
+        .text-zinc-600 {
+            color: var(--zinc-600);
+        }
+
+        .text-2xl {
+            font-size: 1.5rem;
+            line-height: 2rem;
+        }
+
+        .text-xl {
+            font-size: 1.25rem;
+            line-height: 1.75rem;
+        }
+
+        .text-lg {
+            font-size: 1.125rem;
+            line-height: 1.75rem;
+        }
+
+        .text-sm {
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+        }
+
+        .text-xs {
+            font-size: 0.75rem;
+            line-height: 1rem;
+        }
+
+        .font-bold {
+            font-weight: 700;
+        }
+
+        .font-semibold {
+            font-weight: 600;
+        }
+
+        .rounded-lg {
+            border-radius: 0.5rem;
+        }
+
+        .rounded-xl {
+            border-radius: 0.75rem;
+        }
+
+        .rounded-2xl {
+            border-radius: 1rem;
+        }
+
+        .rounded-full {
+            border-radius: 9999px;
+        }
+
+        .bg-black {
+            background-color: var(--black);
+        }
+
+        .bg-zinc-900 {
+            background-color: var(--zinc-900);
+        }
+
+        .bg-zinc-800 {
+            background-color: var(--zinc-800);
+        }
+
+        .bg-zinc-800\/50 {
+            background-color: rgba(39, 39, 42, 0.5);
+        }
+
+        .bg-zinc-700 {
+            background-color: var(--zinc-700);
+        }
+
+        .bg-white\/10 {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .bg-white\/20 {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .backdrop-blur-sm {
+            backdrop-filter: blur(4px);
+        }
+
+        .backdrop-blur-lg {
+            backdrop-filter: blur(16px);
+        }
+
+        .backdrop-blur-md {
+            backdrop-filter: blur(12px);
+        }
+
+        .border {
+            border-width: 1px;
+        }
+
+        .border-zinc-700 {
+            border-color: var(--zinc-700);
+        }
+
+        .border-zinc-800 {
+            border-color: var(--zinc-800);
+        }
+
+        .shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .shadow-2xl {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .shadow-pink-500\/30 {
+            box-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
+        }
+
+        .shadow-amber-500\/30 {
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+        }
+
+        .z-10 {
+            z-index: 10;
+        }
+
+        .z-20 {
+            z-index: 20;
+        }
+
+        .z-30 {
+            z-index: 30;
+        }
+
+        .z-40 {
+            z-index: 40;
+        }
+
+        .z-50 {
+            z-index: 50;
+        }
+
+        .object-contain {
+            object-fit: contain;
+        }
+
+        .cursor-pointer {
+            cursor: pointer;
+        }
+
+        .cursor-not-allowed {
+            cursor: not-allowed;
+        }
+
+        .opacity-30 {
+            opacity: 0.3;
+        }
+
+        .opacity-50 {
+            opacity: 0.5;
+        }
+
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+
+        .transition-colors {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+
+        .hover\:bg-white\/20:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .hover\:bg-zinc-700:hover {
+            background-color: var(--zinc-700);
+        }
+
+        .hover\:text-white:hover {
+            color: var(--white);
+        }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .break-all {
+            word-break: break-all;
+        }
+
+        .max-w-md {
+            max-width: 28rem;
+        }
+
+        .mx-auto {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .top-4 {
+            top: 1rem;
+        }
+
+        .bottom-4 {
+            bottom: 1rem;
+        }
+
+        .left-4 {
+            left: 1rem;
+        }
+
+        .right-4 {
+            right: 1rem;
+        }
+
+        .bottom-32 {
+            bottom: 8rem;
+        }
+
+        .top-1\/2 {
+            top: 50%;
+        }
+
+        .-translate-y-1\/2 {
+            transform: translateY(-50%);
+        }
+
+        .space-y-2 > * + * {
+            margin-top: 0.5rem;
+        }
+
+        .space-y-4 > * + * {
+            margin-top: 1rem;
+        }
+
+        /* Gradients */
+        .gradient-bg {
+            background: linear-gradient(135deg, var(--zinc-900), var(--black), var(--zinc-900));
+        }
+
+        .gradient-pink-violet {
+            background: linear-gradient(to right, var(--pink-500), var(--violet-500));
+        }
+
+        .gradient-amber {
+            background: linear-gradient(to right, var(--amber-500), var(--amber-600));
+        }
+
+        .gradient-emerald {
+            background: linear-gradient(to right, var(--emerald-500), var(--emerald-600));
+        }
+
+        .gradient-blue {
+            background: linear-gradient(to right, var(--blue-500), var(--blue-600));
+        }
+
+        .gradient-red {
+            background: linear-gradient(to right, var(--red-500), var(--red-600));
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, var(--pink-500), var(--violet-500));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .animate-slide-down {
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--zinc-900);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--zinc-700);
+            border-radius: 2px;
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+            border: 3px solid var(--zinc-700);
+            border-top: 3px solid var(--pink-500);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Modal overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background: var(--zinc-900);
+            border-radius: 1rem;
+            border: 1px solid var(--zinc-800);
+            padding: 1.5rem;
+            max-width: 28rem;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* Video player */
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            background: var(--black);
+        }
+
+        .video-player {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 30%, transparent 50%);
+        }
+
+        /* Navigation dots */
+        .nav-dot {
+            width: 4px;
+            height: 8px;
+            background: var(--zinc-700);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-dot.active {
+            height: 24px;
+            background: var(--pink-500);
+        }
+
+        /* Navigation arrows */
+        .nav-arrow {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-arrow:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .nav-arrow:active:not(:disabled) {
+            transform: scale(0.9);
+        }
+
+        .nav-arrow:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Action buttons */
+        .action-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .action-button:hover {
+            transform: scale(1.1);
+        }
+
+        .action-button:active {
+            transform: scale(0.9);
+        }
+
+        .action-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-hold {
+            background: linear-gradient(135deg, var(--pink-500), var(--pink-600));
+        }
+
+        .action-buy {
+            background: linear-gradient(135deg, var(--amber-500), var(--amber-600));
+        }
+
+        /* Form elements */
+        .input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--zinc-800);
+            border: 1px solid var(--zinc-700);
+            border-radius: 0.5rem;
+            color: var(--white);
+            font-size: 0.875rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: var(--pink-500);
+        }
+
+        .input::placeholder {
+            color: var(--zinc-500);
+        }
+
+        .button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .button-primary {
+            background: linear-gradient(to right, var(--pink-500), var(--violet-500));
+            color: var(--white);
+        }
+
+        .button-primary:hover {
+            background: linear-gradient(to right, var(--pink-600), var(--violet-600));
+        }
+
+        .button-secondary {
+            background: var(--zinc-800);
+            color: var(--white);
+            border: 1px solid var(--zinc-700);
+        }
+
+        .button-secondary:hover {
+            background: var(--zinc-700);
+        }
+
+        .button-success {
+            background: linear-gradient(to right, var(--emerald-500), var(--emerald-600));
+            color: var(--white);
+        }
+
+        .button-success:hover {
+            background: linear-gradient(to right, var(--emerald-600), var(--emerald-700));
+        }
+
+        .button-warning {
+            background: linear-gradient(to right, var(--amber-500), var(--amber-600));
+            color: var(--white);
+        }
+
+        .button-warning:hover {
+            background: linear-gradient(to right, var(--amber-600), var(--amber-700));
+        }
+
+        .button-blue {
+            background: linear-gradient(to right, var(--blue-500), var(--blue-600));
+            color: var(--white);
+        }
+
+        .button-blue:hover {
+            background: linear-gradient(to right, var(--blue-600), var(--blue-700));
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Language selector */
+        .language-selector {
+            position: relative;
+        }
+
+        .language-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: rgba(39, 39, 42, 0.8);
+            backdrop-filter: blur(4px);
+            border: 1px solid var(--zinc-700);
+            border-radius: 0.75rem;
+            color: var(--white);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .language-button:hover {
+            background: var(--zinc-700);
+        }
+
+        .language-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            width: 200px;
+            background: var(--zinc-900);
+            border: 1px solid var(--zinc-700);
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            overflow: hidden;
+        }
+
+        .language-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: none;
+            border: none;
+            width: 100%;
+            color: var(--white);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-align: left;
+        }
+
+        .language-option:hover {
+            background: var(--zinc-800);
+        }
+
+        .language-option.active {
+            background: var(--zinc-800);
+        }
+
+        /* Bottom navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(24, 24, 27, 0.9);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid var(--zinc-800);
+            height: 64px;
+            z-index: 40;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            height: 100%;
+            max-width: 32rem;
+            margin: 0 auto;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            background: none;
+            border: none;
+            color: var(--zinc-400);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            color: var(--pink-500);
+        }
+
+        /* Utility classes */
+        .icon {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+
+        .icon-sm {
+            width: 20px;
+            height: 20px;
+        }
+
+        .icon-lg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .success-icon {
+            color: var(--emerald-500);
+        }
+
+        .error-icon {
+            color: #ef4444;
+        }
+
+        .warning-icon {
+            color: var(--amber-500);
+        }
+
+        /* Card styles */
+        .card {
+            background: rgba(39, 39, 42, 0.5);
+            backdrop-filter: blur(4px);
+            border: 1px solid var(--zinc-700);
+            border-radius: 1rem;
+            padding: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .card-icon-whatsapp {
+            background: linear-gradient(135deg, var(--emerald-500), var(--emerald-600));
+        }
+
+        .card-icon-wallet {
+            background: linear-gradient(135deg, var(--amber-500), var(--amber-600));
+        }
+
+        .card-icon-user {
+            background: linear-gradient(135deg, var(--pink-500), var(--violet-500));
+        }
+
+        .card-icon-crown {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        }
+
+        .card-icon-accounts {
+            background: linear-gradient(135deg, var(--blue-500), var(--blue-600));
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .p-4 {
+                padding: 0.75rem;
+            }
+            
+            .p-6 {
+                padding: 1rem;
+            }
+            
+            .text-2xl {
+                font-size: 1.25rem;
+            }
+            
+            .text-xl {
+                font-size: 1.125rem;
+            }
+        }
+
+        /* RTL support */
+        [dir="rtl"] {
+            text-align: right;
+        }
+
+        [dir="rtl"] .language-dropdown {
+            right: auto;
+            left: 0;
+        }
+
+        [dir="rtl"] .nav-arrow {
+            transform: rotate(180deg);
+        }
+
+        [dir="rtl"] .nav-arrow:hover:not(:disabled) {
+            transform: rotate(180deg) scale(1.1);
+        }
+
+        /* ======== POPUP STYLES ======== */
+        /* Popup animations */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .popup-content {
+            background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid #333;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            color: white;
+        }
+
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .popup-title {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(to right, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .popup-close {
+            background: #333;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .popup-close:hover {
+            background: #444;
+            transform: rotate(90deg);
+        }
+
+        .popup-input-group {
+            margin-bottom: 20px;
+        }
+
+        .popup-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #a1a1aa;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .popup-input {
+            width: 100%;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .popup-input:focus {
+            outline: none;
+            border-color: #ec4899;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .popup-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .popup-button {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .popup-button-primary {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            color: white;
+        }
+
+        .popup-button-primary:hover {
+            background: linear-gradient(135deg, #db2777, #7c3aed);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(236, 72, 153, 0.3);
+        }
+
+        .popup-button-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .popup-button-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .success-message {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .success-icon i {
+            font-size: 40px;
+            color: #10b981;
+        }
+
+        .success-message h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .success-message p {
+            color: #a1a1aa;
+            line-height: 1.5;
+        }
+
+        .price-tag {
+            background: rgba(245, 158, 11, 0.1);
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .price-tag h3 {
+            font-size: 28px;
+            margin: 10px 0;
+            color: #f59e0b;
+        }
+
+        .address-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 20px 0;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 14px;
+            color: #f59e0b;
+        }
+
+        .copy-button {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            width: 100%;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+
+        .copy-button:hover {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            transform: translateY(-2px);
+        }
+
+        .copy-button.copied {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .contact-note {
+            text-align: center;
+            color: #a1a1aa;
+            font-size: 14px;
+            margin: 20px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .whatsapp-button {
+            background: linear-gradient(135deg, #25d366, #128c7e);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 16px;
+            width: 100%;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+
+        .whatsapp-button:hover {
+            background: linear-gradient(135deg, #128c7e, #075e54);
+            transform: translateY(-2px);
+        }
+
+        /* Account types tabs */
+        .account-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 4px;
+        }
+
+        .account-tab {
+            flex: 1;
+            padding: 12px;
+            background: none;
+            border: none;
+            color: var(--zinc-400);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .account-tab.active {
+            background: linear-gradient(135deg, var(--pink-500), var(--violet-500));
+            color: white;
+        }
+
+        .account-tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        /* Badge for notifications */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--red-500);
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--zinc-900);
+        }
+
+        /* Admin dashboard tabs */
+        .admin-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 4px;
+            flex-wrap: wrap;
+        }
+
+        .admin-tab {
+            flex: 1;
+            min-width: 100px;
+            padding: 10px;
+            background: none;
+            border: none;
+            color: var(--zinc-400);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 13px;
+            text-align: center;
+            position: relative;
+        }
+
+        .admin-tab.active {
+            background: linear-gradient(135deg, var(--pink-500), var(--violet-500));
+            color: white;
+        }
+
+        .admin-tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        /* User list */
+        .user-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .user-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s;
+        }
+
+        .user-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--pink-500), var(--violet-500));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .user-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--emerald-500);
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            border: 2px solid var(--zinc-900);
+        }
+
+        .user-status.offline {
+            background: var(--zinc-500);
+        }
+
+        .hold-request {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .deal-completed {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .deal-cancelled {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        /* File upload */
+        .file-upload {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .file-upload:hover {
+            border-color: var(--pink-500);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .file-upload i {
+            font-size: 32px;
+            color: var(--zinc-400);
+            margin-bottom: 10px;
+        }
+
+        .file-upload p {
+            color: var(--zinc-400);
+            margin-bottom: 5px;
+        }
+
+        .file-upload span {
+            color: var(--zinc-500);
+            font-size: 12px;
+        }
+
+        /* Price input */
+        .price-input {
+            position: relative;
+        }
+
+        .price-input input {
+            padding-left: 40px;
+        }
+
+        .price-input::before {
+            content: "$";
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--zinc-400);
+            font-weight: bold;
+            z-index: 1;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        /* ======== END POPUP STYLES ======== */
+
+        /* ======== NEW ACCOUNTS PAGE STYLES ======== */
+        .accounts-scroll-container {
+            height: 100vh;
+            width: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .account-video-item {
+            position: relative;
+            height: 100vh;
+            width: 100%;
+            scroll-snap-align: start;
+            background: var(--black);
+        }
+
+        .account-video-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .account-video-player {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .account-video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 30%, transparent 50%);
+        }
+
+        .account-video-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1.5rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+        }
+
+        .account-video-title {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .account-video-description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.95rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .account-video-price {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--amber-500), var(--amber-600));
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-weight: bold;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .account-video-actions {
+            position: absolute;
+            ${APP_STATE?.language === 'fa' || APP_STATE?.language === 'ar' ? 'left: 1rem' : 'right: 1rem'};
+            bottom: 8rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 20;
+        }
+
+        .account-action-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .account-action-button:hover {
+            transform: scale(1.1);
+        }
+
+        .account-action-button:active {
+            transform: scale(0.9);
+        }
+
+        .account-action-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .account-action-label {
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-align: center;
+            max-width: 70px;
+            line-height: 1.2;
+        }
+
+        .account-type-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(24, 24, 27, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--zinc-800);
+            padding: 1rem;
+        }
+
+        .account-video-indicator {
+            position: absolute;
+            ${APP_STATE?.language === 'fa' || APP_STATE?.language === 'ar' ? 'right: 1rem' : 'left: 1rem'};
+            bottom: 8rem;
+            z-index: 30;
+        }
+
+        .accounts-back-button {
+            position: absolute;
+            top: 1rem;
+            ${APP_STATE?.language === 'fa' || APP_STATE?.language === 'ar' ? 'right: 1rem' : 'left: 1rem'};
+            z-index: 50;
+            background: rgba(39, 39, 42, 0.8);
+            backdrop-filter: blur(4px);
+            border: 1px solid var(--zinc-700);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .accounts-back-button:hover {
+            background: var(--zinc-700);
+            transform: scale(1.1);
+        }
+
+        /* ======== END NEW ACCOUNTS PAGE STYLES ======== */
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- App will be rendered here -->
+    </div>
+
+    <script>
+        // PWA State
+        const PWA_STATE = {
+            deferredPrompt: null,
+            isInstalled: false,
+            showInstallPrompt: false,
+            isStandalone: window.matchMedia('(display-mode: standalone)').matches || 
+                         window.navigator.standalone ||
+                         document.referrer.includes('android-app://')
+        };
+
+        // App State
+        const APP_STATE = {
+            currentPage: 'home',
+            language: 'en',
+            videos: [],
+            currentVideoIndex: 0,
+            settings: null,
+            heldAccounts: [],
+            users: [],
+            user: null,
+            isAdminLoggedIn: false,
+            showWelcomeModal: false,
+            showLanguageDropdown: false,
+            adminTab: 'upload',
+            accountType: 'small',
+            // NEW: Track which video is being held/bought
+            currentActionVideo: null
+        };
+
+        // ======== POPUP STATE VARIABLES ========
+        // Popup State Variables
+        let holdData = {
+            show: false,
+            name: '',
+            whatsapp: '',
+            submitting: false,
+            success: false,
+            videoId: null
+        };
+
+        let buyData = {
+            show: false,
+            price: '$1,500',
+            usdtAddress: 'TXYZ1234567890ABCDEFGHIJKLMNOPQRSTUVW',
+            copied: false,
+            videoId: null
+        };
+        // ======== END POPUP STATE VARIABLES ========
+
+        // Translations
+        const TRANSLATIONS = {
+            en: {
+                home: "Home",
+                admin: "Admin",
+                contact: "Contact",
+                profile: "Profile",
+                accounts: "Accounts",
+                holdAccount: "Hold This Account",
+                hold: "Hold",
+                buyNow: "Buy Now",
+                buyWithUSDT: "Buy with USDT (TRC20)",
+                chatNow: "Chat Now",
+                enterName: "Enter your name",
+                enterWhatsApp: "Enter WhatsApp number",
+                submit: "Submit",
+                cancel: "Cancel",
+                success: "Success!",
+                holdSuccess: "Account held successfully! We will contact you soon.",
+                uploadVideo: "Upload Video",
+                videoUrl: "Video URL",
+                uploadFromGallery: "Upload from Gallery",
+                orEnterUrl: "Or enter video URL",
+                title: "Title",
+                description: "Description",
+                upload: "Upload",
+                heldAccounts: "Held Accounts",
+                userName: "User Name",
+                whatsappNumber: "WhatsApp Number",
+                status: "Status",
+                actions: "Actions",
+                deal: "Deal",
+                pending: "Pending",
+                dealt: "Dealt",
+                cancelled: "Cancelled",
+                changePassword: "Change Password",
+                currentPassword: "Current Password",
+                newPassword: "New Password",
+                confirmPassword: "Confirm Password",
+                save: "Save",
+                contactUs: "Contact Us",
+                whatsappContact: "WhatsApp Contact",
+                usdtAddress: "USDT TRC20 Address",
+                copyAddress: "Copy Address",
+                copied: "Copied!",
+                adminPanel: "Admin Panel",
+                enterAdminPassword: "Enter Admin Password",
+                login: "Login",
+                logout: "Logout",
+                accountType: "Account Type",
+                memberSince: "Member Since",
+                invalidPassword: "Invalid password",
+                videos: "Videos",
+                settings: "Settings",
+                delete: "Delete",
+                noVideos: "No videos yet",
+                language: "Language",
+                videoTitle: "Video Title",
+                smallAccounts: "Small Accounts",
+                mediumAccounts: "Medium Accounts",
+                bigAccounts: "Big Accounts",
+                price: "Price",
+                allUsers: "All Users",
+                onlineUsers: "Online Users",
+                holdRequests: "Hold Requests",
+                notifications: "Notifications",
+                videoManagement: "Video Management",
+                userManagement: "User Management",
+                requestManagement: "Request Management",
+                small: "Small",
+                medium: "Medium",
+                big: "Big",
+                registeredUsers: "Registered Users",
+                activeNow: "Active Now",
+                contactUser: "Contact User",
+                markAsDealt: "Mark as Dealt",
+                markAsCancelled: "Mark as Cancelled",
+                selectFile: "Select File",
+                orDragDrop: "or drag and drop",
+                maxSize: "Max file size: 100MB",
+                videoFile: "Video File",
+                videoPrice: "Video Price",
+                accountCategory: "Account Category"
+            },
+            fa: {
+                home: "خانه",
+                admin: "مدیر",
+                contact: "تماس",
+                profile: "پروفایل",
+                accounts: "حساب‌ها",
+                holdAccount: "نگه داشتن این حساب",
+                hold: "نگه دارید",
+                buyNow: "خرید کنید",
+                buyWithUSDT: "خرید با USDT (TRC20)",
+                chatNow: "چت کنید",
+                enterName: "نام خود را وارد کنید",
+                enterWhatsApp: "شماره واتساپ را وارد کنید",
+                submit: "ارسال",
+                cancel: "لغو",
+                success: "موفقیت!",
+                holdSuccess: "حساب با موفقیت نگه داشته شد! به زودی با شما تمتماس می گیریم.",
+                uploadVideo: "آپلود ویدیو",
+                videoUrl: "آدرس ویدیو",
+                uploadFromGallery: "آپلود از گالری",
+                orEnterUrl: "یا آدرس ویدیو را وارد کنید",
+                title: "عنوان",
+                description: "توضیحات",
+                upload: "آپلود",
+                heldAccounts: "حساب های نگه داشته شده",
+                userName: "نام کاربر",
+                whatsappNumber: "شماره واتساپ",
+                status: "وضعیت",
+                actions: "اقدامات",
+                deal: "معامله",
+                pending: "در انتظار",
+                dealt: "معامله شده",
+                cancelled: "لغو شده",
+                changePassword: "تغییر رمز عبور",
+                currentPassword: "رمز عبور فعلی",
+                newPassword: "رمز عبور جدید",
+                confirmPassword: "تایید رمز عبور",
+                save: "ذخیره",
+                contactUs: "تماس با ما",
+                whatsappContact: "تماس واتساپ",
+                usdtAddress: "آدرس USDT TRC20",
+                copyAddress: "کپی آدرس",
+                copied: "کپی شد!",
+                adminPanel: "پنل مدیریت",
+                enterAdminPassword: "رمز عبور مدیر را وارد کنید",
+                login: "ورود",
+                logout: "خروج",
+                accountType: "نوع حساب",
+                memberSince: "عضو از",
+                invalidPassword: "رمز عبور نامعتبر",
+                videos: "ویدیوها",
+                settings: "تنظیمات",
+                delete: "حذف",
+                noVideos: "هنوز ویدیویی نیست",
+                language: "زبان",
+                videoTitle: "عنوان ویدیو",
+                smallAccounts: "حساب‌های کوچک",
+                mediumAccounts: "حساب‌های متوسط",
+                bigAccounts: "حساب‌های بزرگ",
+                price: "قیمت",
+                allUsers: "تمام کاربران",
+                onlineUsers: "کاربران آنلاین",
+                holdRequests: "درخواست‌های نگه‌داری",
+                notifications: "اعلانات",
+                videoManagement: "مدیریت ویدیوها",
+                userManagement: "مدیریت کاربران",
+                requestManagement: "مدیریت درخواست‌ها",
+                small: "کوچک",
+                medium: "متوسط",
+                big: "بزرگ",
+                registeredUsers: "کاربران ثبت‌نام شده",
+                activeNow: "فعال الان",
+                contactUser: "تماس با کاربر",
+                markAsDealt: "علامت به عنوان معامله شده",
+                markAsCancelled: "علامت به عنوان لغو شده",
+                selectFile: "انتخاب فایل",
+                orDragDrop: "یا کشیدن و رها کردن",
+                maxSize: "حداکثر حجم فایل: 100 مگابایت",
+                videoFile: "فایل ویدیو",
+                videoPrice: "قیمت ویدیو",
+                accountCategory: "دسته‌بندی حساب"
+            },
+            ar: {
+                home: "الرئيسية",
+                admin: "المشرف",
+                contact: "اتصل",
+                profile: "الملف الشخصي",
+                accounts: "الحسابات",
+                holdAccount: "احجز هذا الحساب",
+                hold: "احجز",
+                buyNow: "اشتر الآن",
+                buyWithUSDT: "اشتر بواسطة USDT (TRC20)",
+                chatNow: "دردش الآن",
+                enterName: "أدخل اسمك",
+                enterWhatsApp: "أدخل رقم واتساب",
+                submit: "إرسال",
+                cancel: "إلغاء",
+                success: "نجاح!",
+                holdSuccess: "تم حجز الحساب بنجاح! سنتصل بك قريباً.",
+                uploadVideo: "رفع فيديو",
+                videoUrl: "رابط الفيديو",
+                uploadFromGallery: "رفع من المعرض",
+                orEnterUrl: "أو أدخل رابط الفيديو",
+                title: "العنوان",
+                description: "الوصف",
+                upload: "رفع",
+                heldAccounts: "الحسابات المحجوزة",
+                userName: "اسم المستخدم",
+                whatsappNumber: "رقم واتساب",
+                status: "الحالة",
+                actions: "الإجراءات",
+                deal: "صفقة",
+                pending: "قيد الانتظار",
+                dealt: "تم التعامل",
+                cancelled: "ملغى",
+                changePassword: "تغيير كلمة المرور",
+                currentPassword: "كلمة المرور الحالية",
+                newPassword: "كلمة المرور الجديدة",
+                confirmPassword: "تأكيد كلمة المرور",
+                save: "حفظ",
+                contactUs: "اتصل بنا",
+                whatsappContact: "واتساب للتواصل",
+                usdtAddress: "عنوان USDT TRC20",
+                copyAddress: "نسخ العنوان",
+                copied: "تم النسخ!",
+                adminPanel: "لوحة الإدارة",
+                enterAdminPassword: "أدخل كلمة مرور المشرف",
+                login: "دخول",
+                logout: "خروج",
+                accountType: "نوع الحساب",
+                memberSince: "عضو منذ",
+                invalidPassword: "كلمة مرور غير صحيحة",
+                videos: "فيديوهات",
+                settings: "الإعدادات",
+                delete: "حذف",
+                noVideos: "لا توجد فيديوهات بعد",
+                language: "اللغة",
+                videoTitle: "عنوان الفيديو",
+                smallAccounts: "الحسابات الصغيرة",
+                mediumAccounts: "الحسابات المتوسطة",
+                bigAccounts: "الحسابات الكبيرة",
+                price: "السعر",
+                allUsers: "جميع المستخدمين",
+                onlineUsers: "المستخدمين النشطين",
+                holdRequests: "طلبات الحجز",
+                notifications: "الإشعارات",
+                videoManagement: "إدارة الفيديوهات",
+                userManagement: "إدارة المستخدمين",
+                requestManagement: "إدارة الطلبات",
+                small: "صغير",
+                medium: "متوسط",
+                big: "كبير",
+                registeredUsers: "المستخدمين المسجلين",
+                activeNow: "نشط الآن",
+                contactUser: "اتصل بالمستخدم",
+                markAsDealt: "تحديد كمنجز",
+                markAsCancelled: "تحديد كملغي",
+                selectFile: "اختر ملف",
+                orDragDrop: "أو اسحب وأفلت",
+                maxSize: "الحد الأقصى: 100 ميجابايت",
+                videoFile: "ملف فيديو",
+                videoPrice: "سعر الفيديو",
+                accountCategory: "فئة الحساب"
+            }
+        };
+
+        // Languages
+        const LANGUAGES = [
+            { code: 'en', name: 'English', flag: '🇬🇧' },
+            { code: 'fa', name: 'فارسی', flag: '🇮🇷' },
+            { code: 'ar', name: 'العربية', flag: '🇸🇦' }
+        ];
+
+        // Sample Data
+        const SAMPLE_VIDEOS = [
+            {
+                id: 1,
+                title: "Premium Business Account",
+                description: "High-value business account with verified history",
+                video_url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                thumbnail_url: "",
+                is_active: true,
+                price: "$1,500",
+                type: "big",
+                created_at: "2024-01-15"
+            },
+            {
+                id: 2,
+                title: "Verified Trading Account",
+                description: "Profitable trading account with 6-month history",
+                video_url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+                thumbnail_url: "",
+                is_active: true,
+                price: "$800",
+                type: "medium",
+                created_at: "2024-01-14"
+            },
+            {
+                id: 3,
+                title: "Social Media Influencer",
+                description: "Account with 100k+ followers",
+                video_url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+                thumbnail_url: "",
+                is_active: true,
+                price: "$300",
+                type: "small",
+                created_at: "2024-01-13"
+            }
+        ];
+
+        const SAMPLE_SETTINGS = {
+            admin_password: "admin123",
+            contact_whatsapp: "+1234567890",
+            usdt_address: "TXYZ1234567890ABCDEFGHIJKLMNOPQRSTUVW"
+        };
+
+        // Sample Users Data
+        const SAMPLE_USERS = [
+            {
+                id: 1,
+                name: "John Doe",
+                email: "john@example.com",
+                role: "user",
+                status: "online",
+                last_active: new Date().toISOString(),
+                created_at: "2024-01-10"
+            },
+            {
+                id: 2,
+                name: "Jane Smith",
+                email: "jane@example.com",
+                role: "user",
+                status: "online",
+                last_active: new Date().toISOString(),
+                created_at: "2024-01-11"
+            },
+            {
+                id: 3,
+                name: "Bob Johnson",
+                email: "bob@example.com",
+                role: "user",
+                status: "offline",
+                last_active: "2024-01-12T10:30:00Z",
+                created_at: "2024-01-12"
+            }
+        ];
+
+        // Sample Hold Requests
+        const SAMPLE_HOLD_REQUESTS = [
+            {
+                id: 1,
+                video_id: 1,
+                video_title: "Premium Business Account",
+                user_name: "Ahmed Khan",
+                whatsapp_number: "+1234567890",
+                status: "pending",
+                created_at: "2024-01-15T14:30:00Z"
+            },
+            {
+                id: 2,
+                video_id: 2,
+                video_title: "Verified Trading Account",
+                user_name: "Maria Garcia",
+                whatsapp_number: "+9876543210",
+                status: "pending",
+                created_at: "2024-01-14T10:15:00Z"
+            },
+            {
+                id: 3,
+                video_id: 3,
+                video_title: "Social Media Influencer",
+                user_name: "David Chen",
+                whatsapp_number: "+1122334455",
+                status: "dealt",
+                created_at: "2024-01-13T09:45:00Z"
+            }
+        ];
+
+        // ======== PWA FUNCTIONS ========
+        // Initialize PWA
+        function initPWA() {
+            // Check if app is already installed
+            if (PWA_STATE.isStandalone) {
+                console.log('App is running in standalone mode');
+                PWA_STATE.isInstalled = true;
+            }
+
+            // Listen for beforeinstallprompt event
+            window.addEventListener('beforeinstallprompt', (e) => {
+                console.log('beforeinstallprompt event fired');
+                // Prevent Chrome 67 and earlier from automatically showing the prompt
+                e.preventDefault();
+                // Stash the event so it can be triggered later
+                PWA_STATE.deferredPrompt = e;
+                
+                // Show install button/prompt
+                if (!PWA_STATE.isInstalled) {
+                    setTimeout(() => {
+                        PWA_STATE.showInstallPrompt = true;
+                        renderPWAInstallPrompt();
+                    }, 3000);
+                }
+            });
+
+            // Listen for app installed event
+            window.addEventListener('appinstalled', (e) => {
+                console.log('App was installed');
+                PWA_STATE.isInstalled = true;
+                PWA_STATE.showInstallPrompt = false;
+                renderPWAInstallPrompt();
+            });
+
+            // Check if app is already installed
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                PWA_STATE.isInstalled = true;
+            }
+
+            // Register service worker
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/service-worker.js').then(
+                        (registration) => {
+                            console.log('ServiceWorker registration successful');
+                        },
+                        (err) => {
+                            console.log('ServiceWorker registration failed: ', err);
+                        }
+                    );
+                });
+            }
+        }
+
+        // Show PWA install prompt
+        function showPWAInstallPrompt() {
+            if (PWA_STATE.deferredPrompt) {
+                PWA_STATE.deferredPrompt.prompt();
+                
+                PWA_STATE.deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                        PWA_STATE.isInstalled = true;
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    PWA_STATE.deferredPrompt = null;
+                    PWA_STATE.showInstallPrompt = false;
+                    renderPWAInstallPrompt();
+                });
+            }
+        }
+
+        // Render PWA install prompt
+        function renderPWAInstallPrompt() {
+            // Remove existing prompt if any
+            const existingPrompt = document.querySelector('.pwa-install-prompt');
+            const existingButton = document.querySelector('.install-button');
+            if (existingPrompt) existingPrompt.remove();
+            if (existingButton) existingButton.remove();
+
+            // Show install button if not installed and not in standalone mode
+            if (!PWA_STATE.isInstalled && PWA_STATE.deferredPrompt && !PWA_STATE.isStandalone) {
+                // Create install floating button
+                const installButton = document.createElement('button');
+                installButton.className = 'install-button animate-slide-up';
+                installButton.innerHTML = '<i class="fas fa-download"></i>';
+                installButton.title = 'Install App';
+                installButton.onclick = showPWAInstallPrompt;
+                document.body.appendChild(installButton);
+            }
+        }
+
+        // Generate manifest dynamically
+        function generateManifest() {
+            const manifest = {
+                "name": "GK Video Trading Platform",
+                "short_name": "GK Trading",
+                "description": "Premium video account trading platform",
+                "start_url": "/",
+                "display": "standalone",
+                "background_color": "#000000",
+                "theme_color": "#000000",
+                "orientation": "portrait",
+                "scope": "/",
+                "icons": [
+                    {
+                        "src": "https://via.placeholder.com/192x192/ec4899/ffffff?text=GK",
+                        "sizes": "192x192",
+                        "type": "image/png",
+                        "purpose": "any maskable"
+                    },
+                    {
+                        "src": "https://via.placeholder.com/512x512/8b5cf6/ffffff?text=GK",
+                        "sizes": "512x512",
+                        "type": "image/png",
+                        "purpose": "any maskable"
+                    },
+                    {
+                        "src": "https://via.placeholder.com/180x180/ec4899/ffffff?text=GK",
+                        "sizes": "180x180",
+                        "type": "image/png",
+                        "purpose": "apple touch icon"
+                    }
+                ],
+                "screenshots": [
+                    {
+                        "src": "https://via.placeholder.com/1280x720/18181b/ec4899?text=GK+Trading",
+                        "sizes": "1280x720",
+                        "type": "image/png",
+                        "form_factor": "wide",
+                        "label": "GK Trading Platform"
+                    }
+                ],
+                "categories": ["business", "finance", "shopping"],
+                "shortcuts": [
+                    {
+                        "name": "Browse Accounts",
+                        "short_name": "Accounts",
+                        "description": "Browse available accounts",
+                        "url": "/?page=accounts",
+                        "icons": [
+                            {
+                                "src": "https://via.placeholder.com/96x96/8b5cf6/ffffff?text=A",
+                                "sizes": "96x96"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Contact Support",
+                        "short_name": "Contact",
+                        "description": "Contact support team",
+                        "url": "/?page=contact",
+                        "icons": [
+                            {
+                                "src": "https://via.placeholder.com/96x96/10b981/ffffff?text=C",
+                                "sizes": "96x96"
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            // Create manifest link if not exists
+            let manifestLink = document.querySelector('link[rel="manifest"]');
+            if (!manifestLink) {
+                manifestLink = document.createElement('link');
+                manifestLink.rel = 'manifest';
+                document.head.appendChild(manifestLink);
+            }
+            
+            // Create blob URL for manifest
+            const manifestBlob = new Blob([JSON.stringify(manifest, null, 2)], {type: 'application/json'});
+            const manifestURL = URL.createObjectURL(manifestBlob);
+            manifestLink.href = manifestURL;
+        }
+
+        // Create offline fallback
+        function createOfflineFallback() {
+            const offlineHTML = `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>GK Trading - Offline</title>
+                    <style>
+                        body {
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                            background: linear-gradient(135deg, #18181b, #000000);
+                            color: white;
+                            height: 100vh;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            text-align: center;
+                            padding: 20px;
+                        }
+                        .container {
+                            max-width: 400px;
+                        }
+                        h1 {
+                            color: #ec4899;
+                            margin-bottom: 20px;
+                        }
+                        .icon {
+                            font-size: 64px;
+                            margin-bottom: 20px;
+                            color: #8b5cf6;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="icon">📱</div>
+                        <h1>You're Offline</h1>
+                        <p>Please check your internet connection and try again.</p>
+                        <p>Some features may be unavailable offline.</p>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            // Store offline page in cache
+            if ('caches' in window) {
+                caches.open('gk-trading-v1').then(cache => {
+                    const response = new Response(offlineHTML, {
+                        headers: { 'Content-Type': 'text/html' }
+                    });
+                    cache.put('/offline.html', response);
+                });
+            }
+        }
+
+        // Utility Functions
+        const t = (key) => {
+            return TRANSLATIONS[APP_STATE.language]?.[key] || TRANSLATIONS.en[key] || key;
+        };
+
+        const setLanguage = (lang) => {
+            APP_STATE.language = lang;
+            localStorage.setItem('app_language', lang);
+            document.documentElement.dir = ['fa', 'ar'].includes(lang) ? 'rtl' : 'ltr';
+            renderApp();
+        };
+
+        const navigateTo = (page) => {
+            APP_STATE.currentPage = page;
+            renderApp();
+        };
+
+        const handleScroll = (direction) => {
+            if (direction === 'up' && APP_STATE.currentVideoIndex > 0) {
+                APP_STATE.currentVideoIndex--;
+            } else if (direction === 'down' && APP_STATE.currentVideoIndex < APP_STATE.videos.length - 1) {
+                APP_STATE.currentVideoIndex++;
+            }
+            renderApp();
+        };
+
+        const setAccountType = (type) => {
+            APP_STATE.accountType = type;
+            renderApp();
+        };
+
+        const setAdminTab = (tab) => {
+            APP_STATE.adminTab = tab;
+            renderApp();
+        };
+
+        // ======== NEW FUNCTION: SCROLL TO VIDEO IN ACCOUNTS PAGE ========
+        const scrollToVideoInAccounts = (videoIndex) => {
+            const videoElement = document.getElementById(`account-video-${videoIndex}`);
+            if (videoElement) {
+                videoElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        };
+
+        // ======== POPUP FUNCTIONS ========
+        // Hold Popup Functions - MODIFIED TO INCLUDE VIDEO ID
+        const showHoldPopup = (videoId = null) => {
+            const video = videoId ? APP_STATE.videos.find(v => v.id === videoId) : APP_STATE.videos[APP_STATE.currentVideoIndex];
+            APP_STATE.currentActionVideo = video;
+            
+            holdData = {
+                show: true,
+                name: '',
+                whatsapp: '',
+                submitting: false,
+                success: false,
+                videoId: video?.id || null
+            };
+            renderApp();
+        };
+
+        const closeHoldPopup = () => {
+            holdData.show = false;
+            APP_STATE.currentActionVideo = null;
+            renderApp();
+        };
+
+        const submitHoldForm = () => {
+            const nameInput = document.getElementById('holdNameInput');
+            const whatsappInput = document.getElementById('holdWhatsappInput');
+            
+            if (!nameInput || !whatsappInput) return;
+            
+            const name = nameInput.value.trim();
+            const whatsapp = whatsappInput.value.trim();
+            
+            if (!name || !whatsapp) {
+                alert('Please enter both name and WhatsApp number');
+                return;
+            }
+            
+            holdData.submitting = true;
+            holdData.name = name;
+            holdData.whatsapp = whatsapp;
+            renderApp();
+            
+            // Get the video for which hold is being placed
+            const video = APP_STATE.currentActionVideo || APP_STATE.videos[APP_STATE.currentVideoIndex];
+            
+            // Add to hold requests
+            const newRequest = {
+                id: Date.now(),
+                video_id: video.id,
+                video_title: video.title,
+                user_name: name,
+                whatsapp_number: whatsapp,
+                status: 'pending',
+                created_at: new Date().toISOString()
+            };
+            
+            SAMPLE_HOLD_REQUESTS.unshift(newRequest);
+            
+            // Simulate API call
+            setTimeout(() => {
+                holdData.submitting = false;
+                holdData.success = true;
+                renderApp();
+                
+                // Reset after 3 seconds
+                setTimeout(() => {
+                    holdData.show = false;
+                    holdData.success = false;
+                    APP_STATE.currentActionVideo = null;
+                    renderApp();
+                }, 3000);
+            }, 1500);
+        };
+
+        // Buy Popup Functions - MODIFIED TO INCLUDE VIDEO ID
+        const showBuyPopup = (videoId = null) => {
+            const video = videoId ? APP_STATE.videos.find(v => v.id === videoId) : APP_STATE.videos[APP_STATE.currentVideoIndex];
+            APP_STATE.currentActionVideo = video;
+            
+            buyData = {
+                show: true,
+                price: video?.price || '$1,500',
+                usdtAddress: APP_STATE.settings?.usdt_address || 'TXYZ1234567890ABCDEFGHIJKLMNOPQRSTUVW',
+                copied: false,
+                videoId: video?.id || null
+            };
+            renderApp();
+        };
+
+        const closeBuyPopup = () => {
+            buyData.show = false;
+            buyData.copied = false;
+            APP_STATE.currentActionVideo = null;
+            renderApp();
+        };
+
+        const copyUSDTAddress = () => {
+            navigator.clipboard.writeText(buyData.usdtAddress).then(() => {
+                buyData.copied = true;
+                renderApp();
+                
+                // Reset copied state after 3 seconds
+                setTimeout(() => {
+                    buyData.copied = false;
+                    renderApp();
+                }, 3000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy address');
+            });
+        };
+
+        const openWhatsAppForBuy = () => {
+            const whatsappNumber = APP_STATE.settings?.contact_whatsapp || '+1234567890';
+            const video = APP_STATE.currentActionVideo || APP_STATE.videos[APP_STATE.currentVideoIndex];
+            const videoTitle = video?.title || 'Video Account';
+            const message = encodeURIComponent(`Hello! I want to buy: ${videoTitle} for ${buyData.price}. I have sent the payment to the USDT address. Please confirm.`);
+            window.open(`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}?text=${message}`, '_blank');
+        };
+
+        const openWhatsAppForUser = (whatsappNumber) => {
+            const message = encodeURIComponent(`Hello! I saw your hold request. Let's discuss the details.`);
+            window.open(`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}?text=${message}`, '_blank');
+        };
+
+        const updateHoldRequestStatus = (id, status) => {
+            const request = SAMPLE_HOLD_REQUESTS.find(r => r.id === id);
+            if (request) {
+                request.status = status;
+                renderApp();
+            }
+        };
+        // ======== END POPUP FUNCTIONS ========
+
+        // Core Components
+        const LanguageSelector = () => {
+            const currentLang = LANGUAGES.find(l => l.code === APP_STATE.language);
+            
+            return `
+                <div class="language-selector">
+                    <button class="language-button" onclick="APP_STATE.showLanguageDropdown = !APP_STATE.showLanguageDropdown">
+                        <i class="fas fa-globe"></i>
+                        <span>${currentLang?.flag} ${currentLang?.name}</span>
+                    </button>
+                    ${APP_STATE.showLanguageDropdown ? `
+                        <div class="language-dropdown animate-slide-down">
+                            ${LANGUAGES.map(lang => `
+                                <button class="language-option ${APP_STATE.language === lang.code ? 'active' : ''}" 
+                                        onclick="setLanguage('${lang.code}'); APP_STATE.showLanguageDropdown = false">
+                                    <span>${lang.flag} ${lang.name}</span>
+                                    ${APP_STATE.language === lang.code ? '<i class="fas fa-check"></i>' : ''}
+                                </button>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        };
+
+        const VideoPlayer = (video, isActive) => {
+            return `
+                <div class="video-container">
+                    <video class="video-player" ${isActive ? 'autoplay muted' : ''} controls>
+                        <source src="${video.video_url}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="video-overlay"></div>
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 1rem; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
+                        <h3 style="color: white; font-weight: 600; margin-bottom: 0.25rem;">${video.title || ''}</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <p style="color: rgba(255,255,255,0.8); font-size: 0.875rem;">${video.description || ''}</p>
+                            <div style="background: linear-gradient(135deg, var(--amber-500), var(--amber-600)); padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 0.875rem;">
+                                ${video.price || '$1,500'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        const VideoActions = (videoId = null) => {
+            const isAccountsPage = APP_STATE.currentPage === 'accounts';
+            const actionClass = isAccountsPage ? 'account-action-' : '';
+            const buttonClass = isAccountsPage ? 'account-action-button' : 'action-button';
+            const iconClass = isAccountsPage ? 'account-action-icon' : 'action-icon';
+            const labelClass = isAccountsPage ? 'account-action-label' : '';
+            
+            return `
+                <div style="position: absolute; ${APP_STATE.language === 'fa' || APP_STATE.language === 'ar' ? 'left: 1rem' : 'right: 1rem'}; bottom: 8rem; display: flex; flex-direction: column; gap: 1rem; z-index: 20;">
+                    <button class="${buttonClass}" onclick="showHoldPopup(${videoId})">
+                        <div class="${iconClass} action-hold">
+                            <i class="fas fa-hand-paper" style="color: white; font-size: 1.5rem;"></i>
+                        </div>
+                        <span class="${labelClass}" style="${isAccountsPage ? '' : 'color: white; font-size: 0.75rem; font-weight: bold; text-align: center; max-width: 70px; line-height: 1.2;'}">${t('hold')}</span>
+                    </button>
+
+                    <button class="${buttonClass}" onclick="showBuyPopup(${videoId})">
+                        <div class="${iconClass} action-buy">
+                            <i class="fas fa-wallet" style="color: white; font-size: 1.5rem;"></i>
+                        </div>
+                        <span class="${labelClass}" style="${isAccountsPage ? '' : 'color: white; font-size: 0.75rem; font-weight: bold; text-align: center; line-height: 1.2;'}">${t('buyNow')}</span>
+                    </button>
+                </div>
+            `;
+        };
+
+        // ======== NEW COMPONENT: ACCOUNTS VIDEO PLAYER ========
+        const AccountsVideoPlayer = (video, index) => {
+            const isRTL = APP_STATE.language === 'fa' || APP_STATE.language === 'ar';
+            
+            return `
+                <div id="account-video-${index}" class="account-video-item">
+                    <div class="account-video-container">
+                        <video class="account-video-player" controls>
+                            <source src="${video.video_url}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="account-video-overlay"></div>
+                        
+                        <!-- Back Button -->
+                        <button class="accounts-back-button" onclick="navigateTo('home')">
+                            <i class="fas fa-arrow-${isRTL ? 'right' : 'left'}"></i>
+                        </button>
+                        
+                        <!-- Video Info -->
+                        <div class="account-video-info">
+                            <h3 class="account-video-title">${video.title || ''}</h3>
+                            <p class="account-video-description">${video.description || ''}</p>
+                            <div class="account-video-price">${video.price || '$1,500'}</div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        ${VideoActions(video.id)}
+                        
+                        <!-- Video Indicator -->
+                        <div class="account-video-indicator">
+                            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                ${APP_STATE.videos.filter(v => v.type === APP_STATE.accountType).map((_, idx) => `
+                                    <div class="nav-dot ${index === idx ? 'active' : ''}"></div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        // ======== POPUP COMPONENTS ========
+        // Hold Popup Component
+        const HoldPopup = () => {
+            if (!holdData.show) return '';
+            
+            return `
+                <div class="popup-overlay">
+                    <div class="popup-content">
+                        ${holdData.success ? `
+                            <div class="success-message">
+                                <div class="success-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <h3>${t('success')}</h3>
+                                <p>${t('holdSuccess')}</p>
+                            </div>
+                        ` : `
+                            <div class="popup-header">
+                                <h2 class="popup-title">${t('holdAccount')}</h2>
+                                <button class="popup-close" onclick="closeHoldPopup()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="popup-input-group">
+                                <label class="popup-label">${t('enterName')}</label>
+                                <input type="text" 
+                                       id="holdNameInput" 
+                                       class="popup-input" 
+                                       placeholder="${t('enterName')}"
+                                       value="${holdData.name}">
+                            </div>
+                            
+                            <div class="popup-input-group">
+                                <label class="popup-label">${t('enterWhatsApp')}</label>
+                                <input type="tel" 
+                                       id="holdWhatsappInput" 
+                                       class="popup-input" 
+                                       placeholder="+1 234 567 8900"
+                                       value="${holdData.whatsapp}">
+                            </div>
+                            
+                            <div class="popup-buttons">
+                                <button class="popup-button popup-button-secondary" onclick="closeHoldPopup()">
+                                    ${t('cancel')}
+                                </button>
+                                <button class="popup-button popup-button-primary" onclick="submitHoldForm()" ${holdData.submitting ? 'disabled' : ''}>
+                                    ${holdData.submitting ? '<i class="fas fa-spinner fa-spin"></i>' : '<i class="fas fa-paper-plane"></i>'}
+                                    ${holdData.submitting ? 'Submitting...' : t('submit')}
+                                </button>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+        };
+
+        // Buy Popup Component
+        const BuyPopup = () => {
+            if (!buyData.show) return '';
+            
+            const video = APP_STATE.currentActionVideo || APP_STATE.videos[APP_STATE.currentVideoIndex];
+            
+            return `
+                <div class="popup-overlay">
+                    <div class="popup-content">
+                        <div class="popup-header">
+                            <h2 class="popup-title">${t('buyNow')}</h2>
+                            <button class="popup-close" onclick="closeBuyPopup()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="price-tag">
+                            <p style="color: #a1a1aa; margin: 0;">${video?.title || 'Account'}</p>
+                            <h3>${buyData.price}</h3>
+                            <p style="color: #a1a1aa; margin: 0; font-size: 14px;">Pay with USDT (TRC20)</p>
+                        </div>
+                        
+                        <div>
+                            <label class="popup-label">${t('usdtAddress')}</label>
+                            <div class="address-box">
+                                ${buyData.usdtAddress}
+                            </div>
+                            <button class="copy-button ${buyData.copied ? 'copied' : ''}" onclick="copyUSDTAddress()">
+                                ${buyData.copied ? '<i class="fas fa-check"></i> Copied!' : '<i class="fas fa-copy"></i> Copy USDT Address'}
+                            </button>
+                        </div>
+                        
+                        <div class="contact-note">
+                            After sending payment, contact us via WhatsApp to confirm your purchase.
+                        </div>
+                        
+                        <button class="whatsapp-button" onclick="openWhatsAppForBuy()">
+                            <i class="fab fa-whatsapp"></i>
+                            ${t('chatNow')} on WhatsApp
+                        </button>
+                    </div>
+                </div>
+            `;
+        };
+        // ======== END POPUP COMPONENTS ========
+
+        const WelcomeModal = () => {
+            if (!APP_STATE.showWelcomeModal) return '';
+            
+            return `
+                <div class="modal-overlay" style="background: rgba(0,0,0,0.95); backdrop-filter: blur(8px);">
+                    <div class="modal-content" style="background: linear-gradient(135deg, var(--zinc-900), var(--black)); padding: 2rem; position: relative; overflow: hidden;">
+                        <!-- Animated background -->
+                        <div style="position: absolute; inset: 0; opacity: 0.2;">
+                            <div style="position: absolute; top: 0; left: -1rem; width: 18rem; height: 18rem; background: var(--pink-500); border-radius: 9999px; filter: blur(3rem); animation: pulse 2s infinite;"></div>
+                            <div style="position: absolute; top: 0; right: -1rem; width: 18rem; height: 18rem; background: var(--violet-500); border-radius: 9999px; filter: blur(3rem); animation: pulse 2s infinite; animation-delay: 700ms;"></div>
+                        </div>
+                        
+                        <div style="position: relative; z-index: 10;">
+                            <!-- Logo -->
+                            <div style="display: flex; justify-content: center; margin-bottom: 1.5rem;">
+                                <div style="width: 6rem; height: 6rem; background: linear-gradient(135deg, var(--pink-500), var(--violet-500)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 2rem; color: white; box-shadow: 0 0 40px rgba(236, 72, 153, 0.3);">
+                                    GK
+                                </div>
+                            </div>
+                            
+                            <!-- Welcome Text -->
+                            <div style="text-align: center; margin-bottom: 2rem;">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                    <i class="fas fa-sparkles" style="color: var(--amber-500);"></i>
+                                    <h2 style="font-size: 1.75rem; font-weight: bold; background: linear-gradient(to right, var(--pink-500), var(--violet-500), var(--amber-500)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                                        Welcome to GK
+                                    </h2>
+                                    <i class="fas fa-sparkles" style="color: var(--amber-500);"></i>
+                                </div>
+                                <p style="color: var(--zinc-400); font-size: 1.125rem; margin-bottom: 1rem;">
+                                    Your Premium Video Experience
+                                </p>
+                                <div style="text-align: left; margin-top: 1rem;">
+                                    <p style="color: var(--zinc-500); font-size: 0.875rem;"><i class="fas fa-play" style="margin-right: 0.5rem;"></i> Swipe through exclusive videos</p>
+                                    <p style="color: var(--zinc-500); font-size: 0.875rem;"><i class="fas fa-hand-paper" style="margin-right: 0.5rem;"></i> Hold accounts you're interested in</p>
+                                    <p style="color: var(--zinc-500); font-size: 0.875rem;"><i class="fas fa-dollar-sign" style="margin-right: 0.5rem;"></i> Buy directly with USDT (TRC20)</p>
+                                    <p style="color: var(--zinc-500); font-size: 0.875rem;"><i class="fas fa-globe" style="margin-right: 0.5rem;"></i> Available in 3 languages</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Get Started Button -->
+                            <button onclick="closeWelcomeModal()" class="button button-primary" style="width: 100%; padding: 1rem; font-size: 1.125rem; font-weight: bold;">
+                                Get Started
+                                <i class="fas fa-arrow-right" style="margin-left: 0.5rem;"></i>
+                            </button>
+                            
+                            <p style="text-align: center; color: var(--zinc-600); font-size: 0.75rem; margin-top: 1rem;">
+                                Swipe up/down or use arrow keys to browse videos
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        const BottomNavigation = () => {
+            if (APP_STATE.currentPage !== 'home') return '';
+            
+            return `
+                <nav class="bottom-nav">
+                    <div class="nav-grid">
+                        <button class="nav-item ${APP_STATE.currentPage === 'home' ? 'active' : ''}" onclick="navigateTo('home')">
+                            <i class="fas fa-home"></i>
+                            <span style="font-size: 0.75rem;">${t('home')}</span>
+                        </button>
+                        
+                        <button class="nav-item ${APP_STATE.currentPage === 'accounts' ? 'active' : ''}" onclick="navigateTo('accounts')">
+                            <i class="fas fa-layer-group"></i>
+                            <span style="font-size: 0.75rem;">${t('accounts')}</span>
+                        </button>
+                        
+                        <button class="nav-item ${APP_STATE.currentPage === 'contact' ? 'active' : ''}" onclick="navigateTo('contact')">
+                            <i class="fas fa-phone"></i>
+                            <span style="font-size: 0.75rem;">${t('contact')}</span>
+                        </button>
+                        
+                        <button class="nav-item ${APP_STATE.currentPage === 'profile' ? 'active' : ''}" onclick="navigateTo('profile')">
+                            <i class="fas fa-user"></i>
+                            <span style="font-size: 0.75rem;">${t('profile')}</span>
+                        </button>
+                        
+                        <button class="nav-item ${APP_STATE.currentPage === 'admin' ? 'active' : ''}" onclick="navigateTo('admin')">
+                            <i class="fas fa-shield-alt"></i>
+                            <span style="font-size: 0.75rem;">${t('admin')}</span>
+                        </button>
+                    </div>
+                </nav>
+            `;
+        };
+
+        // Page Components
+        const HomePage = () => {
+            if (APP_STATE.videos.length === 0) {
+                return `
+                    <div class="gradient-bg min-h-screen flex flex-col items-center justify-center p-4">
+                        <div class="text-center animate-slide-up">
+                            <div style="width: 6rem; height: 6rem; background: linear-gradient(135deg, var(--pink-500), var(--violet-500)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 2rem; color: white; margin: 0 auto 1.5rem;">
+                                GK
+                            </div>
+                            <h2 class="text-2xl font-bold mb-2">${t('noVideos')}</h2>
+                            <p class="text-zinc-400">Videos will appear here</p>
+                        </div>
+                        <div style="position: absolute; top: 1rem; right: 1rem;">
+                            ${LanguageSelector()}
+                        </div>
+                    </div>
+                `;
+            }
+
+            const currentVideo = APP_STATE.videos[APP_STATE.currentVideoIndex];
+            
+            return `
+                <div class="h-full w-full bg-black relative" 
+                     onwheel="handleWheel(event)"
+                     ontouchstart="handleTouchStart(event)"
+                     ontouchend="handleTouchEnd(event)">
+                    
+                    <!-- Header -->
+                    <div style="position: absolute; top: 1rem; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 1rem; z-index: 30;">
+                        <div style="width: 2.5rem; height: 2.5rem; background: linear-gradient(135deg, var(--pink-500), var(--violet-500)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white;">
+                            GK
+                        </div>
+                        ${LanguageSelector()}
+                    </div>
+
+                    <!-- Navigation arrows -->
+                    <div style="position: absolute; ${APP_STATE.language === 'fa' || APP_STATE.language === 'ar' ? 'right: 1rem' : 'left: 1rem'}; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 0.5rem; z-index: 30;">
+                        <button class="nav-arrow" onclick="handleScroll('up')" ${APP_STATE.currentVideoIndex === 0 ? 'disabled' : ''}>
+                            <i class="fas fa-chevron-up"></i>
+                        </button>
+                        <button class="nav-arrow" onclick="handleScroll('down')" ${APP_STATE.currentVideoIndex === APP_STATE.videos.length - 1 ? 'disabled' : ''}>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+
+                    <!-- Video indicator -->
+                    <div style="position: absolute; ${APP_STATE.language === 'fa' || APP_STATE.language === 'ar' ? 'right: 1rem' : 'left: 1rem'}; bottom: 8rem; z-index: 30;">
+                        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            ${APP_STATE.videos.map((_, index) => `
+                                <div class="nav-dot ${index === APP_STATE.currentVideoIndex ? 'active' : ''}"></div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Video container -->
+                    <div class="animate-slide-up" style="height: 100%; width: 100%;">
+                        ${VideoPlayer(currentVideo, true)}
+                        ${VideoActions()}
+                    </div>
+
+                    ${HoldPopup()}
+                    ${BuyPopup()}
+                    ${WelcomeModal()}
+                </div>
+                ${BottomNavigation()}
+            `;
+        };
+
+        const AccountsPage = () => {
+            const filteredVideos = APP_STATE.videos.filter(video => video.type === APP_STATE.accountType);
+            
+            if (filteredVideos.length === 0) {
+                return `
+                    <div class="gradient-bg min-h-screen text-white p-6" dir="${['fa', 'ar'].includes(APP_STATE.language) ? 'rtl' : 'ltr'}">
+                        <!-- Header -->
+                        <div class="flex items-center justify-between mb-8">
+                            <button onclick="navigateTo('home')" class="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors" style="background: none; border: none;">
+                                <i class="fas fa-arrow-left"></i>
+                                <span>${t('home')}</span>
+                            </button>
+                            ${LanguageSelector()}
+                        </div>
+
+                        <div class="max-w-md mx-auto">
+                            <!-- Page Header -->
+                            <div class="text-center mb-8">
+                                <div style="width: 4rem; height: 4rem; background: linear-gradient(135deg, var(--blue-500), var(--blue-600)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.5rem; color: white; margin: 0 auto 1rem;">
+                                    <i class="fas fa-layer-group"></i>
+                                </div>
+                                <h1 class="text-2xl font-bold text-gradient mb-2">${t('accounts')}</h1>
+                                <p class="text-zinc-400">Browse accounts by category</p>
+                            </div>
+
+                            <!-- Account Type Tabs -->
+                            <div class="account-tabs">
+                                <button class="account-tab ${APP_STATE.accountType === 'small' ? 'active' : ''}" onclick="setAccountType('small')">
+                                    ${t('small')}
+                                </button>
+                                <button class="account-tab ${APP_STATE.accountType === 'medium' ? 'active' : ''}" onclick="setAccountType('medium')">
+                                    ${t('medium')}
+                                </button>
+                                <button class="account-tab ${APP_STATE.accountType === 'big' ? 'active' : ''}" onclick="setAccountType('big')">
+                                    ${t('big')}
+                                </button>
+                            </div>
+
+                            <!-- No Videos Message -->
+                            <div class="card text-center py-8">
+                                <i class="fas fa-video-slash text-4xl text-zinc-600 mb-4"></i>
+                                <p class="text-zinc-400">No ${APP_STATE.accountType} accounts available yet</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // NEW: Direct video scrolling interface
+            return `
+                <div class="accounts-scroll-container" dir="${['fa', 'ar'].includes(APP_STATE.language) ? 'rtl' : 'ltr'}">
+                    <!-- Account Type Header -->
+                    <div class="account-type-header">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <button onclick="navigateTo('home')" class="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors" style="background: none; border: none;">
+                                <i class="fas fa-arrow-left"></i>
+                                <span>${t('home')}</span>
+                            </button>
+                            
+                            <div>
+                                <h2 style="text-align: center; font-size: 1.25rem; font-weight: bold; margin-bottom: 0.5rem;">
+                                    ${APP_STATE.accountType === 'small' ? t('smallAccounts') : 
+                                      APP_STATE.accountType === 'medium' ? t('mediumAccounts') : 
+                                      t('bigAccounts')}
+                                </h2>
+                                <div class="account-tabs" style="width: 200px; margin: 0 auto;">
+                                    <button class="account-tab ${APP_STATE.accountType === 'small' ? 'active' : ''}" onclick="setAccountType('small')">
+                                        ${t('small')}
+                                    </button>
+                                    <button class="account-tab ${APP_STATE.accountType === 'medium' ? 'active' : ''}" onclick="setAccountType('medium')">
+                                        ${t('medium')}
+                                    </button>
+                                    <button class="account-tab ${APP_STATE.accountType === 'big' ? 'active' : ''}" onclick="setAccountType('big')">
+                                        ${t('big')}
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            ${LanguageSelector()}
+                        </div>
+                    </div>
+
+                    <!-- Videos List (Full Screen Videos) -->
+                    ${filteredVideos.map((video, index) => AccountsVideoPlayer(video, index)).join('')}
+                    
+                    ${HoldPopup()}
+                    ${BuyPopup()}
+                </div>
+            `;
+        };
+
+        const ContactPage = () => {
+            return `
+                <div class="gradient-bg min-h-screen text-white p-6" dir="${['fa', 'ar'].includes(APP_STATE.language) ? 'rtl' : 'ltr'}">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between mb-8">
+                        <button onclick="navigateTo('home')" class="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors" style="background: none; border: none;">
+                            <i class="fas fa-arrow-left"></i>
+                            <span>${t('home')}</span>
+                        </button>
+                        ${LanguageSelector()}
+                    </div>
+
+                    <div class="max-w-md mx-auto">
+                        <div class="animate-slide-up text-center mb-10">
+                            <div style="width: 4rem; height: 4rem; background: linear-gradient(135deg, var(--pink-500), var(--violet-500)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.5rem; color: white; margin: 0 auto 1rem;">
+                                GK
+                            </div>
+                            <h1 class="text-2xl font-bold text-gradient mb-2">${t('contactUs')}</h1>
+                            <p class="text-zinc-400">Get in touch with us</p>
+                        </div>
+
+                        <!-- WhatsApp Card -->
+                        <div class="card animate-slide-up" style="margin-bottom: 1.5rem;">
+                            <div class="card-header">
+                                <div class="card-icon card-icon-whatsapp">
+                                    <i class="fab fa-whatsapp" style="color: white; font-size: 1.5rem;"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold">${t('whatsappContact')}</h3>
+                                    <p class="text-zinc-400 text-sm">${APP_STATE.settings?.contact_whatsapp || 'Not set'}</p>
+                                </div>
+                            </div>
+                            <button onclick="openWhatsAppForBuy()" ${!APP_STATE.settings?.contact_whatsapp ? 'disabled' : ''} class="button button-success" style="width: 100%; padding: 1rem;">
+                                <i class="fab fa-whatsapp"></i>
+                                ${t('chatNow')}
+                            </button>
+                        </div>
+
+                        <!-- USDT Address Card -->
+                        <div class="card animate-slide-up" style="animation-delay: 100ms;">
+                            <div class="card-header">
+                                <div class="card-icon card-icon-wallet">
+                                    <i class="fas fa-wallet" style="color: white; font-size: 1.5rem;"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold">${t('usdtAddress')}</h3>
+                                    <p class="text-zinc-400 text-sm">TRC20 Network</p>
+                                </div>
+                            </div>
+                            
+                            <div style="background: var(--zinc-900); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem; word-break: break-all;">
+                                <code style="color: var(--zinc-300); font-family: monospace; font-size: 0.875rem;">
+                                    ${APP_STATE.settings?.usdt_address || 'Not set'}
+                                </code>
+                            </div>
+
+                            <button onclick="copyUSDTAddress()" ${!APP_STATE.settings?.usdt_address ? 'disabled' : ''} class="button button-secondary" style="width: 100%; padding: 1rem;">
+                                <i class="fas fa-copy"></i>
+                                <span id="copyText">${t('copyAddress')}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        const ProfilePage = () => {
+            const user = APP_STATE.user || { name: 'Guest', email: 'guest@example.com', role: 'user' };
+            
+            return `
+                <div class="gradient-bg min-h-screen text-white p-6" dir="${['fa', 'ar'].includes(APP_STATE.language) ? 'rtl' : 'ltr'}">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between mb-8">
+                        <button onclick="navigateTo('home')" class="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors" style="background: none; border: none;">
+                            <i class="fas fa-arrow-left"></i>
+                            <span>${t('home')}</span>
+                        </button>
+                        ${LanguageSelector()}
+                    </div>
+
+                    <div class="max-w-md mx-auto">
+                        <!-- Profile Header -->
+                        <div class="animate-slide-up text-center mb-8">
+                            <div style="position: relative; display: inline-block; margin-bottom: 1rem;">
+                                <div style="width: 6rem; height: 6rem; border-radius: 50%; background: linear-gradient(135deg, var(--pink-500), var(--violet-500)); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; color: white;">
+                                    ${user.name?.[0]?.toUpperCase() || user.email[0]?.toUpperCase() || 'U'}
+                                </div>
+                                ${user.role === 'admin' ? `
+                                    <div style="position: absolute; top: -0.5rem; right: -0.5rem; width: 2rem; height: 2rem; border-radius: 50%; background: var(--amber-500); display: flex; align-items: center; justify-content: center; border: 2px solid var(--black);">
+                                        <i class="fas fa-crown" style="color: white; font-size: 0.875rem;"></i>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <h1 class="text-2xl font-bold mb-1">${user.name || 'User'}</h1>
+                            <p class="text-zinc-400">${user.email}</p>
+                        </div>
+
+                        <!-- Role Card -->
+                        <div class="card animate-slide-up" style="margin-bottom: 1rem; animation-delay: 100ms;">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="card-icon ${user.role === 'admin' ? 'card-icon-crown' : 'card-icon-user'}">
+                                    ${user.role === 'admin' ? 
+                                        '<i class="fas fa-crown" style="color: white; font-size: 1.5rem;"></i>' : 
+                                        '<i class="fas fa-user-shield" style="color: white; font-size: 1.5rem;"></i>'}
+                                </div>
+                                <div>
+                                    <p class="text-sm text-zinc-400">${t('accountType')}</p>
+                                    <p class="text-lg font-semibold capitalize">${user.role}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email Card -->
+                        <div class="card animate-slide-up" style="animation-delay: 200ms;">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="card-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+                                    <i class="fas fa-envelope" style="color: white; font-size: 1.5rem;"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-zinc-400">Email</p>
+                                    <p class="text-lg font-semibold">${user.email}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Logout Button -->
+                        <button onclick="logout()" class="button button-secondary animate-slide-up" style="width: 100%; margin-top: 2rem; padding: 1rem; animation-delay: 300ms;">
+                            <i class="fas fa-sign-out-alt"></i>
+                            ${t('logout')}
+                        </button>
+                    </div>
+                </div>
+            `;
+        };
+
+        const AdminPage = () => {
+            if (!APP_STATE.isAdminLoggedIn) {
+                return `
+                    <div class="gradient-bg min-h-screen text-white p-6">
+                        <div class="max-w-md mx-auto">
+                            <div class="text-center mb-8">
+                                <div style="width: 4rem; height: 4rem; background: linear-gradient(135deg, var(--pink-500), var(--violet-500)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.5rem; color: white; margin: 0 auto 1.5rem;">
+                                    GK
+                                </div>
+                                <h1 class="text-2xl font-bold mb-2">${t('adminPanel')}</h1>
+                                <p class="text-zinc-400">Enter admin password to continue</p>
+                            </div>
+
+                            <form onsubmit="event.preventDefault(); adminLogin();" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm text-zinc-400 mb-2">${t('enterAdminPassword')}</label>
+                                    <input type="password" id="adminPassword" class="input" placeholder="${t('enterAdminPassword')}" required>
+                                </div>
+                                
+                                <button type="submit" class="button button-primary" style="width: 100%;">
+                                    ${t('login')}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const pendingRequests = SAMPLE_HOLD_REQUESTS.filter(r => r.status === 'pending').length;
+            const onlineUsers = SAMPLE_USERS.filter(u => u.status === 'online').length;
+
+            return `
+                <div class="gradient-bg min-h-screen text-white p-6">
+                    <div class="max-w-md mx-auto">
+                        <div class="flex items-center justify-between mb-8">
+                            <button onclick="APP_STATE.isAdminLoggedIn = false; navigateTo('admin')" class="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors" style="background: none; border: none;">
+                                <i class="fas fa-arrow-left"></i>
+                                <span>${t('home')}</span>
+                            </button>
+                            ${LanguageSelector()}
+                        </div>
+
+                        <h1 class="text-2xl font-bold mb-6">${t('adminPanel')}</h1>
+
+                        <!-- Admin Tabs -->
+                        <div class="admin-tabs">
+                            <button class="admin-tab ${APP_STATE.adminTab === 'upload' ? 'active' : ''}" onclick="setAdminTab('upload')">
+                                <i class="fas fa-upload"></i> ${t('uploadVideo')}
+                            </button>
+                            <button class="admin-tab ${APP_STATE.adminTab === 'users' ? 'active' : ''}" onclick="setAdminTab('users')">
+                                <i class="fas fa-users"></i> ${t('userManagement')}
+                                ${SAMPLE_USERS.length > 0 ? `<span class="notification-badge">${SAMPLE_USERS.length}</span>` : ''}
+                            </button>
+                            <button class="admin-tab ${APP_STATE.adminTab === 'requests' ? 'active' : ''}" onclick="setAdminTab('requests')">
+                                <i class="fas fa-hand-paper"></i> ${t('requestManagement')}
+                                ${pendingRequests > 0 ? `<span class="notification-badge">${pendingRequests}</span>` : ''}
+                            </button>
+                            <button class="admin-tab ${APP_STATE.adminTab === 'settings' ? 'active' : ''}" onclick="setAdminTab('settings')">
+                                <i class="fas fa-cog"></i> ${t('settings')}
+                            </button>
+                        </div>
+
+                        ${APP_STATE.adminTab === 'upload' ? AdminUploadTab() : ''}
+                        ${APP_STATE.adminTab === 'users' ? AdminUsersTab() : ''}
+                        ${APP_STATE.adminTab === 'requests' ? AdminRequestsTab() : ''}
+                        ${APP_STATE.adminTab === 'settings' ? AdminSettingsTab() : ''}
+                    </div>
+                </div>
+            `;
+        };
+
+        const AdminUploadTab = () => {
+            return `
+                <div class="animate-slide-up">
+                    <!-- File Upload -->
+                    <div class="file-upload" onclick="document.getElementById('videoFileInput').click()">
+                        <input type="file" id="videoFileInput" accept="video/*" style="display: none;" onchange="handleFileSelect(event)">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>${t('selectFile')}</p>
+                        <p>${t('orDragDrop')}</p>
+                        <span>${t('maxSize')}</span>
+                    </div>
+
+                    <!-- Upload Form -->
+                    <form onsubmit="event.preventDefault(); uploadVideo();">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm text-zinc-400 mb-2">${t('accountCategory')}</label>
+                                <div class="account-tabs">
+                                    <button type="button" class="account-tab ${APP_STATE.accountType === 'small' ? 'active' : ''}" onclick="APP_STATE.accountType = 'small'; renderApp()">
+                                        ${t('small')}
+                                    </button>
+                                    <button type="button" class="account-tab ${APP_STATE.accountType === 'medium' ? 'active' : ''}" onclick="APP_STATE.accountType = 'medium'; renderApp()">
+                                        ${t('medium')}
+                                    </button>
+                                    <button type="button" class="account-tab ${APP_STATE.accountType === 'big' ? 'active' : ''}" onclick="APP_STATE.accountType = 'big'; renderApp()">
+                                        ${t('big')}
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm text-zinc-400 mb-2">${t('title')}</label>
+                                <input type="text" id="videoTitle" class="input" placeholder="${t('title')}" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm text-zinc-400 mb-2">${t('description')}</label>
+                                <textarea id="videoDescription" class="input" placeholder="${t('description')}" style="min-height: 80px;" required></textarea>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm text-zinc-400 mb-2">${t('videoPrice')}</label>
+                                <div class="price-input">
+                                    <input type="text" id="videoPrice" class="input" placeholder="1500" required>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm text-zinc-400 mb-2">${t('videoUrl')} (${t('or')} ${t('videoFile')})</label>
+                                <input type="text" id="videoUrl" class="input" placeholder="https://example.com/video.mp4">
+                            </div>
+                            
+                            <button type="submit" class="button button-success" style="width: 100%;">
+                                <i class="fas fa-upload"></i>
+                                ${t('upload')}
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Videos List -->
+                    <div class="mt-8">
+                        <h3 class="text-lg font-semibold mb-4">${t('videos')} (${APP_STATE.videos.length})</h3>
+                        
+                        <div style="max-height: 300px; overflow-y: auto;">
+                            ${APP_STATE.videos.map(video => `
+                                <div style="background: var(--zinc-800); border-radius: 0.5rem; padding: 0.75rem; margin-bottom: 0.5rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                        <div style="flex: 1;">
+                                            <p class="font-medium">${video.title}</p>
+                                            <p class="text-zinc-400 text-sm">${video.type} • ${video.price}</p>
+                                            <p class="text-zinc-500 text-xs truncate">${video.video_url?.substring(0, 40)}...</p>
+                                        </div>
+                                        <button onclick="deleteVideo(${video.id})" class="button button-secondary" style="padding: 0.25rem 0.5rem; margin-left: 0.5rem;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        const AdminUsersTab = () => {
+            const onlineUsers = SAMPLE_USERS.filter(u => u.status === 'online');
+            
+            return `
+                <div class="animate-slide-up">
+                    <!-- Stats Cards -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div class="card">
+                            <div style="text-align: center;">
+                                <p class="text-sm text-zinc-400">${t('registeredUsers')}</p>
+                                <p class="text-2xl font-bold">${SAMPLE_USERS.length}</p>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div style="text-align: center;">
+                                <p class="text-sm text-zinc-400">${t('activeNow')}</p>
+                                <p class="text-2xl font-bold text-emerald-500">${onlineUsers.length}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Users List -->
+                    <div class="user-list">
+                        <h3 class="text-lg font-semibold mb-4">${t('allUsers')}</h3>
+                        
+                        ${SAMPLE_USERS.map(user => `
+                            <div class="user-item">
+                                <div class="user-info">
+                                    <div style="position: relative;">
+                                        <div class="user-avatar">
+                                            ${user.name?.[0]?.toUpperCase() || user.email[0]?.toUpperCase()}
+                                        </div>
+                                        <div class="user-status ${user.status === 'online' ? '' : 'offline'}"></div>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium">${user.name}</p>
+                                        <p class="text-zinc-400 text-sm">${user.email}</p>
+                                        <p class="text-zinc-500 text-xs">Joined: ${new Date(user.created_at).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+                                <button onclick="openWhatsAppForUser('+1234567890')" class="button button-success" style="padding: 6px 12px; font-size: 0.875rem;">
+                                    <i class="fab fa-whatsapp"></i>
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        };
+
+        const AdminRequestsTab = () => {
+            const pendingRequests = SAMPLE_HOLD_REQUESTS.filter(r => r.status === 'pending');
+            
+            return `
+                <div class="animate-slide-up">
+                    <!-- Stats -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <div class="card">
+                            <div style="text-align: center;">
+                                <p class="text-sm text-zinc-400">${t('holdRequests')}</p>
+                                <p class="text-2xl font-bold">${pendingRequests.length}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Requests List -->
+                    <div class="user-list">
+                        <h3 class="text-lg font-semibold mb-4">${t('holdRequests')}</h3>
+                        
+                        ${SAMPLE_HOLD_REQUESTS.map(request => `
+                            <div class="user-item ${request.status === 'pending' ? 'hold-request' : request.status === 'dealt' ? 'deal-completed' : 'deal-cancelled'}">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                        <div>
+                                            <p class="font-medium">${request.user_name}</p>
+                                            <p class="text-zinc-400 text-sm">${request.whatsapp_number}</p>
+                                            <p class="text-zinc-500 text-xs">${new Date(request.created_at).toLocaleDateString()}</p>
+                                        </div>
+                                        <span style="background: ${request.status === 'pending' ? 'var(--amber-500)' : request.status === 'dealt' ? 'var(--emerald-500)' : 'var(--red-500)'}; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 0.75rem; text-transform: uppercase;">
+                                            ${request.status}
+                                        </span>
+                                    </div>
+                                    <p class="text-zinc-300 text-sm mb-2">Requested: ${request.video_title}</p>
+                                    ${request.status === 'pending' ? `
+                                        <div style="display: flex; gap: 0.5rem;">
+                                            <button onclick="openWhatsAppForUser('${request.whatsapp_number}')" class="button button-success" style="flex: 1; padding: 8px;">
+                                                <i class="fab fa-whatsapp"></i> ${t('contactUser')}
+                                            </button>
+                                            <button onclick="updateHoldRequestStatus(${request.id}, 'dealt')" class="button button-blue" style="flex: 1; padding: 8px;">
+                                                <i class="fas fa-check"></i> ${t('markAsDealt')}
+                                            </button>
+                                            <button onclick="updateHoldRequestStatus(${request.id}, 'cancelled')" class="button button-secondary" style="flex: 1; padding: 8px;">
+                                                <i class="fas fa-times"></i> ${t('markAsCancelled')}
+                                            </button>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        };
+
+        const AdminSettingsTab = () => {
+            return `
+                <div class="animate-slide-up">
+                    <div class="card">
+                        <h2 class="text-lg font-semibold mb-4">${t('settings')}</h2>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm text-zinc-400 mb-2">${t('whatsappContact')}</label>
+                                <input type="text" id="adminWhatsapp" class="input" value="${APP_STATE.settings?.contact_whatsapp || ''}" placeholder="+1234567890">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm text-zinc-400 mb-2">${t('usdtAddress')}</label>
+                                <input type="text" id="adminUSDT" class="input" value="${APP_STATE.settings?.usdt_address || ''}" placeholder="TXYZ...">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm text-zinc-400 mb-2">${t('newPassword')}</label>
+                                <input type="password" id="adminNewPassword" class="input" placeholder="${t('newPassword')}">
+                            </div>
+                            
+                            <button onclick="saveSettings()" class="button button-primary" style="width: 100%;">
+                                ${t('save')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        // Event Handlers
+        const handleWheel = (e) => {
+            e.preventDefault();
+            if (e.deltaY > 50) {
+                handleScroll('down');
+            } else if (e.deltaY < -50) {
+                handleScroll('up');
+            }
+        };
+
+        let touchStartY = 0;
+        const handleTouchStart = (e) => {
+            touchStartY = e.touches[0].clientY;
+        };
+
+        const handleTouchEnd = (e) => {
+            const touchEndY = e.changedTouches[0].clientY;
+            const diff = touchStartY - touchEndY;
+            if (diff > 50) {
+                handleScroll('down');
+            } else if (diff < -50) {
+                handleScroll('up');
+            }
+        };
+
+        const closeWelcomeModal = () => {
+            APP_STATE.showWelcomeModal = false;
+            localStorage.setItem('has_seen_welcome', 'true');
+            renderApp();
+        };
+
+        const adminLogin = () => {
+            const password = document.getElementById('adminPassword')?.value;
+            if (password === APP_STATE.settings?.admin_password) {
+                APP_STATE.isAdminLoggedIn = true;
+                renderApp();
+            } else {
+                alert(t('invalidPassword'));
+            }
+        };
+
+        const saveSettings = () => {
+            const whatsapp = document.getElementById('adminWhatsapp')?.value || '';
+            const usdt = document.getElementById('adminUSDT')?.value || '';
+            const newPassword = document.getElementById('adminNewPassword')?.value;
+            
+            // In a real app, you would save this to a database
+            console.log('Settings saved:', { whatsapp, usdt, newPassword });
+            
+            // Update local state
+            if (APP_STATE.settings) {
+                APP_STATE.settings.contact_whatsapp = whatsapp;
+                APP_STATE.settings.usdt_address = usdt;
+                if (newPassword) {
+                    APP_STATE.settings.admin_password = newPassword;
+                }
+            }
+            
+            alert('Settings saved successfully!');
+            renderApp();
+        };
+
+        const uploadVideo = () => {
+            const title = document.getElementById('videoTitle')?.value || '';
+            const description = document.getElementById('videoDescription')?.value || '';
+            const price = document.getElementById('videoPrice')?.value || '$0';
+            const url = document.getElementById('videoUrl')?.value;
+            
+            if (!title || !description || !price) {
+                alert('Please fill all required fields');
+                return;
+            }
+            
+            const newVideo = {
+                id: Date.now(),
+                title,
+                description,
+                video_url: url || 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+                thumbnail_url: '',
+                is_active: true,
+                price: price.startsWith('$') ? price : `$${price}`,
+                type: APP_STATE.accountType,
+                created_at: new Date().toISOString()
+            };
+            
+            APP_STATE.videos.unshift(newVideo);
+            
+            // Clear form
+            document.getElementById('videoTitle').value = '';
+            document.getElementById('videoDescription').value = '';
+            document.getElementById('videoPrice').value = '';
+            document.getElementById('videoUrl').value = '';
+            
+            alert('Video uploaded successfully!');
+            renderApp();
+        };
+
+        const handleFileSelect = (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.size > 100 * 1024 * 1024) { // 100MB limit
+                    alert('File is too large. Maximum size is 100MB.');
+                    return;
+                }
+                
+                if (!file.type.startsWith('video/')) {
+                    alert('Please select a video file.');
+                    return;
+                }
+                
+                // In a real app, you would upload the file to a server
+                alert(`Selected file: ${file.name}\nSize: ${(file.size / (1024 * 1024)).toFixed(2)}MB\nType: ${file.type}`);
+                
+                // Simulate upload and get URL
+                document.getElementById('videoUrl').value = `https://example.com/uploads/${Date.now()}_${file.name}`;
+            }
+        };
+
+        const deleteVideo = (id) => {
+            if (confirm('Are you sure you want to delete this video?')) {
+                APP_STATE.videos = APP_STATE.videos.filter(video => video.id !== id);
+                if (APP_STATE.currentVideoIndex >= APP_STATE.videos.length) {
+                    APP_STATE.currentVideoIndex = Math.max(0, APP_STATE.videos.length - 1);
+                }
+                renderApp();
+            }
+        };
+
+        const logout = () => {
+            APP_STATE.user = null;
+            APP_STATE.isAdminLoggedIn = false;
+            navigateTo('home');
+        };
+
+        // Render App
+        const renderApp = () => {
+            const app = document.getElementById('app');
+            
+            let pageContent = '';
+            switch (APP_STATE.currentPage) {
+                case 'home':
+                    pageContent = HomePage();
+                    break;
+                case 'accounts':
+                    pageContent = AccountsPage();
+                    break;
+                case 'contact':
+                    pageContent = ContactPage();
+                    break;
+                case 'profile':
+                    pageContent = ProfilePage();
+                    break;
+                case 'admin':
+                    pageContent = AdminPage();
+                    break;
+                default:
+                    pageContent = HomePage();
+            }
+            
+            app.innerHTML = pageContent;
+            
+            // Add keyboard navigation for home page
+            if (APP_STATE.currentPage === 'home') {
+                document.addEventListener('keydown', handleKeyDown);
+            } else {
+                document.removeEventListener('keydown', handleKeyDown);
+            }
+            
+            // Add scroll event listener for accounts page
+            if (APP_STATE.currentPage === 'accounts') {
+                const container = document.querySelector('.accounts-scroll-container');
+                if (container) {
+                    container.addEventListener('scroll', handleAccountsScroll);
+                }
+            }
+            
+            // Render PWA install prompt
+            renderPWAInstallPrompt();
+        };
+
+        // ======== NEW FUNCTION: HANDLE ACCOUNTS PAGE SCROLL ========
+        const handleAccountsScroll = () => {
+            const container = document.querySelector('.accounts-scroll-container');
+            if (!container) return;
+            
+            const scrollPosition = container.scrollTop;
+            const windowHeight = window.innerHeight;
+            const currentIndex = Math.round(scrollPosition / windowHeight);
+            
+            // You could update a visual indicator here if needed
+            // console.log('Currently viewing video index:', currentIndex);
+        };
+
+        const handleKeyDown = (e) => {
+            if (e.key === 'ArrowUp') {
+                handleScroll('up');
+            } else if (e.key === 'ArrowDown') {
+                handleScroll('down');
+            }
+        };
+
+        // Initialize App
+        const initApp = () => {
+            // Initialize PWA
+            initPWA();
+            generateManifest();
+            createOfflineFallback();
+            
+            // Load language
+            const savedLanguage = localStorage.getItem('app_language') || 'en';
+            setLanguage(savedLanguage);
+            
+            // Load videos
+            APP_STATE.videos = SAMPLE_VIDEOS;
+            
+            // Load settings
+            APP_STATE.settings = SAMPLE_SETTINGS;
+            
+            // Load users
+            APP_STATE.users = SAMPLE_USERS;
+            
+            // Load hold requests
+            APP_STATE.heldAccounts = SAMPLE_HOLD_REQUESTS;
+            
+            // Check if welcome modal should be shown
+            const hasSeenWelcome = localStorage.getItem('has_seen_welcome');
+            APP_STATE.showWelcomeModal = !hasSeenWelcome;
+            
+            // Set sample user
+            APP_STATE.user = {
+                name: 'John Doe',
+                email: 'john@example.com',
+                role: 'user'
+            };
+            
+            // Initial render
+            renderApp();
+        };
+
+        // ======== SERVICE WORKER CODE ========
+        // This would typically be in a separate service-worker.js file
+        // but we'll include it inline for this all-in-one solution
+        const serviceWorkerCode = `
+            // Service Worker for GK Trading Platform
+            const CACHE_NAME = 'gk-trading-v1';
+            const OFFLINE_URL = '/offline.html';
+            
+            const urlsToCache = [
+                '/',
+                '/offline.html',
+                'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+                'https://cdn.jsdelivr.net/npm/lucide-static@latest/font/lucide.css'
+            ];
+            
+            // Install event
+            self.addEventListener('install', event => {
+                event.waitUntil(
+                    caches.open(CACHE_NAME)
+                        .then(cache => cache.addAll(urlsToCache))
+                );
+            });
+            
+            // Activate event
+            self.addEventListener('activate', event => {
+                event.waitUntil(
+                    caches.keys().then(cacheNames => {
+                        return Promise.all(
+                            cacheNames.map(cacheName => {
+                                if (cacheName !== CACHE_NAME) {
+                                    return caches.delete(cacheName);
+                                }
+                            })
+                        );
+                    })
+                );
+            });
+            
+            // Fetch event
+            self.addEventListener('fetch', event => {
+                // Skip cross-origin requests
+                if (!event.request.url.startsWith(self.location.origin)) {
+                    return;
+                }
+                
+                event.respondWith(
+                    caches.match(event.request)
+                        .then(response => {
+                            if (response) {
+                                return response;
+                            }
+                            
+                            return fetch(event.request)
+                                .then(response => {
+                                    // Check if we received a valid response
+                                    if (!response || response.status !== 200 || response.type !== 'basic') {
+                                        return response;
+                                    }
+                                    
+                                    // Clone the response
+                                    const responseToCache = response.clone();
+                                    
+                                    caches.open(CACHE_NAME)
+                                        .then(cache => {
+                                            cache.put(event.request, responseToCache);
+                                        });
+                                    
+                                    return response;
+                                })
+                                .catch(() => {
+                                    // If offline and request is for a page, show offline page
+                                    if (event.request.mode === 'navigate') {
+                                        return caches.match(OFFLINE_URL);
+                                    }
+                                });
+                        })
+                );
+            });
+        `;
+
+        // Create service worker if not exists
+        if ('serviceWorker' in navigator) {
+            // Create a blob URL for the service worker code
+            const blob = new Blob([serviceWorkerCode], { type: 'application/javascript' });
+            const swURL = URL.createObjectURL(blob);
+            
+            navigator.serviceWorker.register(swURL)
+                .then(registration => {
+                    console.log('Service Worker registered with scope:', registration.scope);
+                })
+                .catch(error => {
+                    console.log('Service Worker registration failed:', error);
+                });
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
