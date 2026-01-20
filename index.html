@@ -6,20 +6,19 @@
     <meta name="theme-color" content="#ec4899">
     <meta name="description" content="GK Store - Exclusive Video Marketplace">
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="https://shamsahmadzai06.github.io/GkStore/manifest.json">
+    <!-- PWA Manifest will be created dynamically -->
     
     <title>GK Store - Video Marketplace</title>
     
-    <!-- FIXED: Favicon and Apple Touch Icons with absolute GitHub Pages URLs -->
-    <link rel="icon" type="image/png" href="https://shamsahmadzai06.github.io/GkStore/icon.png">
-    <link rel="apple-touch-icon" href="https://shamsahmadzai06.github.io/GkStore/icon.png">
+    <!-- FIXED: Using your android-launchericon-192-192.png as favicon -->
+    <link rel="icon" type="image/png" href="https://shamsahmadzai06.github.io/GkStore/android-launchericon-192-192.png">
+    <link rel="apple-touch-icon" href="https://shamsahmadzai06.github.io/GkStore/android-launchericon-192-192.png">
     
     <!-- iOS PWA Support -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="GK Store">
-    <link rel="apple-touch-startup-image" href="https://shamsahmadzai06.github.io/GkStore/icon.png">
+    <link rel="apple-touch-startup-image" href="https://shamsahmadzai06.github.io/GkStore/android-launchericon-192-192.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- 引入 Supabase 客户端库 -->
@@ -2509,6 +2508,58 @@
         </div>
     </div>
 
+    <!-- Inline Manifest JSON -->
+    <script id="manifest-script" type="application/json">
+    {
+        "name": "GK Store",
+        "short_name": "GK Store",
+        "description": "Exclusive Video Marketplace",
+        "start_url": "https://shamsahmadzai06.github.io/GkStore/",
+        "scope": "https://shamsahmadzai06.github.io/GkStore/",
+        "display": "standalone",
+        "background_color": "#000000",
+        "theme_color": "#ec4899",
+        "orientation": "portrait",
+        "icons": [
+            {
+                "src": "https://shamsahmadzai06.github.io/GkStore/android-launchericon-192-192.png",
+                "sizes": "192x192",
+                "type": "image/png",
+                "purpose": "any maskable"
+            },
+            {
+                "src": "https://shamsahmadzai06.github.io/GkStore/android-launchericon-192-192.png",
+                "sizes": "512x512",
+                "type": "image/png",
+                "purpose": "any maskable"
+            }
+        ],
+        "categories": ["entertainment", "shopping", "social"],
+        "shortcuts": [
+            {
+                "name": "Browse Videos",
+                "short_name": "Videos",
+                "description": "Browse premium video content",
+                "url": "https://shamsahmadzai06.github.io/GkStore/#home",
+                "icons": [{
+                    "src": "https://shamsahmadzai06.github.io/GkStore/android-launchericon-192-192.png",
+                    "sizes": "96x96"
+                }]
+            },
+            {
+                "name": "Premium Accounts",
+                "short_name": "Accounts",
+                "description": "Browse premium accounts",
+                "url": "https://shamsahmadzai06.github.io/GkStore/#accounts",
+                "icons": [{
+                    "src": "https://shamsahmadzai06.github.io/GkStore/android-launchericon-192-192.png",
+                    "sizes": "96x96"
+                }]
+            }
+        ]
+    }
+    </script>
+
     <script>
         // PWA Variables
         let deferredPrompt;
@@ -2853,11 +2904,12 @@
             loadPreferences();
             loadSampleData();
             setupEventListeners();
+            setupDynamicManifest();
             
             // Apply language
             applyLanguage(appState.language);
             
-            // Initialize PWA - FIXED: Call this at the end
+            // Initialize PWA
             initPWA();
             
             // Check if user is already logged in
@@ -2885,13 +2937,39 @@
             pages.forEach(p => p.classList.add('hidden'));
         }
 
+        // Setup dynamic manifest
+        function setupDynamicManifest() {
+            const manifestScript = document.getElementById('manifest-script');
+            if (manifestScript) {
+                const manifestText = manifestScript.textContent;
+                try {
+                    const manifest = JSON.parse(manifestText);
+                    const blob = new Blob([manifestText], {type: 'application/json'});
+                    const manifestURL = URL.createObjectURL(blob);
+                    
+                    // Update manifest link
+                    const manifestLink = document.querySelector('link[rel="manifest"]');
+                    if (manifestLink) {
+                        manifestLink.href = manifestURL;
+                    }
+                    
+                    // Clean up URL after page load
+                    window.addEventListener('load', () => {
+                        setTimeout(() => URL.revokeObjectURL(manifestURL), 1000);
+                    });
+                } catch (e) {
+                    console.error('Error parsing manifest:', e);
+                }
+            }
+        }
+
         // Close welcome modal and show login
         function closeWelcomeModal() {
             document.getElementById('welcome-modal').classList.add('hidden');
             showPage('auth');
         }
 
-        // Initialize PWA - FIXED VERSION
+        // Initialize PWA
         function initPWA() {
             // Check if app is running in standalone mode
             isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
@@ -2900,13 +2978,29 @@
             
             // Register service worker (inline)
             if ('serviceWorker' in navigator) {
+                // Create inline service worker
                 const serviceWorkerScript = `
                 self.addEventListener('install', event => {
                     console.log('Service Worker installing...');
+                    self.skipWaiting();
                 });
                 
                 self.addEventListener('activate', event => {
                     console.log('Service Worker activating...');
+                    return self.clients.claim();
+                });
+                
+                self.addEventListener('fetch', event => {
+                    // Cache-first strategy
+                    event.respondWith(
+                        caches.match(event.request)
+                            .then(response => {
+                                if (response) {
+                                    return response;
+                                }
+                                return fetch(event.request);
+                            })
+                    );
                 });
                 `;
                 
@@ -2923,7 +3017,7 @@
                     });
             }
             
-            // Listen for beforeinstallprompt event - FIXED
+            // Listen for beforeinstallprompt event
             window.addEventListener('beforeinstallprompt', (e) => {
                 console.log('beforeinstallprompt event fired');
                 // Prevent the mini-infobar from appearing on mobile
@@ -2953,7 +3047,14 @@
                 hideInstallButton();
                 deferredPrompt = null;
                 showToast('success', 'App Installed', 'GK Store has been installed successfully!');
+                localStorage.setItem('pwaInstalled', 'true');
             });
+            
+            // Check if already installed
+            if (localStorage.getItem('pwaInstalled') === 'true') {
+                isStandalone = true;
+                hideInstallButton();
+            }
             
             // Check online/offline status
             window.addEventListener('online', updateOnlineStatus);
@@ -2964,7 +3065,7 @@
         // Show install button
         function showInstallButton() {
             const installBtn = document.getElementById('pwa-install-btn');
-            if (installBtn) {
+            if (installBtn && !isStandalone) {
                 installBtn.classList.remove('hidden');
                 console.log('Install button shown');
             }
@@ -3009,6 +3110,7 @@
                 if (outcome === 'accepted') {
                     console.log('User accepted the install prompt');
                     showToast('success', 'Installation Started', 'App installation in progress...');
+                    localStorage.setItem('pwaInstalled', 'true');
                 } else {
                     console.log('User dismissed the install prompt');
                     showToast('info', 'Installation Cancelled', 'You can install the app later.');
