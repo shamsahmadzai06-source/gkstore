@@ -6,12 +6,12 @@
     <meta name="theme-color" content="#ec4899">
     <meta name="description" content="GK Store - Exclusive Video Marketplace">
     
-    <!-- PWA Manifest - REMOVED: We're creating it dynamically in JavaScript -->
-    <!-- <link rel="manifest" href="manifest.json" id="manifest-link"> -->
+    <!-- REMOVED: Dynamic manifest creation - using static manifest.json instead -->
+    <link rel="manifest" href="manifest.json">
     
     <title>GK Store - Video Marketplace</title>
     
-    <!-- FIXED: All favicon links point to correct repository structure -->
+    <!-- Favicon links -->
     <link rel="icon" type="image/png" href="android-launchericon-192-192.png">
     <link rel="apple-touch-icon" href="android-launchericon-192-192.png">
     
@@ -2853,7 +2853,6 @@
             loadPreferences();
             loadSampleData();
             setupEventListeners();
-            setupManifest();
             
             // Apply language
             applyLanguage(appState.language);
@@ -2884,104 +2883,6 @@
             // Hide all pages initially except auth
             const pages = document.querySelectorAll('[id$="-page"]');
             pages.forEach(p => p.classList.add('hidden'));
-        }
-
-        // Setup manifest dynamically - UPDATED: Now using local files
-        function setupManifest() {
-            const manifest = {
-                "name": "GK Store",
-                "short_name": "GK Store",
-                "description": "Exclusive Video Marketplace",
-                "start_url": ".",
-                "scope": ".",
-                "display": "standalone",
-                "background_color": "#000000",
-                "theme_color": "#ec4899",
-                "orientation": "portrait",
-                "icons": [
-                    {
-                        "src": "android-launchericon-72-72.png",
-                        "sizes": "72x72",
-                        "type": "image/png",
-                        "purpose": "any maskable"
-                    },
-                    {
-                        "src": "android-launchericon-96-96.png",
-                        "sizes": "96x96",
-                        "type": "image/png",
-                        "purpose": "any maskable"
-                    },
-                    {
-                        "src": "android-launchericon-144-144.png",
-                        "sizes": "144x144",
-                        "type": "image/png",
-                        "purpose": "any maskable"
-                    },
-                    {
-                        "src": "android-launchericon-192-192.png",
-                        "sizes": "192x192",
-                        "type": "image/png",
-                        "purpose": "any maskable"
-                    },
-                    {
-                        "src": "android-launchericon-512-512.png",
-                        "sizes": "512x512",
-                        "type": "image/png",
-                        "purpose": "any maskable"
-                    }
-                ],
-                "categories": ["entertainment", "shopping", "social"],
-                "shortcuts": [
-                    {
-                        "name": "Browse Videos",
-                        "short_name": "Videos",
-                        "description": "Browse premium video content",
-                        "url": "./#home",
-                        "icons": [{
-                            "src": "android-launchericon-96-96.png",
-                            "sizes": "96x96"
-                        }]
-                    },
-                    {
-                        "name": "Premium Accounts",
-                        "short_name": "Accounts",
-                        "description": "Browse premium accounts",
-                        "url": "./#accounts",
-                        "icons": [{
-                            "src": "android-launchericon-96-96.png",
-                            "sizes": "96x96"
-                        }]
-                    }
-                ]
-            };
-            
-            // Create and inject manifest
-            const manifestData = JSON.stringify(manifest);
-            const blob = new Blob([manifestData], {type: 'application/json'});
-            const manifestURL = URL.createObjectURL(blob);
-            
-            // Remove existing manifest link if exists (just in case)
-            const existingLink = document.querySelector('link[rel="manifest"]');
-            if (existingLink) {
-                existingLink.remove();
-            }
-            
-            // Create new manifest link
-            const manifestLink = document.createElement('link');
-            manifestLink.rel = 'manifest';
-            manifestLink.href = manifestURL;
-            document.head.appendChild(manifestLink);
-            
-            // Clean up URL object after loading
-            setTimeout(() => URL.revokeObjectURL(manifestURL), 1000);
-            
-            console.log('Manifest setup completed with local icons');
-        }
-
-        // Close welcome modal and show login
-        function closeWelcomeModal() {
-            document.getElementById('welcome-modal').classList.add('hidden');
-            showPage('auth');
         }
 
         // Initialize PWA
