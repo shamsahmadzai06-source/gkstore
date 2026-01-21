@@ -2,28 +2,38 @@
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#ec4899">
     <meta name="description" content="GK Store - Exclusive Video Marketplace">
     
-    <!-- Inline Manifest - Added -->
-    <link rel="manifest" id="app-manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiR0sgU3RvcmUiLCJzaG9ydF9uYW1lIjoiR0sgU3RvcmUiLCJkZXNjcmlwdGlvbiI6IkV4Y2x1c2l2ZSBWaWRlbyBNYXJrZXRwbGFjZSIsInN0YXJ0X3VybCI6Ii8iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMDAwMDAwIiwidGhlbWVfY29sb3IiOiIjZWM0ODk5Iiwib3JpZW50YXRpb24iOiJhbnkiLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCNGJXeHVjejBpYUhSMGNEb3ZMM2QzZHk1M015NXZjbWN2TWpBd01DOXpkbWNpSUhacFpYZENiM2c5SWpBZ01DQTFNREFnTURBaUlITjBjbTlyWlQwaWJtOXVaU0lnZUQwaU1UQXdNREF3TUNJZ2VUMGlNVEJtSWlCNVBTSXhPQzR3TURBd01EQWlMejQ4TDNOMlp6ND0iLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCIsInB1cnBvc2UiOiJhbnkifSx7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsUEhOMlp5QjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdk1qQXdNQzl6ZG1jaUlIWnBaWGRDYjNnOUlqQWdNQ0ExTURBZ01DQWlJSE4wY205clpUMGlibTl1WlNJZ2VEc2lNVEF3TURBd01DSWdlVDBpTVRCbUlpQjVQU0l4T0M0d01EQXdNREFpTHo0OEwzTjJaejQ9Iiwic2l6ZXMiOiI1MTJ4NTEyIiwidHlwZSI6ImltYWdlL3N2Zyt4bWwiLCJwdXJwb3NlIjoiYW55In1dfQ==">
-    
-    <title>GK Store - Video Marketplace</title>
-    
-    <!-- Favicon links - Updated to use data URIs -->
-    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcikiLz4KPHRleHQgeD0iOTYiIHk9IjExMiIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrIiBmb250LXNpemU9IjgwIiBmb250LXdlaWdodD0iOTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI+R0s8L3RleHQ+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXIiIHgxPSIwIiB5MT0iMCIgeDI9IjE5MiIgeTI9IjE5MiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjRUM0ODk5Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzhCNUM2NiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=">
-    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iNjQiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcikiLz4KPHRleHQgeD0iMjU2IiB5PSIyOTYiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayIgZm9udC1zaXplPSIxMjgiIGZvbnQtd2VpZ2h0PSI5MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIj5HSzwvdGV4dD4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhciIgeDE9IjAiIHkxPSIwIiB4Mj0iNTEyIiB5Mj0iNTEyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNFQzQ4OTkiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjOEI1QzY2Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+Cg==">
-    
-    <!-- iOS PWA Support -->
+    <!-- PWA Metadata -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="GK Store">
-    <link rel="apple-touch-startup-image" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iNjQiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcikiLz4KPHRleHQgeD0iMjU2IiB5PSIyOTYiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayIgZm9udC1zaXplPSIxMjgiIGZvbnQtd2VpZ2h0PSI5MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIj5HSzwvdGV4dD4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhciIgeDE9IjAiIHkxPSIwIiB4Mj0iNTEyIiB5Mj0iNTEyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNFQzQ4OTkiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjOEI1QzY2Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+Cg==">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="GK Store">
     
+    <!-- Inline Web App Manifest (Base64 encoded) -->
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIkdLIFN0b3JlIiwKICAic2hvcnRfbmFtZSI6ICJHSyBTdG9yZSIsCiAgImRlc2NyaXB0aW9uIjogIkV4Y2x1c2l2ZSBWaWRlbyBNYXJrZXRwbGFjZSIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMDAwMDAwIiwKICAidGhlbWVfY29sb3IiOiAiI2VjNDg5OSIsCiAgIm9yaWVudGF0aW9uIjogImFueSIsCiAgInNjb3BlIjogIi4iLAogICJsYW5nIjogImVuLVVTIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCNGJXeHVjejBpYUhSMGNEb3ZMM2QzZHk1M015NXZjbWN2TWpBd01DOXpkbWNpSUhacFpYZENiM2c5SWpBZ01DQTFNREFnTURBaUlITjBjbTlyWlQwaWJtOXVaU0lnZUQwaU1UQXdNREF3TUNJZ2VUMGlNVEJtSWlCNVBTSXhPQzR3TURBd01EQWlMejQ4TDNOMlp6ND0iLAogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAgICJ0eXBlIjogImltYWdlL3N2Zyt4bWwiLAogICAgICAicHVycG9zZSI6ICJhbnkgbWFzayFibGUiCiAgICB9LAogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsUEhOMlp5QjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdk1qQXdNQzl6ZG1jaUlIWnBaWGRDYjNnOUlqQWdNQ0ExTURBZ01DQWlJSE4wY205clpUMGlibTl1WlNJZ2VEc2lNVEF3TURBd01DSWdlVDBpTVRCbUlpQjVQU0l4T0M0d01EQXdNREFpTHo0OEwzTjJaejQ9IiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIiwKICAgICAgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIgogICAgfQogIF0KfQ==">
+    
+    <title>GK Store - Video Marketplace</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcikiLz4KPHRleHQgeD0iOTYiIHk9IjExMiIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrIiBmb250LXNpemU9IjgwIiBmb250LXdlaWdodD0iOTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI+R0s8L3RleHQ+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXIiIHgxPSIwIiB5MT0iMCIgeDI9IjE5MiIgeTI9IjE5MiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjRUM0ODk5Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzhCNUM2NiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=">
+    
+    <!-- iOS PWA Icons -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iNjQiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcikiLz4KPHRleHQgeD0iMjU2IiB5PSIyOTYiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayIgZm9udC1zaXplPSIxMjgiIGZvbnQtd2VpZ2h0PSI5MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIj5HSzwvdGV4dD4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhciIgeDE9IjAiIHkxPSIwIiB4Mj0iNTEyIiB5Mj0iNTEyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNFQzQ4OTkiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjOEI1QzY2Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+Cg==">
+    
+    <!-- Splash Screens for iOS -->
+    <link rel="apple-touch-startup-image" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzA3IiBoZWlnaHQ9IjQ3NyIgdmlld0JveD0iMCAwIDMwNyA0NzciIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDciIGhlaWdodD0iNDc3IiBmaWxsPSJ1cmwoI3BhaW50MF9saW5lYXIpIi8+Cjx0ZXh0IHg9IjE1My41IiB5PSIyMzguNSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrIiBmb250LXNpemU9IjgwIiBmb250LXdlaWdodD0iOTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI+R0s8L3RleHQ+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXIiIHgxPSIwIiB5MT0iMCIgeDI9IjMwNyIgeTI9IjQ3NyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjRUM0ODk5Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzhCNUM2NiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=" media="(device-width: 307px) and (device-height: 477px) and (-webkit-device-pixel-ratio: 1)">
+    <link rel="apple-touch-startup-image" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzQ4IiBoZWlnaHQ9IjExMjQiIHZpZXdCb3g9IjAgMCA3NDggMTEyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijc0OCIgaGVpZ2h0PSIxMTI0IiBmaWxsPSJ1cmwoI3BhaW50MF9saW5lYXIpIi8+Cjx0ZXh0IHg9IjM3NCIgeT0iNTYyIiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2siIGZvbnQtc2l6ZT0iMTI4IiBmb250LXdlaWdodD0iOTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI+R0s8L3RleHQ+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXIiIHgxPSIwIiB5MT0iMCIgeDI9Ijc0OCIgeTI9IjExMjQiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iI0VDNDg5OSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM4QjVDNjYiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K" media="(device-width: 374px) and (device-height: 1124px) and (-webkit-device-pixel-ratio: 2)">
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- 引入 Supabase 客户端库 -->
+    
+    <!-- Supabase -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
     <style>
         /* ALL YOUR ORIGINAL CSS CODE... */
         /* ALL YOUR ORIGINAL CSS CODE REMAINS EXACTLY THE SAME - NO CHANGES */
@@ -2885,19 +2895,16 @@
             pages.forEach(p => p.classList.add('hidden'));
         }
 
-        // Initialize PWA - UPDATED
+        // Initialize PWA - UPDATED with proper inline service worker
         function initPWA() {
             // Check if app is running in standalone mode
             isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                           window.navigator.standalone || 
                           document.referrer.includes('android-app://');
             
-            // Generate and set manifest dynamically
-            generateManifest();
-            
             // Register service worker if supported
             if ('serviceWorker' in navigator) {
-                // Register inline service worker
+                // Create inline service worker
                 registerInlineServiceWorker();
             }
             
@@ -2946,92 +2953,127 @@
             updateOnlineStatus();
         }
 
-        // Generate Manifest - ADDED
-        function generateManifest() {
-            const manifest = {
-                "name": "GK Store",
-                "short_name": "GK Store",
-                "description": "Exclusive Video Marketplace",
-                "start_url": "/",
-                "display": "standalone",
-                "background_color": "#000000",
-                "theme_color": "#ec4899",
-                "orientation": "any",
-                "icons": [
-                    {
-                        "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcikiLz4KPHRleHQgeD0iOTYiIHk9IjExMiIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrIiBmb250LXNpemU9IjgwIiBmb250LXdlaWdodD0iOTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI+R0s8L3RleHQ+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXIiIHgxPSIwIiB5MT0iMCIgeDI9IjE5MiIgeTI9IjE5MiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjRUM0ODk5Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzhCNUM2NiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=",
-                        "sizes": "192x192",
-                        "type": "image/svg+xml",
-                        "purpose": "any"
-                    },
-                    {
-                        "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iNjQiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcikiLz4KPHRleHQgeD0iMjU2IiB5PSIyOTYiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayIgZm9udC1zaXplPSIxMjgiIGZvbnQtd2VpZ2h0PSI5MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIj5HSzwvdGV4dD4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhciIgeDE9IjAiIHkxPSIwIiB4Mj0iNTEyIiB5Mj0iNTEyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNFQzQ4OTkiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjOEI1QzY2Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+Cg==",
-                        "sizes": "512x512",
-                        "type": "image/svg+xml",
-                        "purpose": "any"
-                    }
-                ]
-            };
-            
-            // Create a blob URL for the manifest
-            const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
-            const manifestURL = URL.createObjectURL(blob);
-            
-            // Update the manifest link
-            const manifestLink = document.getElementById('app-manifest');
-            if (manifestLink) {
-                manifestLink.href = manifestURL;
-            }
-            
-            // Clean up URL after a short delay
-            setTimeout(() => {
-                URL.revokeObjectURL(manifestURL);
-            }, 1000);
-        }
-
-        // Register Inline Service Worker - ADDED
+        // Register Inline Service Worker - UPDATED with proper implementation
         function registerInlineServiceWorker() {
-            const swScript = `
-                self.addEventListener('install', event => {
-                    console.log('Service Worker installing...');
-                    self.skipWaiting();
-                });
-                
-                self.addEventListener('activate', event => {
-                    console.log('Service Worker activating...');
-                    return self.clients.claim();
-                });
-                
-                self.addEventListener('fetch', event => {
-                    // Network-first strategy for better UX
-                    event.respondWith(
-                        fetch(event.request)
-                            .then(response => {
-                                // Cache the response for future use
-                                const responseClone = response.clone();
-                                caches.open('gk-store-v1').then(cache => {
-                                    cache.put(event.request, responseClone);
-                                });
-                                return response;
+            try {
+                // Create a blob URL for the service worker script
+                const swScript = `
+                    const CACHE_NAME = 'gk-store-v2';
+                    const urlsToCache = [
+                        '/',
+                        './index.html'
+                    ];
+
+                    // Install event
+                    self.addEventListener('install', event => {
+                        console.log('Service Worker: Installing...');
+                        event.waitUntil(
+                            caches.open(CACHE_NAME)
+                                .then(cache => {
+                                    console.log('Service Worker: Caching app shell');
+                                    return cache.addAll(urlsToCache);
+                                })
+                                .then(() => {
+                                    console.log('Service Worker: Install completed');
+                                    return self.skipWaiting();
+                                })
+                        );
+                    });
+
+                    // Activate event
+                    self.addEventListener('activate', event => {
+                        console.log('Service Worker: Activating...');
+                        event.waitUntil(
+                            caches.keys().then(cacheNames => {
+                                return Promise.all(
+                                    cacheNames.map(cacheName => {
+                                        if (cacheName !== CACHE_NAME) {
+                                            console.log('Service Worker: Deleting old cache', cacheName);
+                                            return caches.delete(cacheName);
+                                        }
+                                    })
+                                );
+                            }).then(() => {
+                                console.log('Service Worker: Activation completed');
+                                return self.clients.claim();
                             })
-                            .catch(() => {
-                                // If network fails, try cache
-                                return caches.match(event.request);
-                            })
-                    );
-                });
-            `;
-            
-            // Create blob URL for inline service worker
-            const blob = new Blob([swScript], { type: 'application/javascript' });
-            const swURL = URL.createObjectURL(blob);
-            
-            navigator.serviceWorker.register(swURL).then(registration => {
-                console.log('Inline Service Worker registered with scope:', registration.scope);
-                URL.revokeObjectURL(swURL);
-            }).catch(error => {
-                console.log('Inline Service Worker registration failed:', error);
-            });
+                        );
+                    });
+
+                    // Fetch event - Network first, fallback to cache
+                    self.addEventListener('fetch', event => {
+                        // Skip non-GET requests
+                        if (event.request.method !== 'GET') return;
+
+                        // Skip chrome-extension requests
+                        if (event.request.url.startsWith('chrome-extension://')) return;
+
+                        event.respondWith(
+                            fetch(event.request)
+                                .then(response => {
+                                    // Cache the response
+                                    const responseClone = response.clone();
+                                    caches.open(CACHE_NAME)
+                                        .then(cache => {
+                                            cache.put(event.request, responseClone);
+                                        });
+                                    return response;
+                                })
+                                .catch(() => {
+                                    // Network failed, try cache
+                                    return caches.match(event.request)
+                                        .then(cachedResponse => {
+                                            if (cachedResponse) {
+                                                return cachedResponse;
+                                            }
+                                            // Return offline page or empty response
+                                            return new Response('Offline', {
+                                                status: 503,
+                                                statusText: 'Service Unavailable',
+                                                headers: new Headers({
+                                                    'Content-Type': 'text/html'
+                                                })
+                                            });
+                                        });
+                                })
+                        );
+                    });
+
+                    // Message event for communication with client
+                    self.addEventListener('message', event => {
+                        if (event.data && event.data.type === 'SKIP_WAITING') {
+                            self.skipWaiting();
+                        }
+                    });
+                `;
+
+                // Create blob and register service worker
+                const blob = new Blob([swScript], { type: 'application/javascript' });
+                const swURL = URL.createObjectURL(blob);
+
+                navigator.serviceWorker.register(swURL, { scope: './' })
+                    .then(registration => {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                        
+                        // Check for updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            console.log('Service Worker update found!');
+                            
+                            newWorker.addEventListener('statechange', () => {
+                                console.log('New Service Worker state:', newWorker.state);
+                            });
+                        });
+                        
+                        // Clean up the blob URL
+                        URL.revokeObjectURL(swURL);
+                    })
+                    .catch(error => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            } catch (error) {
+                console.error('Failed to register service worker:', error);
+            }
         }
 
         // Show install button
