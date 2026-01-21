@@ -6,8 +6,8 @@
     <meta name="theme-color" content="#ec4899">
     <meta name="description" content="GK Store - Exclusive Video Marketplace">
     
-    <!-- REMOVED: Dynamic manifest creation - using static manifest.json instead -->
-    <link rel="manifest" href="manifest.json">
+    <!-- Use static manifest.json file -->
+    <link rel="manifest" href="/manifest.json">
     
     <title>GK Store - Video Marketplace</title>
     
@@ -2892,51 +2892,10 @@
                           window.navigator.standalone || 
                           document.referrer.includes('android-app://');
             
-            // Register service worker (inline)
+            // Register service worker if supported
             if ('serviceWorker' in navigator) {
-                // Create inline service worker
-                const serviceWorkerScript = `
-                self.addEventListener('install', event => {
-                    console.log('Service Worker installing...');
-                    self.skipWaiting();
-                });
-                
-                self.addEventListener('activate', event => {
-                    console.log('Service Worker activating...');
-                    return self.clients.claim();
-                });
-                
-                self.addEventListener('fetch', event => {
-                    // Network-first strategy for better UX
-                    event.respondWith(
-                        fetch(event.request)
-                            .then(response => {
-                                // Cache the response for future use
-                                const responseClone = response.clone();
-                                caches.open('gk-store-v1').then(cache => {
-                                    cache.put(event.request, responseClone);
-                                });
-                                return response;
-                            })
-                            .catch(() => {
-                                // If network fails, try cache
-                                return caches.match(event.request);
-                            })
-                    );
-                });
-                `;
-                
-                const blob = new Blob([serviceWorkerScript], { type: 'application/javascript' });
-                const serviceWorkerUrl = URL.createObjectURL(blob);
-                
-                navigator.serviceWorker.register(serviceWorkerUrl)
-                    .then(registration => {
-                        console.log('Service Worker registered with scope:', registration.scope);
-                        URL.revokeObjectURL(serviceWorkerUrl);
-                    })
-                    .catch(error => {
-                        console.log('Service Worker registration failed:', error);
-                    });
+                // Register service worker from a separate file (or inline)
+                registerServiceWorker();
             }
             
             // Listen for beforeinstallprompt event
@@ -2982,6 +2941,64 @@
             window.addEventListener('online', updateOnlineStatus);
             window.addEventListener('offline', updateOnlineStatus);
             updateOnlineStatus();
+        }
+
+        // Register Service Worker
+        function registerServiceWorker() {
+            navigator.serviceWorker.register('/sw.js').then(registration => {
+                console.log('Service Worker registered with scope:', registration.scope);
+            }).catch(error => {
+                console.log('Service Worker registration failed:', error);
+                
+                // Fallback to creating an inline service worker if file not found
+                createInlineServiceWorker();
+            });
+        }
+
+        // Create inline service worker as fallback
+        function createInlineServiceWorker() {
+            // Create a simple inline service worker
+            const swScript = `
+                self.addEventListener('install', event => {
+                    console.log('Service Worker installing...');
+                    self.skipWaiting();
+                });
+                
+                self.addEventListener('activate', event => {
+                    console.log('Service Worker activating...');
+                    return self.clients.claim();
+                });
+                
+                self.addEventListener('fetch', event => {
+                    // Network-first strategy for better UX
+                    event.respondWith(
+                        fetch(event.request)
+                            .then(response => {
+                                // Cache the response for future use
+                                const responseClone = response.clone();
+                                caches.open('gk-store-v1').then(cache => {
+                                    cache.put(event.request, responseClone);
+                                });
+                                return response;
+                            })
+                            .catch(() => {
+                                // If network fails, try cache
+                                return caches.match(event.request);
+                            })
+                    );
+                });
+            `;
+            
+            // Create blob URL for inline service worker
+            const blob = new Blob([swScript], { type: 'application/javascript' });
+            const swURL = URL.createObjectURL(blob);
+            
+            navigator.serviceWorker.register(swURL).then(registration => {
+                console.log('Inline Service Worker registered with scope:', registration.scope);
+                URL.revokeObjectURL(swURL);
+            }).catch(error => {
+                console.log('Inline Service Worker registration failed:', error);
+            });
         }
 
         // Show install button
