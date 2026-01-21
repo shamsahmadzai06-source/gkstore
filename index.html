@@ -6,20 +6,20 @@
     <meta name="theme-color" content="#ec4899">
     <meta name="description" content="GK Store - Exclusive Video Marketplace">
     
-    <!-- Use static manifest.json file -->
-    <link rel="manifest" href="/manifest.json">
+    <!-- Inline Manifest - Added -->
+    <link rel="manifest" id="app-manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiR0sgU3RvcmUiLCJzaG9ydF9uYW1lIjoiR0sgU3RvcmUiLCJkZXNjcmlwdGlvbiI6IkV4Y2x1c2l2ZSBWaWRlbyBNYXJrZXRwbGFjZSIsInN0YXJ0X3VybCI6Ii8iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMDAwMDAwIiwidGhlbWVfY29sb3IiOiIjZWM0ODk5Iiwib3JpZW50YXRpb24iOiJhbnkiLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCNGJXeHVjejBpYUhSMGNEb3ZMM2QzZHk1M015NXZjbWN2TWpBd01DOXpkbWNpSUhacFpYZENiM2c5SWpBZ01DQTFNREFnTURBaUlITjBjbTlyWlQwaWJtOXVaU0lnZUQwaU1UQXdNREF3TUNJZ2VUMGlNVEJtSWlCNVBTSXhPQzR3TURBd01EQWlMejQ4TDNOMlp6ND0iLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCIsInB1cnBvc2UiOiJhbnkifSx7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsUEhOMlp5QjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdk1qQXdNQzl6ZG1jaUlIWnBaWGRDYjNnOUlqQWdNQ0ExTURBZ01DQWlJSE4wY205clpUMGlibTl1WlNJZ2VEc2lNVEF3TURBd01DSWdlVDBpTVRCbUlpQjVQU0l4T0M0d01EQXdNREFpTHo0OEwzTjJaejQ9Iiwic2l6ZXMiOiI1MTJ4NTEyIiwidHlwZSI6ImltYWdlL3N2Zyt4bWwiLCJwdXJwb3NlIjoiYW55In1dfQ==">
     
     <title>GK Store - Video Marketplace</title>
     
-    <!-- Favicon links - Fixed paths with correct filenames -->
-    <link rel="icon" type="image/png" href="android-launchericon-192x192.png">
-    <link rel="apple-touch-icon" href="android-launchericon-192x192.png">
+    <!-- Favicon links - Updated to use data URIs -->
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcikiLz4KPHRleHQgeD0iOTYiIHk9IjExMiIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrIiBmb250LXNpemU9IjgwIiBmb250LXdlaWdodD0iOTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI+R0s8L3RleHQ+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXIiIHgxPSIwIiB5MT0iMCIgeDI9IjE5MiIgeTI9IjE5MiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjRUM0ODk5Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzhCNUM2NiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iNjQiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcikiLz4KPHRleHQgeD0iMjU2IiB5PSIyOTYiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayIgZm9udC1zaXplPSIxMjgiIGZvbnQtd2VpZ2h0PSI5MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIj5HSzwvdGV4dD4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhciIgeDE9IjAiIHkxPSIwIiB4Mj0iNTEyIiB5Mj0iNTEyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNFQzQ4OTkiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjOEI1QzY2Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+Cg==">
     
     <!-- iOS PWA Support -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="GK Store">
-    <link rel="apple-touch-startup-image" href="android-launchericon-512x512.png">
+    <link rel="apple-touch-startup-image" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iNjQiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcikiLz4KPHRleHQgeD0iMjU2IiB5PSIyOTYiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayIgZm9udC1zaXplPSIxMjgiIGZvbnQtd2VpZ2h0PSI5MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIj5HSzwvdGV4dD4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhciIgeDE9IjAiIHkxPSIwIiB4Mj0iNTEyIiB5Mj0iNTEyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNFQzQ4OTkiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjOEI1QzY2Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+Cg==">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- 引入 Supabase 客户端库 -->
@@ -2885,17 +2885,20 @@
             pages.forEach(p => p.classList.add('hidden'));
         }
 
-        // Initialize PWA
+        // Initialize PWA - UPDATED
         function initPWA() {
             // Check if app is running in standalone mode
             isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                           window.navigator.standalone || 
                           document.referrer.includes('android-app://');
             
+            // Generate and set manifest dynamically
+            generateManifest();
+            
             // Register service worker if supported
             if ('serviceWorker' in navigator) {
-                // Register service worker from a separate file (or inline)
-                registerServiceWorker();
+                // Register inline service worker
+                registerInlineServiceWorker();
             }
             
             // Listen for beforeinstallprompt event
@@ -2943,21 +2946,51 @@
             updateOnlineStatus();
         }
 
-        // Register Service Worker
-        function registerServiceWorker() {
-            navigator.serviceWorker.register('/sw.js').then(registration => {
-                console.log('Service Worker registered with scope:', registration.scope);
-            }).catch(error => {
-                console.log('Service Worker registration failed:', error);
-                
-                // Fallback to creating an inline service worker if file not found
-                createInlineServiceWorker();
-            });
+        // Generate Manifest - ADDED
+        function generateManifest() {
+            const manifest = {
+                "name": "GK Store",
+                "short_name": "GK Store",
+                "description": "Exclusive Video Marketplace",
+                "start_url": "/",
+                "display": "standalone",
+                "background_color": "#000000",
+                "theme_color": "#ec4899",
+                "orientation": "any",
+                "icons": [
+                    {
+                        "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcikiLz4KPHRleHQgeD0iOTYiIHk9IjExMiIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrIiBmb250LXNpemU9IjgwIiBmb250LXdlaWdodD0iOTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI+R0s8L3RleHQ+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXIiIHgxPSIwIiB5MT0iMCIgeDI9IjE5MiIgeTI9IjE5MiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjRUM0ODk5Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzhCNUM2NiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=",
+                        "sizes": "192x192",
+                        "type": "image/svg+xml",
+                        "purpose": "any"
+                    },
+                    {
+                        "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iNjQiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcikiLz4KPHRleHQgeD0iMjU2IiB5PSIyOTYiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayIgZm9udC1zaXplPSIxMjgiIGZvbnQtd2VpZ2h0PSI5MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIj5HSzwvdGV4dD4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhciIgeDE9IjAiIHkxPSIwIiB4Mj0iNTEyIiB5Mj0iNTEyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNFQzQ4OTkiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjOEI1QzY2Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+Cg==",
+                        "sizes": "512x512",
+                        "type": "image/svg+xml",
+                        "purpose": "any"
+                    }
+                ]
+            };
+            
+            // Create a blob URL for the manifest
+            const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+            const manifestURL = URL.createObjectURL(blob);
+            
+            // Update the manifest link
+            const manifestLink = document.getElementById('app-manifest');
+            if (manifestLink) {
+                manifestLink.href = manifestURL;
+            }
+            
+            // Clean up URL after a short delay
+            setTimeout(() => {
+                URL.revokeObjectURL(manifestURL);
+            }, 1000);
         }
 
-        // Create inline service worker as fallback
-        function createInlineServiceWorker() {
-            // Create a simple inline service worker
+        // Register Inline Service Worker - ADDED
+        function registerInlineServiceWorker() {
             const swScript = `
                 self.addEventListener('install', event => {
                     console.log('Service Worker installing...');
