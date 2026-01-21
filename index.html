@@ -6,12 +6,12 @@
     <meta name="theme-color" content="#ec4899">
     <meta name="description" content="GK Store - Exclusive Video Marketplace">
     
-    <!-- PWA Manifest -->
+    <!-- PWA Manifest - FIXED: Using your repository structure -->
     <link rel="manifest" href="manifest.json" id="manifest-link">
     
     <title>GK Store - Video Marketplace</title>
     
-    <!-- FIXED: Using your android-launchericon-192-192.png as favicon -->
+    <!-- FIXED: All favicon links point to correct repository structure -->
     <link rel="icon" type="image/png" href="https://shamsahmadzai06.github.io/GkStore/android-launchericon-192-192.png">
     <link rel="apple-touch-icon" href="https://shamsahmadzai06.github.io/GkStore/android-launchericon-192-192.png">
     
@@ -19,7 +19,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="GK Store">
-    <link rel="apple-touch-startup-image" href="https://shamsahmadzai06.github.io/GkStore/android-launchericon-192-192.png">
+    <link rel="apple-touch-startup-image" href="https://shamsahmadzai06.github.io/GkStore/android-launchericon-512-512.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- 引入 Supabase 客户端库 -->
@@ -2886,7 +2886,7 @@
             pages.forEach(p => p.classList.add('hidden'));
         }
 
-        // Setup manifest - FIXED: Using only the icons that exist in your repository
+        // Setup manifest dynamically - FIXED to use your repository structure
         function setupManifest() {
             const manifest = {
                 "name": "GK Store",
@@ -2955,11 +2955,27 @@
                 ]
             };
             
-            // Create manifest link
+            // Create and inject manifest
+            const manifestData = JSON.stringify(manifest);
+            const blob = new Blob([manifestData], {type: 'application/json'});
+            const manifestURL = URL.createObjectURL(blob);
+            
+            // Remove existing manifest link if exists
+            const existingLink = document.querySelector('link[rel="manifest"]');
+            if (existingLink) {
+                existingLink.remove();
+            }
+            
+            // Create new manifest link
             const manifestLink = document.createElement('link');
             manifestLink.rel = 'manifest';
-            manifestLink.href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type: 'application/json'}));
+            manifestLink.href = manifestURL;
             document.head.appendChild(manifestLink);
+            
+            // Clean up URL object after loading
+            setTimeout(() => URL.revokeObjectURL(manifestURL), 1000);
+            
+            console.log('Manifest setup completed with your icons');
         }
 
         // Close welcome modal and show login
