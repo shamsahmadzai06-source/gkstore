@@ -13,8 +13,8 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="application-name" content="GK Store">
     
-    <!-- Web App Manifest with correct icon paths -->
-    <link rel="manifest" href="icons.json">
+    <!-- Web App Manifest - Fixed inline manifest -->
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIktHIENvbnRlbnQgU3RvcmUiLAogICJzaG9ydF9uYW1lIjogIktHIENvbnRlbnQiLAogICJkZXNjcmlwdGlvbiI6ICJFeGNsdXNpdmUgVmlkZW8gTWFya2V0cGxhY2UiLAogICJzdGFydF91cmwiICIuL2luZGV4Lmh0bWwiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJ0aGVtZV9jb2xvciI6ICIjZWM0ODk5IiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMDAwMDAwIiwKICAib3JpZW50YXRpb24iOiAicG9ydHJhaXQiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJhbmRyb2lkLWxhdW5jaGVyaWNvbi03Mi03Mi5wbmciLAogICAgICAic2l6ZXMiOiAiNzJ4NzIiLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciCiAgICB9LAogICAgewogICAgICAic3JjIjogImFuZHJvaWQtbGF1bmNoZXJpY29uLTk2LTk2LnBuZyIsCiAgICAgICJzaXplcyI6ICI5Nng5NiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiYW5kcm9pZC1sYXVuY2hlcmljb24tMTQ0LTE0NC5wbmciLAogICAgICAic2l6ZXMiOiAiMTQ0eDE0NCIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiYW5kcm9pZC1sYXVuY2hlcmljb24tMTkyLTE5Mi5wbmciLAogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiYW5kcm9pZC1sYXVuY2hlcmljb24tNTEyLTUxMi5wbmciLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0KICBdCn0K">
     
     <title>GK Store - Video Marketplace</title>
     
@@ -39,7 +39,7 @@
     <link rel="icon" sizes="512x512" href="android-launchericon-512-512.png">
     
     <!-- Splash Screens for iOS -->
-    <link rel="apple-touch-startup-image" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzA3IiBoZWlnaHQ9IjQ3NyIgdmlld0JveD0iMCAwIDMwNyA0NzciIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDciIGhlaWdodD0iNDc3IiBmaWxsPSJ1cmwoI3BhaW50MF9saW5lYXIpIi8+Cjx0ZXh0IHg9IjE1My41IiB5PSIyMzguNSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrIiBmb250LXNpemU9IjgwIiBmb250LXdlaWdodD0iOTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI+R0s8L3RleHQ+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXIiIHgxPSIwIiB5MT0iMCIgeDI9IjMwNyIgeTI9IjQ3NyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25VzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNFQzQ4OTkiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjOEI1QzY2Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+Cg==" media="(device-width: 307px) and (device-height: 477px) and (-webkit-device-pixel-ratio: 1)">
+    <link rel="apple-touch-startup-image" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzA3IiBoZWlnaHQ9IjQ3NyIgdmlld0JveD0iMCAwIDMwNyA0NzciIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDciIGhlaWdodD0iNDc3IiBmaWxsPSJ1cmwoI3BhaW50MF9saW5lYXIpIi8+Cjx0ZXh0IHg9IjE1My41IiB5PSIyMzguNSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrIiBmb250LXNpemU9IjgwIiBmb250LXdlaWdodD0iOTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI+R0s8L3RleHQ+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXIiIHgxPSIwIiB5MT0iMCIgeDI9IjMwNyIgeTI9IjQ3NyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjRUM0ODk5Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzhCNUM2NiIiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K" media="(device-width: 307px) and (device-height: 477px) and (-webkit-device-pixel-ratio: 1)">
     <link rel="apple-touch-startup-image" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzQ4IiBoZWlnaHQ9IjExMjQiIHZpZXdCb3g9IjAgMCA3NDggMTEyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijc0OCIgaGVpZ2h0PSIxMTI0IiBmaWxsPSJ1cmwoI3BhaW50MF9saW5lYXIpIi8+Cjx0ZXh0IHg9IjM3NCIgeT0iNTYyIiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2siIGZvbnQtc2l6ZT0iMTI4IiBmb250LXdlaWdodD0iOTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI+R0s8L3RleHQ+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXIiIHgxPSIwIiB5MT0iMCIgeDI9Ijc0OCIgeTI9IjExMjQiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iI0VDNDg5OSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM4QjVDNjYiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K" media="(device-width: 374px) and (device-height: 1124px) and (-webkit-device-pixel-ratio: 2)">
     
     <!-- Font Awesome -->
@@ -2980,8 +2980,7 @@
                         './android-launchericon-96-96.png',
                         './android-launchericon-144-144.png',
                         './android-launchericon-192-192.png',
-                        './android-launchericon-512-512.png',
-                        './icons.json'
+                        './android-launchericon-512-512.png'
                     ];
 
                     // Install event
@@ -4835,6 +4834,12 @@
         // Show privacy
         function showPrivacy() {
             showToast('info', 'Privacy Policy', 'This is a demo app. Privacy policy will be implemented in production.');
+        }
+
+        // Close welcome modal
+        function closeWelcomeModal() {
+            document.getElementById('welcome-modal').classList.add('hidden');
+            showPage('auth');
         }
 
         // Initialize app when DOM is loaded
