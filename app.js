@@ -2,7 +2,7 @@
    GLOBAL DATA
 ========================= */
 const ADMIN_USDT = "TXxxxxADMINADDRESS";
-const APP_LINK = "https://your-github-username.github.io/your-repo-name/";
+const APP_LINK = "https://your-github-username.github.io/your-repo-name/"; // replace with your repo URL
 
 let users = JSON.parse(localStorage.getItem("users")) || [];
 let currentUser = JSON.parse(localStorage.getItem("currentUser"));
@@ -15,6 +15,9 @@ let adminPass = localStorage.getItem("adminPass") || "admin123";
    DOM ELEMENTS
 ========================= */
 const authScreen = document.getElementById("authScreen");
+const authName = document.getElementById("authName");
+const authEmail = document.getElementById("authEmail");
+const authPhone = document.getElementById("authPhone");
 const loginBtn = document.getElementById("loginBtn");
 const app = document.getElementById("app");
 
@@ -84,11 +87,6 @@ installBtn.onclick = async () => {
   if (!deferredPrompt) return;
   deferredPrompt.prompt();
   const choice = await deferredPrompt.userChoice;
-  if (choice.outcome === 'accepted') {
-    console.log('User accepted the install prompt');
-  } else {
-    console.log('User dismissed the install prompt');
-  }
   deferredPrompt = null;
   installBtn.classList.add('hidden');
 };
@@ -97,7 +95,7 @@ installBtn.onclick = async () => {
    SERVICE WORKER REGISTRATION
 ========================= */
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/service-worker.js')
+  navigator.serviceWorker.register('service-worker.js')
     .then(reg => console.log('Service worker registered', reg))
     .catch(err => console.log('SW registration failed', err));
 }
@@ -110,10 +108,7 @@ loginBtn.onclick = () => {
   const email = authEmail.value.trim();
   const phone = authPhone.value.trim();
 
-  if (!name || !email || !phone) {
-    alert("Fill Name, Email and WhatsApp");
-    return;
-  }
+  if (!name || !email || !phone) { alert("Fill Name, Email and WhatsApp"); return; }
 
   if (!users.find(u => u.phone === phone)) {
     users.push({ name, email, phone });
@@ -129,7 +124,7 @@ loginBtn.onclick = () => {
   updateProfile();
   loadHomeVideos();
   updateAdminStats();
-}
+};
 
 /* =========================
    PROFILE
@@ -377,7 +372,7 @@ changePassBtn.onclick = () => {
   adminPass = newPass.value;
   localStorage.setItem("adminPass", adminPass);
   alert("Password changed");
-}
+};
 
 /* =========================
    INIT
