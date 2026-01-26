@@ -6,11 +6,11 @@
     <meta name="theme-color" content="#ec4899">
     <meta name="description" content="GK Store - Exclusive Video Marketplace">
     <!-- PWA Manifest with proper icon paths -->
-    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIkdLIFN0b3JlIiwKICAic2hvcnRfbmFtZSI6ICJHSyBTdG9yZSIsCiAgImRlc2NyaXB0aW9uIjogIkV4Y2x1c2l2ZSBWaWRlbyBNYXJrZXRwbGFjZSIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMDAwMDAwIiwKICAidGhlbWVfY29sb3IiOiAiI2VjNDg5OSIsCiAgIm9yaWVudGF0aW9uIjogInBvcnRyYWl0IiwKICAic2NvcGUiOiAiLiIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogIi4vaWNvbi5wbmciLAogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiLi9pY29uLnBuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIgogICAgfQogIF0sCiAgInNob3J0Y3V0cyI6IFtdLAogICJzY3JlZW5zaG90cyI6IFtdCn0K">
+    <link rel="manifest" href="/manifest.json">
     <title>GK Store - Video Marketplace</title>
-    <!-- Favicon and Apple Touch Icons - SIMPLIFIED to use single icon.png -->
-    <link rel="icon" type="image/png" href="icon.png">
-    <link rel="apple-touch-icon" href="icon.png">
+    <!-- Favicon and Apple Touch Icons -->
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/sulemankhaksartech/icon/main/android-launchericon-512-512.png">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sulemankhaksartech/icon/main/android-launchericon-512-512.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- 引入 Supabase 客户端库 -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -1474,6 +1474,70 @@
         .auth-switch a:hover {
             text-decoration: underline;
         }
+        
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            backdrop-filter: blur(10px);
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid transparent;
+            border-top-color: var(--primary);
+            border-right-color: var(--secondary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        /* Form validation styles */
+        .input-error {
+            border-color: var(--danger) !important;
+        }
+        
+        .error-message {
+            color: var(--danger);
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+        
+        /* User stats */
+        .user-stats {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .stat-item {
+            flex: 1;
+            text-align: center;
+            padding: 0.75rem;
+            background: var(--surface-light);
+            border-radius: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
     </style>
 </head>
 <body>
@@ -1486,6 +1550,11 @@
     <button id="pwa-install-btn" class="pwa-install-btn hidden" onclick="showPWAInstallPrompt()">
         <i class="fas fa-download"></i>
     </button>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+    </div>
 
     <!-- Gradient Background Effects -->
     <div class="gradient-bg-effects">
@@ -1540,11 +1609,13 @@
                             <div class="input-group">
                                 <label class="input-label" id="email-label">Email Address</label>
                                 <input type="email" class="input" id="login-email" placeholder="Enter your email" required>
+                                <span id="login-email-error" class="error-message hidden"></span>
                             </div>
                             
                             <div class="input-group">
                                 <label class="input-label" id="password-label">Password</label>
                                 <input type="password" class="input" id="login-password" placeholder="Enter your password" required>
+                                <span id="login-password-error" class="error-message hidden"></span>
                             </div>
                             
                             <div class="flex items-center justify-between mb-6">
@@ -1555,7 +1626,7 @@
                                 <a href="#forgot-password" class="text-sm text-primary" onclick="showForgotPassword()" id="forgot-password-text">Forgot password?</a>
                             </div>
                             
-                            <button type="submit" class="btn btn-primary w-full mb-4">
+                            <button type="submit" class="btn btn-primary w-full mb-4" id="login-button">
                                 <i class="fas fa-sign-in-alt"></i> <span id="sign-in-text">Sign In</span>
                             </button>
                         </form>
@@ -1564,12 +1635,12 @@
                             <span id="or-sign-in-with-text">Or sign in with</span>
                         </div>
                         
-                        <button class="social-login-btn mb-4" onclick="socialLogin('google')">
+                        <button class="social-login-btn mb-4" onclick="socialLogin('google')" id="google-login-button">
                             <i class="fab fa-google text-red-500"></i>
                             <span id="google-signin-text">Continue with Google</span>
                         </button>
                         
-                        <button class="social-login-btn" onclick="socialLogin('apple')">
+                        <button class="social-login-btn" onclick="socialLogin('apple')" id="apple-login-button">
                             <i class="fab fa-apple"></i>
                             <span id="apple-signin-text">Continue with Apple</span>
                         </button>
@@ -1594,21 +1665,25 @@
                             <div class="input-group">
                                 <label class="input-label" id="full-name-label">Full Name</label>
                                 <input type="text" class="input" id="signup-name" placeholder="Enter your full name" required>
+                                <span id="signup-name-error" class="error-message hidden"></span>
                             </div>
                             
                             <div class="input-group">
                                 <label class="input-label" id="signup-email-label">Email Address</label>
                                 <input type="email" class="input" id="signup-email" placeholder="Enter your email" required>
+                                <span id="signup-email-error" class="error-message hidden"></span>
                             </div>
                             
                             <div class="input-group">
                                 <label class="input-label" id="signup-password-label">Password</label>
                                 <input type="password" class="input" id="signup-password" placeholder="Create a password" required>
+                                <span id="signup-password-error" class="error-message hidden"></span>
                             </div>
                             
                             <div class="input-group">
                                 <label class="input-label" id="confirm-password-label">Confirm Password</label>
                                 <input type="password" class="input" id="signup-confirm-password" placeholder="Confirm your password" required>
+                                <span id="signup-confirm-password-error" class="error-message hidden"></span>
                             </div>
                             
                             <div class="flex items-center mb-6">
@@ -1621,7 +1696,7 @@
                                 </label>
                             </div>
                             
-                            <button type="submit" class="btn btn-primary w-full mb-4">
+                            <button type="submit" class="btn btn-primary w-full mb-4" id="signup-button">
                                 <i class="fas fa-user-plus"></i> <span id="create-account-text">Create Account</span>
                             </button>
                         </form>
@@ -1630,12 +1705,12 @@
                             <span id="or-signup-with-text">Or sign up with</span>
                         </div>
                         
-                        <button class="social-login-btn mb-4" onclick="socialLogin('google')">
+                        <button class="social-login-btn mb-4" onclick="socialLogin('google')" id="google-signup-button">
                             <i class="fab fa-google text-red-500"></i>
                             <span id="google-signup-text">Continue with Google</span>
                         </button>
                         
-                        <button class="social-login-btn" onclick="socialLogin('apple')">
+                        <button class="social-login-btn" onclick="socialLogin('apple')" id="apple-signup-button">
                             <i class="fab fa-apple"></i>
                             <span id="apple-signup-text">Continue with Apple</span>
                         </button>
@@ -1660,9 +1735,10 @@
                             <div class="input-group">
                                 <label class="input-label" id="reset-email-label">Email Address</label>
                                 <input type="email" class="input" id="reset-email" placeholder="Enter your email" required>
+                                <span id="reset-email-error" class="error-message hidden"></span>
                             </div>
                             
-                            <button type="submit" class="btn btn-primary w-full mb-4">
+                            <button type="submit" class="btn btn-primary w-full mb-4" id="reset-password-button">
                                 <i class="fas fa-paper-plane"></i> <span id="send-reset-link-text">Send Reset Link</span>
                             </button>
                         </form>
@@ -1799,22 +1875,22 @@
                 <div class="card">
                     <div class="card-body">
                         <h3 class="font-semibold mb-4" id="statistics-title">Statistics</h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="text-center p-4 bg-surface-light rounded-lg">
-                                <div class="text-2xl font-bold gradient-text" id="videos-watched-count">24</div>
-                                <div class="text-sm text-zinc-400" id="videos-watched-text">Videos Watched</div>
+                        <div class="user-stats">
+                            <div class="stat-item">
+                                <div class="stat-value" id="videos-watched-count">24</div>
+                                <div class="stat-label" id="videos-watched-text">Videos Watched</div>
                             </div>
-                            <div class="text-center p-4 bg-surface-light rounded-lg">
-                                <div class="text-2xl font-bold gradient-text" id="accounts-booked-count">5</div>
-                                <div class="text-sm text-zinc-400" id="accounts-booked-text">Accounts Booked</div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="accounts-booked-count">5</div>
+                                <div class="stat-label" id="accounts-booked-text">Accounts Booked</div>
                             </div>
-                            <div class="text-center p-4 bg-surface-light rounded-lg">
-                                <div class="text-2xl font-bold gradient-text" id="watch-time-count">12h</div>
-                                <div class="text-sm text-zinc-400" id="watch-time-text">Watch Time</div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="watch-time-count">12h</div>
+                                <div class="stat-label" id="watch-time-text">Watch Time</div>
                             </div>
-                            <div class="text-center p-4 bg-surface-light rounded-lg">
-                                <div class="text-2xl font-bold gradient-text" id="purchases-count">3</div>
-                                <div class="text-sm text-zinc-400" id="purchases-text">Purchases</div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="purchases-count">3</div>
+                                <div class="stat-label" id="purchases-text">Purchases</div>
                             </div>
                         </div>
                     </div>
@@ -1874,15 +1950,15 @@
                         <form id="contact-form" onsubmit="sendContactMessage(event)">
                             <div class="input-group">
                                 <label class="input-label" id="your-name-label">Your Name</label>
-                                <input type="text" class="input" placeholder="Enter your name" required>
+                                <input type="text" class="input" id="contact-name" placeholder="Enter your name" required>
                             </div>
                             <div class="input-group">
                                 <label class="input-label" id="email-address-label">Email Address</label>
-                                <input type="email" class="input" placeholder="Enter your email" required>
+                                <input type="email" class="input" id="contact-email" placeholder="Enter your email" required>
                             </div>
                             <div class="input-group">
                                 <label class="input-label" id="message-label">Message</label>
-                                <textarea class="input textarea" placeholder="Type your message here..." required></textarea>
+                                <textarea class="input textarea" id="contact-message" placeholder="Type your message here..." required></textarea>
                             </div>
                             <button type="submit" class="btn btn-primary w-full">
                                 <i class="fas fa-paper-plane"></i> <span id="send-message-text">Send Message</span>
@@ -2117,17 +2193,17 @@
                 <form id="book-form" onsubmit="submitBookRequest(event)">
                     <div class="input-group">
                         <label class="input-label" id="your-full-name-label">Your Full Name</label>
-                        <input type="text" class="input" placeholder="Enter your name" required>
+                        <input type="text" class="input" id="book-name" placeholder="Enter your name" required>
                     </div>
                     
                     <div class="input-group">
                         <label class="input-label" id="whatsapp-number-label">WhatsApp Number</label>
-                        <input type="tel" class="input" placeholder="+93 793066322" required>
+                        <input type="tel" class="input" id="book-whatsapp" placeholder="+93 793066322" required>
                     </div>
                     
                     <div class="input-group">
                         <label class="input-label" id="additional-notes-label">Additional Notes (Optional)</label>
-                        <textarea class="input textarea" placeholder="Any special requests or questions..."></textarea>
+                        <textarea class="input textarea" id="book-notes" placeholder="Any special requests or questions..."></textarea>
                     </div>
                 </form>
             </div>
@@ -2846,15 +2922,19 @@
             // Apply language
             applyLanguage(appState.language);
             
-            // Initialize PWA - FIXED: Call this at the end
+            // Initialize PWA
             initPWA();
             
             // Check if user is already logged in
             const savedUser = localStorage.getItem('gkStoreUser');
             if (savedUser) {
                 try {
-                    appState.currentUser = JSON.parse(savedUser);
+                    const user = JSON.parse(savedUser);
+                    appState.currentUser = user;
                     appState.isLoggedIn = true;
+                    
+                    // Update user stats in UI
+                    updateUserProfile();
                     
                     // Hide welcome modal and show home page
                     document.getElementById('welcome-modal').classList.add('hidden');
@@ -2874,6 +2954,17 @@
             pages.forEach(p => p.classList.add('hidden'));
         }
 
+        // Update user profile in UI
+        function updateUserProfile() {
+            if (appState.currentUser) {
+                document.getElementById('user-name').textContent = appState.currentUser.name;
+                document.getElementById('user-email').textContent = appState.currentUser.email;
+                document.getElementById('member-since').textContent = appState.currentUser.createdAt ? 
+                    new Date(appState.currentUser.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 
+                    'Jan 2024';
+            }
+        }
+
         // Close welcome modal and show login
         function closeWelcomeModal() {
             document.getElementById('welcome-modal').classList.add('hidden');
@@ -2887,32 +2978,18 @@
                           window.navigator.standalone || 
                           document.referrer.includes('android-app://');
             
-            // Register service worker (inline)
+            // Register service worker
             if ('serviceWorker' in navigator) {
-                const serviceWorkerScript = `
-                self.addEventListener('install', event => {
-                    console.log('Service Worker installing...');
-                });
-                
-                self.addEventListener('activate', event => {
-                    console.log('Service Worker activating...');
-                });
-                `;
-                
-                const blob = new Blob([serviceWorkerScript], { type: 'application/javascript' });
-                const serviceWorkerUrl = URL.createObjectURL(blob);
-                
-                navigator.serviceWorker.register(serviceWorkerUrl)
+                navigator.serviceWorker.register('/service-worker.js')
                     .then(registration => {
                         console.log('Service Worker registered with scope:', registration.scope);
-                        URL.revokeObjectURL(serviceWorkerUrl);
                     })
                     .catch(error => {
                         console.log('Service Worker registration failed:', error);
                     });
             }
             
-            // Listen for beforeinstallprompt event - FIXED
+            // Listen for beforeinstallprompt event
             window.addEventListener('beforeinstallprompt', (e) => {
                 console.log('beforeinstallprompt event fired');
                 // Prevent the mini-infobar from appearing on mobile
@@ -3140,8 +3217,33 @@
                 }
             ];
 
-            // Initialize with empty accounts array
-            appState.accounts = [];
+            // Sample accounts
+            appState.accounts = [
+                {
+                    id: 1,
+                    title: "Premium Plus",
+                    description: "Exclusive premium account with full access",
+                    tier: "big",
+                    price: 5000,
+                    sold: false
+                },
+                {
+                    id: 2,
+                    title: "VIP Access",
+                    description: "VIP level access to premium features",
+                    tier: "medium",
+                    price: 2500,
+                    sold: false
+                },
+                {
+                    id: 3,
+                    title: "Exclusive Pro",
+                    description: "Professional account for content creators",
+                    tier: "small",
+                    price: 1200,
+                    sold: true
+                }
+            ];
 
             // Sample book requests
             appState.bookRequests = [
@@ -3349,6 +3451,9 @@
                         break;
                     case 'accounts':
                         loadAccountsContent();
+                        break;
+                    case 'profile':
+                        updateUserProfile();
                         break;
                     case 'admin':
                         loadAdminContent();
@@ -4384,10 +4489,14 @@
             const form = document.getElementById('book-form');
             if (!form) return;
             
-            const formData = new FormData(form);
-            const name = formData.get('name') || 'Not provided';
-            const whatsapp = formData.get('whatsapp') || 'Not provided';
-            const notes = formData.get('notes') || 'No additional notes';
+            const name = document.getElementById('book-name').value;
+            const whatsapp = document.getElementById('book-whatsapp').value;
+            const notes = document.getElementById('book-notes').value || 'No additional notes';
+            
+            if (!name || !whatsapp) {
+                showToast('error', 'Validation Error', 'Please fill in all required fields');
+                return;
+            }
             
             const bookRequest = {
                 id: appState.bookRequests.length + 1,
@@ -4470,9 +4579,16 @@
             event.preventDefault();
             
             const form = event.target;
-            const formData = new FormData(form);
+            const name = document.getElementById('contact-name').value;
+            const email = document.getElementById('contact-email').value;
+            const message = document.getElementById('contact-message').value;
             
-            console.log('Contact message:', Object.fromEntries(formData));
+            if (!name || !email || !message) {
+                showToast('error', 'Validation Error', 'Please fill in all required fields');
+                return;
+            }
+            
+            console.log('Contact message:', { name, email, message });
             
             showToast('success', getTranslation('Message Sent', appState.language), getTranslation('We will respond within 24 hours', appState.language));
             form.reset();
@@ -4492,21 +4608,76 @@
             document.getElementById('login-form-container').classList.remove('hidden');
             document.getElementById('signup-form-container').classList.add('hidden');
             document.getElementById('forgot-password-container').classList.add('hidden');
+            
+            // Clear any previous errors
+            clearFormErrors();
         }
 
         function showSignupForm() {
             document.getElementById('login-form-container').classList.add('hidden');
             document.getElementById('signup-form-container').classList.remove('hidden');
             document.getElementById('forgot-password-container').classList.add('hidden');
+            
+            // Clear any previous errors
+            clearFormErrors();
         }
 
         function showForgotPassword() {
             document.getElementById('login-form-container').classList.add('hidden');
             document.getElementById('signup-form-container').classList.add('hidden');
             document.getElementById('forgot-password-container').classList.remove('hidden');
+            
+            // Clear any previous errors
+            clearFormErrors();
         }
 
-        // Login function
+        // Clear form errors
+        function clearFormErrors() {
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.classList.add('hidden');
+                el.textContent = '';
+            });
+            
+            document.querySelectorAll('.input').forEach(el => {
+                el.classList.remove('input-error');
+            });
+        }
+
+        // Show form error
+        function showError(inputId, message) {
+            const input = document.getElementById(inputId);
+            const errorElement = document.getElementById(`${inputId}-error`);
+            
+            if (input && errorElement) {
+                input.classList.add('input-error');
+                errorElement.textContent = message;
+                errorElement.classList.remove('hidden');
+            }
+        }
+
+        // Clear error
+        function clearError(inputId) {
+            const input = document.getElementById(inputId);
+            const errorElement = document.getElementById(`${inputId}-error`);
+            
+            if (input && errorElement) {
+                input.classList.remove('input-error');
+                errorElement.classList.add('hidden');
+                errorElement.textContent = '';
+            }
+        }
+
+        // Show loading
+        function showLoading() {
+            document.getElementById('loading-overlay').classList.remove('hidden');
+        }
+
+        // Hide loading
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.add('hidden');
+        }
+
+        // Login function - FIXED
         function login(event) {
             event.preventDefault();
             
@@ -4514,39 +4685,67 @@
             const password = document.getElementById('login-password').value;
             const rememberMe = document.getElementById('remember-me').checked;
             
-            // Find user
-            const user = appState.users.find(u => u.email === email && u.password === password);
+            // Clear previous errors
+            clearError('login-email');
+            clearError('login-password');
             
-            if (user) {
-                // Update last login
-                user.lastLogin = new Date().toISOString();
-                
-                // Set current user
-                appState.currentUser = user;
-                appState.isLoggedIn = true;
-                
-                // Save to localStorage if remember me is checked
-                if (rememberMe) {
-                    localStorage.setItem('gkStoreUser', JSON.stringify(user));
-                }
-                
-                // Update user stats
-                appState.userStats.onlineUsers++;
-                
-                // Show success message
-                showToast('success', getTranslation('Login Successful', appState.language), `Welcome back, ${user.name}!`);
-                
-                // Redirect to home
-                showPage('home');
-                
-                // Reset form
-                document.getElementById('login-form').reset();
-            } else {
-                showToast('error', getTranslation('Login Failed', appState.language), getTranslation('Invalid email or password', appState.language));
+            // Validation
+            if (!email) {
+                showError('login-email', 'Email is required');
+                return;
             }
+            
+            if (!password) {
+                showError('login-password', 'Password is required');
+                return;
+            }
+            
+            // Show loading
+            showLoading();
+            
+            // Simulate API call delay
+            setTimeout(() => {
+                // Find user
+                const user = appState.users.find(u => u.email === email && u.password === password);
+                
+                if (user) {
+                    // Update last login
+                    user.lastLogin = new Date().toISOString();
+                    
+                    // Set current user
+                    appState.currentUser = user;
+                    appState.isLoggedIn = true;
+                    
+                    // Save to localStorage if remember me is checked
+                    if (rememberMe) {
+                        localStorage.setItem('gkStoreUser', JSON.stringify(user));
+                    }
+                    
+                    // Update user stats
+                    appState.userStats.onlineUsers++;
+                    
+                    // Hide loading
+                    hideLoading();
+                    
+                    // Show success message
+                    showToast('success', getTranslation('Login Successful', appState.language), `Welcome back, ${user.name}!`);
+                    
+                    // Redirect to home
+                    showPage('home');
+                    
+                    // Reset form
+                    document.getElementById('login-form').reset();
+                } else {
+                    // Hide loading
+                    hideLoading();
+                    
+                    showToast('error', getTranslation('Login Failed', appState.language), getTranslation('Invalid email or password', appState.language));
+                    showError('login-password', 'Invalid email or password');
+                }
+            }, 1000);
         }
 
-        // Signup function
+        // Signup function - FIXED
         function signup(event) {
             event.preventDefault();
             
@@ -4554,120 +4753,185 @@
             const email = document.getElementById('signup-email').value;
             const password = document.getElementById('signup-password').value;
             const confirmPassword = document.getElementById('signup-confirm-password').value;
+            const termsAgreed = document.getElementById('terms-agreement').checked;
+            
+            // Clear previous errors
+            clearError('signup-name');
+            clearError('signup-email');
+            clearError('signup-password');
+            clearError('signup-confirm-password');
             
             // Validation
-            if (password !== confirmPassword) {
-                showToast('error', getTranslation('Signup Failed', appState.language), getTranslation('Passwords do not match', appState.language));
-                return;
+            let hasError = false;
+            
+            if (!name || name.length < 2) {
+                showError('signup-name', 'Name must be at least 2 characters');
+                hasError = true;
             }
             
-            if (password.length < 6) {
-                showToast('error', getTranslation('Signup Failed', appState.language), getTranslation('Password must be at least 6 characters', appState.language));
+            if (!email || !email.includes('@')) {
+                showError('signup-email', 'Valid email is required');
+                hasError = true;
+            }
+            
+            if (!password || password.length < 6) {
+                showError('signup-password', 'Password must be at least 6 characters');
+                hasError = true;
+            }
+            
+            if (password !== confirmPassword) {
+                showError('signup-confirm-password', 'Passwords do not match');
+                hasError = true;
+            }
+            
+            if (!termsAgreed) {
+                showToast('error', 'Terms Required', 'You must agree to the terms and conditions');
+                hasError = true;
+            }
+            
+            if (hasError) {
                 return;
             }
             
             // Check if user already exists
             if (appState.users.some(u => u.email === email)) {
-                showToast('error', getTranslation('Signup Failed', appState.language), getTranslation('User with this email already exists', appState.language));
+                showError('signup-email', 'User with this email already exists');
                 return;
             }
             
-            // Create new user
-            const newUser = {
-                id: appState.users.length + 1,
-                email: email,
-                password: password,
-                name: name,
-                role: 'user',
-                createdAt: new Date().toISOString().split('T')[0],
-                lastLogin: new Date().toISOString()
-            };
+            // Show loading
+            showLoading();
             
-            // Add to users array
-            appState.users.push(newUser);
-            
-            // Update stats
-            appState.userStats.registeredUsers++;
-            appState.userStats.onlineUsers++;
-            
-            // Set current user
-            appState.currentUser = newUser;
-            appState.isLoggedIn = true;
-            
-            // Save to localStorage
-            localStorage.setItem('gkStoreUser', JSON.stringify(newUser));
-            
-            // Show success message
-            showToast('success', getTranslation('Account Created', appState.language), `Welcome to GK Store, ${name}!`);
-            
-            // Redirect to home
-            showPage('home');
-            
-            // Reset form
-            document.getElementById('signup-form').reset();
+            // Simulate API call delay
+            setTimeout(() => {
+                // Create new user
+                const newUser = {
+                    id: appState.users.length + 1,
+                    email: email,
+                    password: password,
+                    name: name,
+                    role: 'user',
+                    createdAt: new Date().toISOString(),
+                    lastLogin: new Date().toISOString()
+                };
+                
+                // Add to users array
+                appState.users.push(newUser);
+                
+                // Update stats
+                appState.userStats.registeredUsers++;
+                appState.userStats.onlineUsers++;
+                
+                // Set current user
+                appState.currentUser = newUser;
+                appState.isLoggedIn = true;
+                
+                // Save to localStorage
+                localStorage.setItem('gkStoreUser', JSON.stringify(newUser));
+                
+                // Hide loading
+                hideLoading();
+                
+                // Show success message
+                showToast('success', getTranslation('Account Created', appState.language), `Welcome to GK Store, ${name}!`);
+                
+                // Redirect to home
+                showPage('home');
+                
+                // Reset form
+                document.getElementById('signup-form').reset();
+            }, 1000);
         }
 
-        // Reset password function
+        // Reset password function - FIXED
         function resetPassword(event) {
             event.preventDefault();
             
             const email = document.getElementById('reset-email').value;
             
-            // Check if user exists
-            const user = appState.users.find(u => u.email === email);
+            // Clear previous errors
+            clearError('reset-email');
             
-            if (user) {
-                // In a real app, you would send a reset email here
-                // For demo, just show success message
-                showToast('success', getTranslation('Reset Link Sent', appState.language), getTranslation('Check your email for password reset instructions', appState.language));
-                
-                // Reset form and go back to login
-                document.getElementById('forgot-password-form').reset();
-                showLoginForm();
-            } else {
-                showToast('error', getTranslation('Reset Failed', appState.language), getTranslation('No account found with this email', appState.language));
+            // Validation
+            if (!email || !email.includes('@')) {
+                showError('reset-email', 'Valid email is required');
+                return;
             }
+            
+            // Show loading
+            showLoading();
+            
+            // Simulate API call delay
+            setTimeout(() => {
+                // Check if user exists
+                const user = appState.users.find(u => u.email === email);
+                
+                // Hide loading
+                hideLoading();
+                
+                if (user) {
+                    // In a real app, you would send a reset email here
+                    // For demo, just show success message
+                    showToast('success', getTranslation('Reset Link Sent', appState.language), getTranslation('Check your email for password reset instructions', appState.language));
+                    
+                    // Reset form and go back to login
+                    document.getElementById('forgot-password-form').reset();
+                    showLoginForm();
+                } else {
+                    showToast('error', getTranslation('Reset Failed', appState.language), getTranslation('No account found with this email', appState.language));
+                    showError('reset-email', 'No account found with this email');
+                }
+            }, 1000);
         }
 
-        // Social login function
+        // Social login function - FIXED
         function socialLogin(provider) {
-            // In a real app, this would integrate with actual OAuth providers
-            // For demo, create a mock user
-            const mockUser = {
-                id: 999,
-                email: `user_${Date.now()}@${provider}.com`,
-                password: 'social_auth',
-                name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} User`,
-                role: 'user',
-                createdAt: new Date().toISOString().split('T')[0],
-                lastLogin: new Date().toISOString()
-            };
+            // Show loading
+            showLoading();
             
-            // Check if user already exists (by email)
-            let existingUser = appState.users.find(u => u.email === mockUser.email);
-            
-            if (!existingUser) {
-                // Add new user
-                appState.users.push(mockUser);
-                appState.userStats.registeredUsers++;
-                existingUser = mockUser;
-            }
-            
-            // Update stats
-            appState.userStats.onlineUsers++;
-            
-            // Set current user
-            appState.currentUser = existingUser;
-            appState.isLoggedIn = true;
-            
-            // Save to localStorage
-            localStorage.setItem('gkStoreUser', JSON.stringify(existingUser));
-            
-            // Show success message
-            showToast('success', getTranslation('Login Successful', appState.language), `Welcome, ${existingUser.name}!`);
-            
-            // Redirect to home
-            showPage('home');
+            // Simulate API call delay
+            setTimeout(() => {
+                // In a real app, this would integrate with actual OAuth providers
+                // For demo, create a mock user
+                const mockUser = {
+                    id: 999,
+                    email: `user_${Date.now()}@${provider}.com`,
+                    password: 'social_auth',
+                    name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} User`,
+                    role: 'user',
+                    createdAt: new Date().toISOString(),
+                    lastLogin: new Date().toISOString()
+                };
+                
+                // Check if user already exists (by email)
+                let existingUser = appState.users.find(u => u.email === mockUser.email);
+                
+                if (!existingUser) {
+                    // Add new user
+                    appState.users.push(mockUser);
+                    appState.userStats.registeredUsers++;
+                    existingUser = mockUser;
+                }
+                
+                // Update stats
+                appState.userStats.onlineUsers++;
+                
+                // Set current user
+                appState.currentUser = existingUser;
+                appState.isLoggedIn = true;
+                
+                // Save to localStorage
+                localStorage.setItem('gkStoreUser', JSON.stringify(existingUser));
+                
+                // Hide loading
+                hideLoading();
+                
+                // Show success message
+                showToast('success', getTranslation('Login Successful', appState.language), `Welcome, ${existingUser.name}!`);
+                
+                // Redirect to home
+                showPage('home');
+            }, 1000);
         }
 
         // Show terms
