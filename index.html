@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#ec4899">
     <meta name="description" content="GK Store - Exclusive Video Marketplace">
-    <!-- PWA Manifest with proper icon paths -->
-    <link rel="manifest" href="/manifest.json">
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
     <title>GK Store - Video Marketplace</title>
     <!-- Favicon and Apple Touch Icons -->
-    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/sulemankhaksartech/icon/main/android-launchericon-512-512.png">
-    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sulemankhaksartech/icon/main/android-launchericon-512-512.png">
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/shamsahmadzai06/GkStore/main/android-launchericon-512-512.png">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/shamsahmadzai06/GkStore/main/android-launchericon-192-192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- 引入 Supabase 客户端库 -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -1539,6 +1539,23 @@
             margin-top: 0.25rem;
         }
     </style>
+    
+    <!-- Inline Service Worker Registration -->
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('service-worker.js').then(
+                    function(registration) {
+                        console.log('Service Worker registration successful with scope: ', registration.scope);
+                    },
+                    function(err) {
+                        console.log('Service Worker registration failed: ', err);
+                    }
+                );
+            });
+        }
+    </script>
 </head>
 <body>
     <!-- Offline Indicator -->
@@ -2574,6 +2591,68 @@
         </div>
     </div>
 
+    <!-- Inline Service Worker Script -->
+    <script>
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            // Create a blob with the service worker code
+            const swBlob = new Blob([`
+                // Service Worker for GK Store
+                const CACHE_NAME = 'gk-store-v1';
+                const urlsToCache = [
+                    './',
+                    './index.html'
+                ];
+
+                // Install event
+                self.addEventListener('install', event => {
+                    event.waitUntil(
+                        caches.open(CACHE_NAME)
+                            .then(cache => cache.addAll(urlsToCache))
+                            .then(() => self.skipWaiting())
+                    );
+                });
+
+                // Activate event
+                self.addEventListener('activate', event => {
+                    event.waitUntil(
+                        caches.keys().then(cacheNames => {
+                            return Promise.all(
+                                cacheNames.map(cacheName => {
+                                    if (cacheName !== CACHE_NAME) {
+                                        return caches.delete(cacheName);
+                                    }
+                                })
+                            );
+                        }).then(() => self.clients.claim())
+                    );
+                });
+
+                // Fetch event
+                self.addEventListener('fetch', event => {
+                    event.respondWith(
+                        caches.match(event.request)
+                            .then(response => {
+                                if (response) {
+                                    return response;
+                                }
+                                return fetch(event.request);
+                            })
+                    );
+                });
+            `], { type: 'application/javascript' });
+
+            // Register the service worker
+            navigator.serviceWorker.register(URL.createObjectURL(swBlob))
+                .then(registration => {
+                    console.log('Service Worker registered with scope:', registration.scope);
+                })
+                .catch(error => {
+                    console.log('Service Worker registration failed:', error);
+                });
+        }
+    </script>
+
     <script>
         // PWA Variables
         let deferredPrompt;
@@ -2978,15 +3057,62 @@
                           window.navigator.standalone || 
                           document.referrer.includes('android-app://');
             
-            // Register service worker
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(registration => {
-                        console.log('Service Worker registered with scope:', registration.scope);
-                    })
-                    .catch(error => {
-                        console.log('Service Worker registration failed:', error);
-                    });
+            // Create inline manifest
+            const manifest = {
+                "name": "GK Store",
+                "short_name": "GK Store",
+                "description": "Exclusive Video Marketplace",
+                "start_url": ".",
+                "display": "standalone",
+                "background_color": "#000000",
+                "theme_color": "#ec4899",
+                "orientation": "any",
+                "categories": ["business", "entertainment", "social"],
+                "icons": [
+                    {
+                        "src": "https://raw.githubusercontent.com/shamsahmadzai06/GkStore/main/android-launchericon-72-72.png",
+                        "sizes": "72x72",
+                        "type": "image/png"
+                    },
+                    {
+                        "src": "https://raw.githubusercontent.com/shamsahmadzai06/GkStore/main/android-launchericon-96-96.png",
+                        "sizes": "96x96",
+                        "type": "image/png"
+                    },
+                    {
+                        "src": "https://raw.githubusercontent.com/shamsahmadzai06/GkStore/main/android-launchericon-144-144.png",
+                        "sizes": "144x144",
+                        "type": "image/png"
+                    },
+                    {
+                        "src": "https://raw.githubusercontent.com/shamsahmadzai06/GkStore/main/android-launchericon-192-192.png",
+                        "sizes": "192x192",
+                        "type": "image/png"
+                    },
+                    {
+                        "src": "https://raw.githubusercontent.com/shamsahmadzai06/GkStore/main/android-launchericon-512-512.png",
+                        "sizes": "512x512",
+                        "type": "image/png"
+                    }
+                ],
+                "screenshots": [
+                    {
+                        "src": "splash",
+                        "sizes": "372x790",
+                        "type": "image/png",
+                        "form_factor": "portrait"
+                    }
+                ]
+            };
+
+            // Create and inject manifest link
+            const manifestBlob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/manifest+json' });
+            const manifestURL = URL.createObjectURL(manifestBlob);
+            
+            // Update existing manifest link
+            const manifestLink = document.querySelector('link[rel="manifest"]');
+            if (manifestLink) {
+                manifestLink.href = manifestURL;
             }
             
             // Listen for beforeinstallprompt event
