@@ -3,141 +3,116 @@
 <head>
   <meta charset="UTF-8" />
   <title>GK Store</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#1a1a2e" />
 
-  <!-- Link manifest correctly -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1a1a2e">
+
+  <!-- ✅ REQUIRED FOR PWA BUILDER -->
   <link rel="manifest" href="manifest.json">
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- LOGIN / SIGNUP SCREEN -->
-  <section id="authScreen" class="auth-screen">
-    <div class="auth-card">
-      <h2>Welcome to GK Store</h2>
-      <input id="authName" placeholder="Name" type="text">
-      <input id="authEmail" placeholder="Email" type="email">
-      <input id="authPhone" placeholder="WhatsApp Number" type="text">
-      <button id="loginBtn">Login</button>
+
+<!-- AUTH -->
+<section id="authScreen" class="auth-screen">
+  <div class="auth-card">
+    <h2>GK Store</h2>
+    <input id="authName" placeholder="Name">
+    <input id="authEmail" placeholder="Email">
+    <input id="authPhone" placeholder="WhatsApp">
+    <button id="loginBtn">Login</button>
+  </div>
+</section>
+
+<!-- APP -->
+<div id="app" class="hidden">
+
+  <div id="videoFeed" class="video-feed"></div>
+
+  <section id="account" class="page scrollable hidden">
+    <h2 class="page-title">Select Tier</h2>
+    <div class="tier-buttons">
+      <button class="tier-btn small" data-tier="small">Small</button>
+      <button class="tier-btn medium" data-tier="medium">Medium</button>
+      <button class="tier-btn big" data-tier="big">Big</button>
     </div>
   </section>
 
-  <!-- MAIN APP -->
-  <div id="app" class="hidden">
-    <!-- HOME PAGE -->
-    <section id="home" class="page scrollable">
-      <div id="videoFeed" class="video-feed"></div>
-    </section>
+  <section id="tierPage" class="page scrollable hidden">
+    <div class="tier-header">
+      <button id="backToAccount">← Back</button>
+      <h3 id="tierTitle"></h3>
+    </div>
+    <div id="tierVideos" class="video-list"></div>
+    <p id="noTierVideos" class="empty-text hidden">No videos</p>
+  </section>
 
-    <!-- ACCOUNT PAGE -->
-    <section id="account" class="page scrollable hidden">
-      <h2 class="page-title">Your Tiers</h2>
-      <div class="tier-buttons">
-        <button class="tier-btn small" data-tier="small">Small Tier</button>
-        <button class="tier-btn medium" data-tier="medium">Medium Tier</button>
-        <button class="tier-btn big" data-tier="big">Big Tier</button>
-      </div>
-    </section>
+  <section id="profile" class="page scrollable hidden">
+    <div class="profile-card">
+      <p>Name: <span id="profileName"></span></p>
+      <p>Email: <span id="profileEmail"></span></p>
+      <p>WhatsApp: <span id="profilePhone"></span></p>
+    </div>
+  </section>
 
-    <!-- TIER PAGE -->
-    <section id="tierPage" class="page scrollable hidden">
-      <div class="tier-header">
-        <button id="backToAccount">← Back</button>
-        <h2 id="tierTitle"></h2>
-      </div>
-      <div id="tierVideos" class="video-list"></div>
-      <p id="noTierVideos" class="empty-text hidden">No videos in this tier yet.</p>
-    </section>
+  <section id="contact" class="page scrollable hidden">
+    <h2 class="page-title">Contact</h2>
+  </section>
 
-    <!-- PROFILE PAGE -->
-    <section id="profile" class="page scrollable hidden">
-      <div class="profile-card">
-        <h2>Profile</h2>
-        <p>Name: <span id="profileName"></span></p>
-        <p>Email: <span id="profileEmail"></span></p>
-        <p>WhatsApp: <span id="profilePhone"></span></p>
-      </div>
-    </section>
-
-    <!-- CONTACT PAGE -->
-    <section id="contact" class="page scrollable hidden">
-      <h2 class="page-title">Contact Us</h2>
-      <p style="text-align:center;">For support, chat on WhatsApp or visit our website.</p>
-    </section>
-
-    <!-- ADMIN PAGE -->
-    <section id="admin" class="page scrollable hidden">
-      <div id="adminLoginBox">
-        <input id="adminPassInput" type="password" placeholder="Admin Password">
-        <button id="adminLoginBtn">Login as Admin</button>
-      </div>
-      <div id="adminContent" class="hidden scrollable">
-        <h2>Admin Panel</h2>
-        <p>Total Users: <span id="userCount">0</span></p>
-        <p>Online Users: <span id="onlineCount">0</span></p>
-        <p>Book Requests: <span id="bookCount">0</span></p>
-
-        <h3>Upload Video</h3>
-        <input id="videoID" placeholder="Video ID">
-        <input id="videoTitle" placeholder="Video Title">
-        <input id="videoFile" type="file">
-        <input id="videoPrice" placeholder="Price">
-        <select id="videoTier">
-          <option value="small">Small</option>
-          <option value="medium">Medium</option>
-          <option value="big">Big</option>
-        </select>
-        <button id="uploadVideoBtn">Upload Video</button>
-
-        <h3>Change Admin Password</h3>
-        <input id="oldPass" type="password" placeholder="Old Password">
-        <input id="newPass" type="password" placeholder="New Password">
-        <button id="changePassBtn">Change Password</button>
-
-        <div id="notificationContainer"></div>
-      </div>
-    </section>
-
-    <!-- VIDEO TEMPLATE -->
-    <template id="videoTemplate">
-      <div class="video">
-        <video></video>
-        <div class="video-info"></div>
-        <div class="video-overlay-buttons">
-          <button class="btn-buy">💰</button>
-          <button class="btn-book">📖</button>
-          <button class="btn-share">🔗</button>
-        </div>
-      </div>
-    </template>
-
-    <!-- POPUP -->
-    <div id="buyPopup" class="popup hidden">
-      <div class="popup-box">
-        <h2 id="popupTitle"></h2>
-        <p id="usdtText">Send USDT to:</p>
-        <input id="usdtAddress" readonly value="TXxxxxADMINADDRESS">
-        <button id="copyUSDT">Copy Address</button>
-        <input id="buyerName" placeholder="Your Name">
-        <input id="buyerWhats" placeholder="WhatsApp Number">
-        <button id="confirmBtn">Confirm</button>
-        <button id="cancelBtn">Cancel</button>
-      </div>
+  <section id="admin" class="page scrollable hidden">
+    <div id="adminLoginBox">
+      <input id="adminPassInput" placeholder="Admin Password" type="password">
+      <button id="adminLoginBtn">Login</button>
     </div>
 
-    <!-- BOTTOM NAV -->
-    <div class="bottom-nav">
-      <button id="navHome" class="active">Home</button>
-      <button id="navAccount">Account</button>
-      <button id="navProfile">Profile</button>
-      <button id="navContact">Contact</button>
-      <button id="navAdmin">Admin</button>
-    </div>
+    <div id="adminContent" class="hidden">
+      <p>Users: <span id="userCount">0</span></p>
+      <p>Online: <span id="onlineCount">0</span></p>
+      <p>Requests: <span id="bookCount">0</span></p>
 
-    <!-- INSTALL BUTTON (PWA) -->
-    <button id="installBtn" class="install-btn hidden">Install App</button>
+      <input id="videoID" placeholder="Video ID">
+      <input id="videoTitle" placeholder="Title">
+      <input id="videoFile" type="file">
+      <input id="videoPrice" placeholder="Price">
+      <select id="videoTier">
+        <option value="small">Small</option>
+        <option value="medium">Medium</option>
+        <option value="big">Big</option>
+      </select>
+      <button id="uploadVideoBtn">Upload</button>
+
+      <input id="oldPass" placeholder="Old Password" type="password">
+      <input id="newPass" placeholder="New Password" type="password">
+      <button id="changePassBtn">Change Password</button>
+
+      <div id="notificationContainer"></div>
+    </div>
+  </section>
+
+  <template id="videoTemplate">
+    <div class="video">
+      <video></video>
+      <div class="video-info"></div>
+      <div class="video-overlay-buttons">
+        <button class="btn-buy">💰</button>
+        <button class="btn-book">📖</button>
+        <button class="btn-share">🔗</button>
+      </div>
+    </div>
+  </template>
+
+  <div class="bottom-nav">
+    <button id="navHome">Home</button>
+    <button id="navAccount">Account</button>
+    <button id="navProfile">Profile</button>
+    <button id="navContact">Contact</button>
+    <button id="navAdmin">Admin</button>
   </div>
 
-  <script src="app.js"></script>
+  <button id="installBtn" class="install-btn hidden">Install App</button>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
