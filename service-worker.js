@@ -1,15 +1,16 @@
 const CACHE_NAME = "gk-store-v10";
 const APP_SHELL = [
-  "/",
-  "/index.html",
-  "/style.css",
-  "/app.js",
-  "/manifest.json",
-  "/android-launchericon-72-72.png",
-  "/android-launchericon-96-96.png",
-  "/android-launchericon-144-144.png",
-  "/android-launchericon-192-192.png",
-  "/android-launchericon-512-512.png"
+  "./",
+  "./index.html",
+  "./style.css",
+  "./app.js",
+  "./manifest.json",
+  "./android-launchericon-48-48.png",
+  "./android-launchericon-72-72.png",
+  "./android-launchericon-96-96.png",
+  "./android-launchericon-144-144.png",
+  "./android-launchericon-192-192.png",
+  "./android-launchericon-512-512.png"
 ];
 
 const VIDEO_CACHE = "gk-store-videos-v10";
@@ -50,7 +51,7 @@ self.addEventListener("fetch", event => {
 
   const { request } = event;
 
-  // Video requests → network-first + cache
+  // Video requests → network-first then cache
   if (request.destination === "video") {
     event.respondWith(
       fetch(request)
@@ -67,13 +68,17 @@ self.addEventListener("fetch", event => {
   // App shell → cache-first
   event.respondWith(
     caches.match(request).then(cached => {
-      return cached || fetch(request).then(res => {
+      if (cached) return cached;
+
+      return fetch(request).then(res => {
         if (!res || res.status !== 200) return res;
         const clone = res.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
         return res;
       }).catch(() => {
-        if (request.destination === "document") return caches.match("/index.html");
+        if (request.destination === "document") {
+          return caches.match("./index.html");
+        }
       });
     })
   );
