@@ -49,7 +49,7 @@ self.addEventListener("fetch", event => {
 
   const { request } = event;
 
-  // Video requests → network-first then cache
+  // Video requests → network-first + cache
   if (request.destination === "video") {
     event.respondWith(
       fetch(request)
@@ -63,21 +63,17 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // App shell & other requests → cache-first
+  // App shell → cache-first
   event.respondWith(
     caches.match(request).then(cached => {
-      if (cached) return cached;
-
-      return fetch(request)
-        .then(res => {
-          if (!res || res.status !== 200) return res;
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
-          return res;
-        })
-        .catch(() => {
-          if (request.destination === "document") return caches.match("/index.html");
-        });
+      return cached || fetch(request).then(res => {
+        if (!res || res.status !== 200) return res;
+        const clone = res.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+        return res;
+      }).catch(() => {
+        if (request.destination === "document") return caches.match("/index.html");
+      });
     })
   );
 });
