@@ -6,79 +6,21 @@
     <meta name="theme-color" content="#ec4899">
     <meta name="description" content="GK Store - Exclusive Video Marketplace">
     
-    <!-- PWA Manifest - CORRECTED PATH -->
-    <link rel="manifest" href="/GKStore/manifest.json">
-    
     <title>GK Store - Video Marketplace</title>
     
-    <!-- CORRECTED: Favicon and Apple Touch Icons with correct GitHub Pages URLs -->
-    <link rel="icon" type="image/png" href="/GKStore/icon.png">
-    <link rel="apple-touch-icon" href="/GKStore/icon.png">
+    <!-- FIXED: Favicon and Apple Touch Icons with absolute GitHub Pages URLs -->
+    <link rel="icon" type="image/png" href="https://shamsahmadzai06.github.io/GkStore/icon.png">
+    <link rel="apple-touch-icon" href="https://shamsahmadzai06.github.io/GkStore/icon.png">
     
     <!-- iOS PWA Support -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="GK Store">
-    <link rel="apple-touch-startup-image" href="/GKStore/icon.png">
+    <link rel="apple-touch-startup-image" href="https://shamsahmadzai06.github.io/GkStore/icon.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- 引入 Supabase 客户端库 -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    
-    <!-- INLINE MANIFEST DATA FOR PWA -->
-    <script type="application/manifest+json">
-    {
-        "name": "GK Store",
-        "short_name": "GK Store",
-        "description": "Exclusive Video Marketplace",
-        "start_url": "/GKStore/",
-        "display": "standalone",
-        "background_color": "#000000",
-        "theme_color": "#ec4899",
-        "orientation": "portrait",
-        "scope": "/GKStore/",
-        "icons": [
-            {
-                "src": "/GKStore/icon.png",
-                "sizes": "192x192",
-                "type": "image/png",
-                "purpose": "any"
-            },
-            {
-                "src": "/GKStore/icon.png",
-                "sizes": "512x512",
-                "type": "image/png",
-                "purpose": "any"
-            },
-            {
-                "src": "/GKStore/android-launchericon-72-72.png",
-                "sizes": "72x72",
-                "type": "image/png"
-            },
-            {
-                "src": "/GKStore/android-launchericon-96-96.png",
-                "sizes": "96x96",
-                "type": "image/png"
-            },
-            {
-                "src": "/GKStore/android-launchericon-144-144.png",
-                "sizes": "144x144",
-                "type": "image/png"
-            },
-            {
-                "src": "/GKStore/android-launchericon-192-192.png",
-                "sizes": "192x192",
-                "type": "image/png"
-            },
-            {
-                "src": "/GKStore/android-launchericon-512-512.png",
-                "sizes": "512x512",
-                "type": "image/png"
-            }
-        ]
-    }
-    </script>
-    
     <style>
         /* ALL YOUR ORIGINAL CSS CODE... */
         /* ALL YOUR ORIGINAL CSS CODE REMAINS EXACTLY THE SAME - NO CHANGES */
@@ -168,34 +110,7 @@
             to { transform: rotate(360deg); }
         }
 
-        /* PWA Install Button */
-        .pwa-install-btn {
-            position: fixed;
-            left: 1rem;
-            bottom: 9rem;
-            width: 3rem;
-            height: 3rem;
-            border-radius: 50%;
-            background: var(--gradient);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 100;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-            border: none;
-            animation: pulse 2s infinite;
-        }
-
-        .pwa-install-btn.hidden {
-            display: none;
-        }
-
-        .pwa-install-btn i {
-            font-size: 1.25rem;
-        }
+        /* REMOVED: PWA Install Button styles */
 
         /* Offline Indicator */
         .offline-indicator {
@@ -1179,7 +1094,6 @@
             .modal { margin: 1rem; }
             .video-container { height: calc(100vh - 120px); }
             .video-top-actions { top: 40%; }
-            .pwa-install-btn { left: 0.5rem; bottom: 8rem; }
         }
 
         @media (max-width: 480px) {
@@ -1188,7 +1102,6 @@
             .nav-item { min-width: 3rem; }
             .video-top-actions { top: 35%; right: 0.5rem; }
             .video-right-actions { right: 0.5rem; }
-            .pwa-install-btn { left: 0.5rem; bottom: 7rem; }
         }
 
         /* Dark/Light Mode (Future Enhancement) */
@@ -1221,14 +1134,9 @@
             left: auto;
         }
 
-        body[dir="rtl"] .pwa-install-btn {
-            right: 1rem;
-            left: auto;
-        }
-
         /* Print Styles */
         @media print {
-            .top-nav, .bottom-nav, .notification-bell, .pwa-install-btn {
+            .top-nav, .bottom-nav, .notification-bell {
                 display: none !important;
             }
             
@@ -1448,26 +1356,7 @@
             color: var(--danger);
         }
 
-        /* PWA Install Modal */
-        .pwa-install-modal .modal {
-            max-width: 350px;
-        }
-
-        .pwa-install-icon {
-            width: 80px;
-            height: 80px;
-            border-radius: 20px;
-            background: var(--gradient);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.5rem;
-        }
-
-        .pwa-install-icon i {
-            font-size: 2.5rem;
-            color: white;
-        }
+        /* REMOVED: PWA Install Modal styles */
 
         /* Login/Signup Specific Styles */
         .auth-container {
@@ -1548,10 +1437,7 @@
         <i class="fas fa-wifi-slash"></i> You are currently offline. Some features may be limited.
     </div>
 
-    <!-- PWA Install Button -->
-    <button id="pwa-install-btn" class="pwa-install-btn hidden" onclick="showPWAInstallPrompt()">
-        <i class="fas fa-download"></i>
-    </button>
+    <!-- REMOVED: PWA Install Button -->
 
     <!-- Gradient Background Effects -->
     <div class="gradient-bg-effects">
@@ -2136,30 +2022,7 @@
         </div>
     </div>
 
-    <!-- PWA Install Modal -->
-    <div id="pwa-install-modal" class="modal-overlay hidden">
-        <div class="modal pwa-install-modal">
-            <div class="modal-body">
-                <div class="text-center">
-                    <div class="pwa-install-icon">
-                        <span class="gk-icon gk-icon-large" style="color: white; font-size: 2rem;">GK</span>
-                    </div>
-                    <h2 class="text-xl font-bold mb-3">Install GK Store</h2>
-                    <p class="text-zinc-400 mb-6">
-                        Install this app on your device for quick access, offline functionality, and a better experience.
-                    </p>
-                    <div class="grid gap-3">
-                        <button class="btn btn-primary" onclick="installPWA()">
-                            <i class="fas fa-download"></i> Install App
-                        </button>
-                        <button class="btn btn-secondary" onclick="closeModal('pwa-install-modal')">
-                            Maybe Later
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- REMOVED: PWA Install Modal -->
 
     <!-- Book Account Modal -->
     <div id="book-modal" class="modal-overlay hidden">
@@ -2550,32 +2413,52 @@
         </div>
     </div>
 
-    <!-- Service Worker Registration Script -->
     <script>
-        // Register Service Worker for PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/GKStore/service-worker.js').then(
-                    function(registration) {
-                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    },
-                    function(err) {
-                        console.log('ServiceWorker registration failed: ', err);
-                    }
-                );
-            });
-        }
-
-        // PWA Variables
-        let deferredPrompt;
-        let isStandalone = false;
-
         // App State Management
         const appState = {
             currentPage: 'auth',
             currentVideoIndex: 0,
-            videos: [],
-            accounts: [],
+            videos: [
+                {
+                    id: 1,
+                    title: "Premium Account Showcase",
+                    description: "Get exclusive access to premium content and features.",
+                    views: 12500,
+                    likes: 850,
+                    shares: 120,
+                    duration: "2:45",
+                    thumbnail: "",
+                    url: "",
+                    account: {
+                        id: 1,
+                        title: "Premium Plus",
+                        tier: "big",
+                        price: 5000,
+                        followers: 15000,
+                        thumbnail: ""
+                    }
+                },
+                {
+                    id: 2,
+                    title: "VIP Access Preview",
+                    description: "Preview of our exclusive VIP access features.",
+                    views: 8900,
+                    likes: 620,
+                    shares: 85,
+                    duration: "3:20",
+                    thumbnail: "",
+                    url: "",
+                    account: {
+                        id: 2,
+                        title: "VIP Access",
+                        tier: "medium",
+                        price: 2500,
+                        followers: 8500,
+                        thumbnail: ""
+                    }
+                }
+            ],
+            accounts: [], // CHANGED: Start with empty accounts array
             notifications: [],
             bookRequests: [],
             language: 'en',
@@ -2626,7 +2509,6 @@
             loadPreferences();
             loadSampleData();
             setupEventListeners();
-            initPWA();
             
             // Check if user is already logged in
             const savedUser = localStorage.getItem('gkStoreUser');
@@ -2648,99 +2530,6 @@
         function closeWelcomeModal() {
             document.getElementById('welcome-modal').classList.add('hidden');
             showPage('auth');
-        }
-
-        // Initialize PWA
-        function initPWA() {
-            // Check if app is running in standalone mode
-            isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                          window.navigator.standalone;
-            
-            // Listen for beforeinstallprompt event
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                deferredPrompt = e;
-                
-                // Show install button if not in standalone mode
-                if (!isStandalone) {
-                    showInstallButton();
-                }
-            });
-            
-            // Listen for appinstalled event
-            window.addEventListener('appinstalled', () => {
-                console.log('PWA was installed');
-                isStandalone = true;
-                hideInstallButton();
-                deferredPrompt = null;
-                showToast('success', 'App Installed', 'GK Store has been installed successfully!');
-            });
-            
-            // Check online/offline status
-            window.addEventListener('online', updateOnlineStatus);
-            window.addEventListener('offline', updateOnlineStatus);
-            updateOnlineStatus();
-        }
-
-        // Show install button
-        function showInstallButton() {
-            const installBtn = document.getElementById('pwa-install-btn');
-            if (installBtn) {
-                installBtn.classList.remove('hidden');
-            }
-        }
-
-        // Hide install button
-        function hideInstallButton() {
-            const installBtn = document.getElementById('pwa-install-btn');
-            if (installBtn) {
-                installBtn.classList.add('hidden');
-            }
-        }
-
-        // Show PWA install prompt
-        function showPWAInstallPrompt() {
-            if (deferredPrompt && !isStandalone) {
-                showModal('pwa-install-modal');
-            } else if (isStandalone) {
-                showToast('info', 'Already Installed', 'App is already installed on your device.');
-            } else {
-                showToast('info', 'Installation Info', 'Installation option will appear when all PWA criteria are met.');
-            }
-        }
-
-        // Install PWA
-        async function installPWA() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                
-                const { outcome } = await deferredPrompt.userChoice;
-                
-                if (outcome === 'accepted') {
-                    showToast('success', 'Installation Started', 'App installation in progress...');
-                } else {
-                    showToast('info', 'Installation Cancelled', 'You can install the app later.');
-                }
-                
-                deferredPrompt = null;
-                closeModal('pwa-install-modal');
-                hideInstallButton();
-            } else {
-                showToast('info', 'Installation Info', 'Installation option not available at the moment.');
-            }
-        }
-
-        // Update online status
-        function updateOnlineStatus() {
-            const offlineIndicator = document.getElementById('offline-indicator');
-            if (offlineIndicator) {
-                if (navigator.onLine) {
-                    offlineIndicator.classList.remove('show');
-                } else {
-                    offlineIndicator.classList.add('show');
-                    showToast('warning', 'You are offline', 'Some features may be limited.');
-                }
-            }
         }
 
         // Load user preferences
@@ -2765,76 +2554,7 @@
 
         // Load sample data
         function loadSampleData() {
-            // Sample videos
-            appState.videos = [
-                {
-                    id: 1,
-                    title: "Premium Account Showcase",
-                    description: "Get exclusive access to premium content and features.",
-                    views: 12500,
-                    likes: 850,
-                    shares: 120,
-                    duration: "2:45",
-                    thumbnail: "",
-                    url: "",
-                    account: {
-                        id: 1,
-                        title: "Premium Plus",
-                        tier: "big",
-                        price: 5000,
-                        followers: 15000,
-                        thumbnail: ""
-                    }
-                },
-                {
-                    id: 2,
-                    title: "VIP Access Preview",
-                    description: "Preview of our exclusive VIP access features.",
-                    views: 8900,
-                    likes: 620,
-                    shares: 85,
-                    duration: "3:20",
-                    thumbnail: "",
-                    url: "",
-                    account: {
-                        id: 2,
-                        title: "VIP Access",
-                        tier: "medium",
-                        price: 2500,
-                        followers: 8500,
-                        thumbnail: ""
-                    }
-                }
-            ];
-
-            // Sample accounts
-            appState.accounts = [
-                {
-                    id: 1,
-                    title: "Premium Plus",
-                    description: "Full access to all premium features",
-                    tier: "big",
-                    price: 5000,
-                    sold: false
-                },
-                {
-                    id: 2,
-                    title: "VIP Access",
-                    description: "VIP level access with special privileges",
-                    tier: "medium",
-                    price: 2500,
-                    sold: false
-                },
-                {
-                    id: 3,
-                    title: "Basic Pro",
-                    description: "Professional level access",
-                    tier: "small",
-                    price: 1200,
-                    sold: true
-                }
-            ];
-
+            // CHANGED: Removed hardcoded accounts. Only videos remain.
             // Sample book requests
             appState.bookRequests = [
                 {
@@ -3177,6 +2897,21 @@
             
             grid.innerHTML = '';
             
+            // Show empty message if no accounts
+            if (appState.accounts.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-3 text-center py-12">
+                        <i class="fas fa-box-open text-4xl text-zinc-600 mb-4"></i>
+                        <h3 class="text-xl font-semibold mb-2">No Accounts Available</h3>
+                        <p class="text-zinc-400 mb-4">Upload videos from the admin section to see accounts here.</p>
+                        <button class="btn btn-primary" onclick="showPage('home')">
+                            <i class="fas fa-video"></i> Browse Videos
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
             appState.accounts.forEach(account => {
                 const accountCard = document.createElement('div');
                 accountCard.className = 'account-card';
@@ -3220,6 +2955,85 @@
             });
         }
 
+        // Filter accounts by tier
+        function filterAccounts(tier) {
+            document.querySelectorAll('.tab-item').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.textContent.toLowerCase() === tier.toLowerCase()) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            const grid = document.getElementById('accounts-grid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
+            let filteredAccounts = appState.accounts;
+            if (tier !== 'all') {
+                filteredAccounts = appState.accounts.filter(account => account.tier === tier);
+            }
+            
+            // Show empty message if no accounts in the selected tier
+            if (filteredAccounts.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-3 text-center py-12">
+                        <i class="fas fa-box-open text-4xl text-zinc-600 mb-4"></i>
+                        <h3 class="text-xl font-semibold mb-2">No ${tier} Tier Accounts</h3>
+                        <p class="text-zinc-400 mb-4">No accounts available in the ${tier} tier.</p>
+                        <button class="btn btn-primary" onclick="filterAccounts('all')">
+                            <i class="fas fa-list"></i> View All Accounts
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            filteredAccounts.forEach(account => {
+                const accountCard = document.createElement('div');
+                accountCard.className = 'account-card';
+                
+                // Determine icon class based on tier
+                let iconClass = 'account-icon ';
+                let iconText = '';
+                if (account.tier === 'small') {
+                    iconClass += 'small';
+                    iconText = '<i class="fas fa-user"></i>';
+                } else if (account.tier === 'medium') {
+                    iconClass += 'medium';
+                    iconText = '<i class="fas fa-user-tie"></i>';
+                } else {
+                    iconClass += 'big';
+                    iconText = '<i class="fas fa-crown"></i>';
+                }
+                
+                accountCard.innerHTML = `
+                    <div class="${iconClass}">
+                        ${iconText}
+                    </div>
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-semibold">${account.title}</h3>
+                        <span class="badge ${account.tier === 'big' ? 'badge-primary' : account.tier === 'medium' ? 'badge-secondary' : 'badge-warning'}">
+                            ${account.tier}
+                        </span>
+                    </div>
+                    <p class="text-zinc-400 text-sm mb-4">${account.description}</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-2xl font-bold gradient-text">$${account.price.toLocaleString()}</span>
+                        <button class="btn btn-sm ${account.sold ? 'btn-secondary' : 'btn-primary'}" 
+                                onclick="viewAccount(${account.id})" 
+                                ${account.sold ? 'disabled' : ''}>
+                            ${account.sold ? 'Sold' : 'View Details'}
+                        </button>
+                    </div>
+                `;
+                
+                grid.appendChild(accountCard);
+            });
+            
+            showToast('info', 'Filter Applied', `${tier} accounts`);
+        }
+
         // Load admin page content
         function loadAdminContent() {
             appState.isAdminLoggedIn = false;
@@ -3232,18 +3046,6 @@
             if (adminPasswordInput) {
                 adminPasswordInput.value = '';
             }
-        }
-
-        // Filter accounts by tier
-        function filterAccounts(tier) {
-            document.querySelectorAll('.tab-item').forEach(tab => {
-                tab.classList.remove('active');
-                if (tab.textContent.toLowerCase() === tier.toLowerCase()) {
-                    tab.classList.add('active');
-                }
-            });
-            
-            showToast('info', 'Filter Applied', `${tier} accounts`);
         }
 
         // View account details
@@ -3428,7 +3230,7 @@
             return `${baseUrl}/storage/v1/object/public/${bucket}/${fileName}`;
         }
 
-        // Upload video function
+        // Upload video function - UPDATED to add account to accounts array
         async function uploadVideo() {
             if (!appState.isAdminLoggedIn) {
                 showToast('error', 'Access Denied', 'Please login as admin first');
@@ -3529,9 +3331,10 @@
                         }
                     };
                     
-                    // Add to app state
+                    // Add to videos array
                     appState.videos.unshift(newVideo);
                     
+                    // Create corresponding account and add to accounts array
                     const newAccount = {
                         id: newVideo.account.id,
                         title: newVideo.account.title,
@@ -3558,7 +3361,7 @@
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
                         
-                        showToast('success', 'Upload Successful', `Video "${title}" has been uploaded`);
+                        showToast('success', 'Upload Successful', `Video "${title}" has been uploaded and added to ${tier} tier accounts`);
                         
                         // Load the new video
                         loadVideo(0);
@@ -3671,16 +3474,19 @@
             loadAdminVideos(tier);
         }
 
-        // Delete video
+        // Delete video - UPDATED to also remove corresponding account
         function deleteVideo(videoId) {
-            if (confirm('Are you sure you want to delete this video?')) {
+            if (confirm('Are you sure you want to delete this video? The corresponding account will also be removed.')) {
+                // Remove video
                 appState.videos = appState.videos.filter(v => v.id !== videoId);
+                
+                // Remove corresponding account
+                appState.accounts = appState.accounts.filter(a => a.id !== videoId);
+                
                 loadAdminVideos('all');
                 updateAdminStats();
                 
-                appState.accounts = appState.accounts.filter(a => a.id !== videoId);
-                
-                showToast('success', 'Video Deleted', 'Video has been removed');
+                showToast('success', 'Video Deleted', 'Video and corresponding account have been removed');
             }
         }
 
