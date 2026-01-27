@@ -22,8 +22,10 @@
     <link rel="apple-touch-startup-image" href="https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-512-512.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- 引入 Supabase 客户端库 -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <style>
         /* ALL YOUR ORIGINAL CSS CODE */
         :root {
@@ -2409,35 +2411,20 @@
                         </div>
                     </div>
                     
-                    <!-- Supabase Configuration Section -->
+                    <!-- Firebase Configuration Section -->
                     <div class="card glass-effect p-4 mb-4">
-                        <h4 class="font-semibold mb-2">Supabase Configuration</h4>
-                        <p class="text-sm text-zinc-400 mb-3">Configure your Supabase connection to enable video uploads</p>
+                        <h4 class="font-semibold mb-2">Firebase Configuration</h4>
+                        <p class="text-sm text-zinc-400 mb-3">Firebase is configured and ready for uploads</p>
                         
                         <!-- Test Connection -->
                         <div class="test-connection mb-3">
-                            <button type="button" class="btn btn-sm btn-secondary w-full" onclick="testSupabaseConnection()">
-                                <i class="fas fa-plug"></i> Test Supabase Connection
+                            <button type="button" class="btn btn-sm btn-secondary w-full" onclick="testFirebaseConnection()">
+                                <i class="fas fa-plug"></i> Test Firebase Connection
                             </button>
                             <div id="connection-status" class="connection-status hidden">
                                 <i id="connection-icon" class="fas"></i>
                                 <span id="connection-message"></span>
                             </div>
-                        </div>
-                        
-                        <div class="input-group">
-                            <label class="input-label">Supabase URL <span class="text-danger">*</span></label>
-                            <input type="url" class="input" id="supabase-url" placeholder="https://your-project.supabase.co" required>
-                        </div>
-                        
-                        <div class="input-group">
-                            <label class="input-label">Supabase Anon Key <span class="text-danger">*</span></label>
-                            <input type="text" class="input" id="supabase-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." required>
-                        </div>
-                        
-                        <div class="input-group">
-                            <label class="input-label">Storage Bucket Name <span class="text-danger">*</span></label>
-                            <input type="text" class="input" id="supabase-bucket" placeholder="videos" required>
                         </div>
                     </div>
                     
@@ -2635,12 +2622,19 @@
             currentAccount: null,
             isAdminLoggedIn: false,
             adminPassword: 'admin123',
-            // FIXED: Using Service Role Key instead of Anon Key for uploads
-            supabaseConfig: {
-                url: 'https://ggmgahdegtnmpxghxogn.supabase.co',
-                key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdnbWdhaGRlZ3RubXB4Z2h4b2duIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczODQ1Mjc3MywiZXhwIjoyMDU0MDI4NzczfQ.XRBF9cVU4aX6Zf3p7M6atUABtQ3gS0GGi8c8gELC7KE', // Your Service Role Key
-                bucket: 'videos'
+            // Firebase Configuration - USE YOUR CONFIG HERE
+            firebaseConfig: {
+                apiKey: "AIzaSyBawJO9yZy51LLSa6ac7vRZiwEB-Bi59fk",
+                authDomain: "gk-store-46834.firebaseapp.com",
+                projectId: "gk-store-46834",
+                storageBucket: "gk-store-46834.firebasestorage.app",
+                messagingSenderId: "454498586544",
+                appId: "1:454498586544:web:d054a398d8a7927f3ed075"
             },
+            // Firebase Services
+            firebaseApp: null,
+            firebaseStorage: null,
+            firebaseFirestore: null,
             userStats: {
                 registeredUsers: 48,
                 onlineUsers: 5
@@ -2676,6 +2670,27 @@
         let deferredPrompt = null;
         let isAppInstalled = false;
 
+        // Initialize Firebase
+        function initializeFirebase() {
+            try {
+                // Check if Firebase is already initialized
+                if (!firebase.apps.length) {
+                    // Initialize Firebase with your config
+                    appState.firebaseApp = firebase.initializeApp(appState.firebaseConfig);
+                }
+                
+                // Get Firebase services
+                appState.firebaseStorage = firebase.storage();
+                appState.firebaseFirestore = firebase.firestore();
+                
+                console.log('Firebase initialized successfully');
+                return true;
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                return false;
+            }
+        }
+
         // Initialize App
         function initApp() {
             loadPreferences();
@@ -2683,6 +2698,11 @@
             setupEventListeners();
             registerServiceWorker();
             setupPWAInstall();
+            
+            // Initialize Firebase
+            if (!initializeFirebase()) {
+                showToast('error', 'Firebase Error', 'Failed to initialize Firebase');
+            }
             
             // Check if user is already logged in
             const savedUser = localStorage.getItem('gkStoreUser');
@@ -2959,21 +2979,9 @@
         function loadPreferences() {
             const savedLanguage = localStorage.getItem('appLanguage') || 'en';
             const savedTheme = localStorage.getItem('appTheme') || 'dark';
-            const savedConfig = localStorage.getItem('supabaseConfig');
             
             appState.language = savedLanguage;
             appState.theme = savedTheme;
-            
-            if (savedConfig) {
-                try {
-                    appState.supabaseConfig = JSON.parse(savedConfig);
-                } catch (e) {
-                    console.error('Error loading Supabase config:', e);
-                }
-            } else {
-                // Save default config to localStorage
-                localStorage.setItem('supabaseConfig', JSON.stringify(appState.supabaseConfig));
-            }
             
             document.documentElement.setAttribute('data-theme', savedTheme);
         }
@@ -3517,6 +3525,43 @@
             }
         }
 
+        // Test Firebase connection
+        function testFirebaseConnection() {
+            const statusElement = document.getElementById('connection-status');
+            const iconElement = document.getElementById('connection-icon');
+            const messageElement = document.getElementById('connection-message');
+            
+            if (!appState.firebaseStorage || !appState.firebaseFirestore) {
+                statusElement.className = 'connection-status error';
+                iconElement.className = 'fas fa-times-circle';
+                messageElement.textContent = 'Firebase not initialized';
+                statusElement.classList.remove('hidden');
+                return;
+            }
+            
+            try {
+                // Test storage connection
+                const storageRef = appState.firebaseStorage.ref();
+                
+                // Test firestore connection
+                const db = appState.firebaseFirestore;
+                
+                statusElement.className = 'connection-status success';
+                iconElement.className = 'fas fa-check-circle';
+                messageElement.textContent = 'Firebase connected successfully';
+                statusElement.classList.remove('hidden');
+                
+                showToast('success', 'Connection Successful', 'Firebase is connected and ready');
+            } catch (error) {
+                statusElement.className = 'connection-status error';
+                iconElement.className = 'fas fa-times-circle';
+                messageElement.textContent = 'Connection failed: ' + error.message;
+                statusElement.classList.remove('hidden');
+                
+                showToast('error', 'Connection Failed', 'Could not connect to Firebase');
+            }
+        }
+
         // Show upload video modal
         function showUploadVideo() {
             if (!appState.isAdminLoggedIn) {
@@ -3535,10 +3580,8 @@
             // Reset file selection
             clearFileSelection();
             
-            // Load saved Supabase config
-            document.getElementById('supabase-url').value = appState.supabaseConfig.url || 'https://ggmgahdegtnmpxghxogn.supabase.co';
-            document.getElementById('supabase-key').value = appState.supabaseConfig.key || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdnbWdhaGRlZ3RubXB4Z2h4b2duIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczODQ1Mjc3MywiZXhwIjoyMDU0MDI4NzczfQ.XRBF9cVU4aX6Zf3p7M6atUABtQ3gS0GGi8c8gELC7KE';
-            document.getElementById('supabase-bucket').value = appState.supabaseConfig.bucket || 'videos';
+            // Reset connection status
+            document.getElementById('connection-status').classList.add('hidden');
             
             showModal('upload-video-modal');
         }
@@ -3600,68 +3643,7 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // Test Supabase connection
-        async function testSupabaseConnection() {
-            const url = document.getElementById('supabase-url').value;
-            const key = document.getElementById('supabase-key').value;
-            const bucket = document.getElementById('supabase-bucket').value || 'videos';
-            
-            if (!url || !key) {
-                showToast('error', 'Configuration Required', 'Please enter Supabase URL and Key');
-                return;
-            }
-            
-            try {
-                const supabase = window.supabase.createClient(url, key);
-                
-                // Test connection by listing buckets
-                const { data, error } = await supabase.storage.listBuckets();
-                
-                const statusElement = document.getElementById('connection-status');
-                const iconElement = document.getElementById('connection-icon');
-                const messageElement = document.getElementById('connection-message');
-                
-                if (error) {
-                    statusElement.className = 'connection-status error';
-                    iconElement.className = 'fas fa-times-circle';
-                    messageElement.textContent = 'Connection failed: ' + error.message;
-                } else {
-                    statusElement.className = 'connection-status success';
-                    iconElement.className = 'fas fa-check-circle';
-                    const bucketCount = data ? data.length : 0;
-                    messageElement.textContent = `Connected successfully (${bucketCount} buckets found)`;
-                    
-                    // Check if the specified bucket exists
-                    const bucketExists = data && data.some(b => b.name === bucket);
-                    if (!bucketExists && bucketCount > 0) {
-                        showToast('warning', 'Bucket Not Found', `Bucket "${bucket}" not found. Available buckets: ${data.map(b => b.name).join(', ')}`);
-                    }
-                }
-                
-                statusElement.classList.remove('hidden');
-                
-                // Save config
-                appState.supabaseConfig = { url, key, bucket };
-                localStorage.setItem('supabaseConfig', JSON.stringify(appState.supabaseConfig));
-                
-            } catch (error) {
-                showToast('error', 'Connection Error', 'Failed to connect to Supabase: ' + error.message);
-            }
-        }
-
-        // Generate video URL
-        function generateVideoUrl(fileName) {
-            const url = document.getElementById('supabase-url').value;
-            const bucket = document.getElementById('supabase-bucket').value || 'videos';
-            
-            if (!url || !bucket) return '';
-            
-            // Remove trailing slash if present
-            const baseUrl = url.replace(/\/$/, '');
-            return `${baseUrl}/storage/v1/object/public/${bucket}/${fileName}`;
-        }
-
-        // FIXED UPLOAD VIDEO FUNCTION - SIMPLIFIED VERSION
+        // UPLOAD VIDEO WITH FIREBASE
         async function uploadVideo() {
             if (!appState.isAdminLoggedIn) {
                 showToast('error', 'Access Denied', 'Please login as admin first');
@@ -3673,10 +3655,6 @@
             const description = document.getElementById('video-description-input').value;
             const price = parseFloat(document.getElementById('video-price').value);
             const tier = document.getElementById('video-tier').value;
-            
-            const supabaseUrl = document.getElementById('supabase-url').value;
-            const supabaseKey = document.getElementById('supabase-key').value;
-            const supabaseBucket = document.getElementById('supabase-bucket').value || 'videos';
             
             const file = appState.currentUpload.file;
             
@@ -3691,78 +3669,61 @@
                 return;
             }
             
-            if (!supabaseUrl || !supabaseKey) {
-                showToast('error', 'Supabase Configuration Required', 'Please configure your Supabase connection first');
+            // Check Firebase is initialized
+            if (!appState.firebaseStorage || !appState.firebaseFirestore) {
+                showToast('error', 'Firebase Error', 'Firebase is not initialized. Please check connection.');
                 return;
             }
             
-            // Generate file name with tier folder
-            const fileName = `${tier}/${id}_${Date.now()}.${file.name.split('.').pop()}`;
+            // Show upload status
+            const uploadStatus = document.getElementById('upload-status');
+            const uploadProgress = document.getElementById('upload-progress');
+            const uploadPercentage = document.getElementById('upload-percentage');
+            const uploadedSize = document.getElementById('uploaded-size');
+            const totalSize = document.getElementById('total-size');
+            const submitBtn = document.querySelector('#upload-video-form button[type="button"]');
+            
+            uploadStatus.classList.add('active');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Uploading...';
             
             try {
-                // Show upload status
-                const uploadStatus = document.getElementById('upload-status');
-                const uploadProgress = document.getElementById('upload-progress');
-                const uploadPercentage = document.getElementById('upload-percentage');
-                const uploadedSize = document.getElementById('uploaded-size');
-                const totalSize = document.getElementById('total-size');
-                const submitBtn = document.querySelector('#upload-video-form button[type="button"]');
+                // Generate unique file name
+                const fileName = `${tier}/${id}_${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
                 
-                uploadStatus.classList.add('active');
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Uploading...';
+                // Create storage reference
+                const storageRef = appState.firebaseStorage.ref();
+                const videoRef = storageRef.child(fileName);
                 
-                // Initialize Supabase client with Service Role Key
-                const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                // Upload file to Firebase Storage
+                const uploadTask = videoRef.put(file);
                 
-                // Show initial progress
-                uploadProgress.style.width = '10%';
-                uploadPercentage.textContent = '10%';
-                uploadedSize.textContent = '0 MB';
-                totalSize.textContent = formatFileSize(file.size);
-                
-                // Create FormData for upload
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('fileName', fileName);
-                
-                console.log('Starting upload to Supabase:', {
-                    bucket: supabaseBucket,
-                    fileName: fileName,
-                    fileSize: file.size,
-                    url: supabaseUrl
-                });
-                
-                // Update progress to 50%
-                uploadProgress.style.width = '50%';
-                uploadPercentage.textContent = '50%';
-                uploadedSize.textContent = formatFileSize(file.size / 2);
-                
-                // UPLOAD TO SUPABASE USING XHR FOR PROGRESS TRACKING
-                const xhr = new XMLHttpRequest();
-                
-                // Set up progress tracking
-                xhr.upload.addEventListener('progress', (e) => {
-                    if (e.lengthComputable) {
-                        const percentage = Math.round((e.loaded * 100) / e.total);
-                        uploadProgress.style.width = percentage + '%';
-                        uploadPercentage.textContent = percentage + '%';
-                        uploadedSize.textContent = formatFileSize(e.loaded);
-                    }
-                });
-                
-                // Handle response
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState === 4) {
-                        if (xhr.status === 200) {
-                            // Upload successful
-                            uploadProgress.style.width = '100%';
-                            uploadPercentage.textContent = '100%';
-                            uploadedSize.textContent = formatFileSize(file.size);
+                // Monitor upload progress
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        // Progress tracking
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        uploadProgress.style.width = progress + '%';
+                        uploadPercentage.textContent = Math.round(progress) + '%';
+                        uploadedSize.textContent = formatFileSize(snapshot.bytesTransferred);
+                        totalSize.textContent = formatFileSize(snapshot.totalBytes);
+                    },
+                    (error) => {
+                        // Handle errors
+                        console.error('Upload error:', error);
+                        showToast('error', 'Upload Failed', error.message);
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
+                        uploadStatus.classList.remove('active');
+                    },
+                    async () => {
+                        // Upload complete
+                        try {
+                            // Get download URL
+                            const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
                             
                             // Generate and show URL
-                            const generatedUrl = generateVideoUrl(fileName);
-                            document.getElementById('generated-url').textContent = generatedUrl;
+                            document.getElementById('generated-url').textContent = downloadURL;
                             document.getElementById('url-generator').classList.add('active');
                             
                             // Create new video object
@@ -3775,7 +3736,7 @@
                                 shares: 0,
                                 duration: "2:30",
                                 thumbnail: "",
-                                url: generatedUrl,
+                                url: downloadURL,
                                 account: {
                                     id: appState.accounts.length + 1,
                                     title: title,
@@ -3789,7 +3750,7 @@
                             // Add to videos array
                             appState.videos.unshift(newVideo);
                             
-                            // Create corresponding account and add to accounts array
+                            // Create corresponding account
                             const newAccount = {
                                 id: newVideo.account.id,
                                 title: newVideo.account.title,
@@ -3800,8 +3761,10 @@
                             };
                             
                             appState.accounts.unshift(newAccount);
-                            
                             appState.currentVideoIndex = 0;
+                            
+                            // Save to Firestore
+                            await saveToFirestore(newVideo, newAccount);
                             
                             // Update UI
                             loadHomeContent();
@@ -3816,46 +3779,68 @@
                                 submitBtn.disabled = false;
                                 submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
                                 
-                                showToast('success', 'Upload Successful', `Video "${title}" has been uploaded and added to ${tier} tier accounts`);
+                                showToast('success', 'Upload Successful', `Video "${title}" has been uploaded to ${tier} tier`);
                                 
                                 // Load the new video
                                 loadVideo(0);
                                 
                             }, 2000);
                             
-                        } else {
-                            // Upload failed
-                            console.error('Upload failed:', xhr.status, xhr.responseText);
-                            throw new Error(`Upload failed with status ${xhr.status}`);
+                        } catch (error) {
+                            console.error('Error after upload:', error);
+                            showToast('error', 'Upload Failed', 'Upload complete but failed to get URL: ' + error.message);
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
+                            uploadStatus.classList.remove('active');
                         }
                     }
-                };
-                
-                // Handle errors
-                xhr.onerror = function() {
-                    console.error('XHR error occurred');
-                    throw new Error('Network error occurred during upload');
-                };
-                
-                // Prepare upload URL for Supabase
-                const uploadUrl = `${supabaseUrl}/storage/v1/object/${supabaseBucket}/${fileName}`;
-                
-                // Set up headers for Supabase
-                xhr.open('POST', uploadUrl, true);
-                xhr.setRequestHeader('Authorization', `Bearer ${supabaseKey}`);
-                xhr.setRequestHeader('Content-Type', 'application/octet-stream');
-                xhr.setRequestHeader('x-upsert', 'true');
-                
-                // Send the file
-                xhr.send(file);
+                );
                 
             } catch (error) {
                 console.error('Upload error:', error);
                 showToast('error', 'Upload Failed', error.message);
-                const submitBtn = document.querySelector('#upload-video-form button[type="button"]');
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
-                document.getElementById('upload-status').classList.remove('active');
+                uploadStatus.classList.remove('active');
+            }
+        }
+
+        // Save video and account to Firestore
+        async function saveToFirestore(videoData, accountData) {
+            try {
+                const db = appState.firebaseFirestore;
+                
+                // Save video to 'videos' collection
+                await db.collection('videos').doc(videoData.id).set({
+                    title: videoData.title,
+                    description: videoData.description,
+                    price: videoData.account.price,
+                    tier: videoData.account.tier,
+                    url: videoData.url,
+                    views: 0,
+                    likes: 0,
+                    shares: 0,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Save account to 'accounts' collection
+                await db.collection('accounts').doc(accountData.id.toString()).set({
+                    title: accountData.title,
+                    description: accountData.description,
+                    tier: accountData.tier,
+                    price: accountData.price,
+                    sold: false,
+                    videoId: videoData.id,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                console.log('Data saved to Firestore');
+                return true;
+            } catch (error) {
+                console.error('Error saving to Firestore:', error);
+                showToast('warning', 'Database Error', 'Video uploaded but failed to save metadata to database');
+                return false;
             }
         }
 
