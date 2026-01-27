@@ -8,12 +8,12 @@
     
     <title>GK Store - Video Marketplace</title>
     
-    <!-- FIXED: Favicon and Apple Touch Icons with absolute GitHub Pages URLs -->
+    <!-- Favicon and Apple Touch Icons with absolute GitHub Pages URLs -->
     <link rel="icon" type="image/png" href="https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-96-96.png">
     <link rel="apple-touch-icon" href="https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-192-192.png">
     
     <!-- Web App Manifest -->
-    <link rel="manifest" href="https://shamsahmadzai06-source.github.io/GKStore/manifest.json">
+    <link rel="manifest" href="https://shamsahmadzai06-source.github.io/GKStore/manifest.json" id="app-manifest">
     
     <!-- iOS PWA Support -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -113,66 +113,38 @@
             to { transform: rotate(360deg); }
         }
 
-        /* ADDED BACK: PWA Install Button styles */
-        #install-button {
+        /* PWA Install Button Styles - ADDED BACK */
+        .pwa-install-btn {
             position: fixed;
-            right: 1rem;
-            bottom: 5rem;
-            z-index: 100;
+            left: 1rem;
+            bottom: 9rem;
             width: 3rem;
             height: 3rem;
             border-radius: 50%;
-            background: var(--surface-light);
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-            border: 1px solid var(--border);
-        }
-
-        #install-button:hover {
-            background: var(--surface);
-            transform: scale(1.1);
-        }
-
-        #install-button.show {
-            display: flex;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        #install-button.hidden {
-            display: none;
-        }
-
-        /* ADDED BACK: PWA Install Modal styles */
-        #pwa-install-modal .modal {
-            max-width: 400px;
-        }
-
-        .pwa-features {
-            display: grid;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .pwa-feature-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .pwa-feature-item i {
-            width: 2rem;
-            height: 2rem;
-            border-radius: 0.5rem;
-            background: var(--gradient);
+            background: var(--primary);
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 10px 25px rgba(236, 72, 153, 0.3);
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .pwa-install-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.1);
+            box-shadow: 0 15px 30px rgba(236, 72, 153, 0.4);
+        }
+
+        .pwa-install-btn.hidden {
+            display: none;
+        }
+
+        .pwa-install-btn i {
+            font-size: 1.25rem;
         }
 
         /* Offline Indicator */
@@ -1157,7 +1129,6 @@
             .modal { margin: 1rem; }
             .video-container { height: calc(100vh - 120px); }
             .video-top-actions { top: 40%; }
-            #install-button { right: 0.5rem; bottom: 4.5rem; }
         }
 
         @media (max-width: 480px) {
@@ -1166,7 +1137,6 @@
             .nav-item { min-width: 3rem; }
             .video-top-actions { top: 35%; right: 0.5rem; }
             .video-right-actions { right: 0.5rem; }
-            #install-button { width: 2.5rem; height: 2.5rem; }
         }
 
         /* Dark/Light Mode (Future Enhancement) */
@@ -1198,15 +1168,10 @@
             right: 1rem;
             left: auto;
         }
-        
-        body[dir="rtl"] #install-button {
-            left: 1rem;
-            right: auto;
-        }
 
         /* Print Styles */
         @media print {
-            .top-nav, .bottom-nav, .notification-bell, #install-button {
+            .top-nav, .bottom-nav, .notification-bell {
                 display: none !important;
             }
             
@@ -1426,6 +1391,57 @@
             color: var(--danger);
         }
 
+        /* PWA Install Modal styles - ADDED */
+        #pwa-install-modal .modal {
+            max-width: 450px;
+        }
+
+        .pwa-features {
+            display: grid;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .pwa-feature {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            background: var(--surface-light);
+            border-radius: 0.75rem;
+            border: 1px solid var(--border);
+        }
+
+        .pwa-feature i {
+            font-size: 1.25rem;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+        }
+
+        .pwa-feature:nth-child(1) i {
+            background: linear-gradient(135deg, #ec4899, #db2777);
+            color: white;
+        }
+
+        .pwa-feature:nth-child(2) i {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+        }
+
+        .pwa-feature:nth-child(3) i {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .pwa-feature:nth-child(4) i {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
         /* Login/Signup Specific Styles */
         .auth-container {
             min-height: 100vh;
@@ -1504,6 +1520,11 @@
     <div id="offline-indicator" class="offline-indicator">
         <i class="fas fa-wifi-slash"></i> You are currently offline. Some features may be limited.
     </div>
+
+    <!-- PWA Install Button - ADDED -->
+    <button id="pwa-install-btn" class="pwa-install-btn hidden">
+        <i class="fas fa-download"></i>
+    </button>
 
     <!-- Gradient Background Effects -->
     <div class="gradient-bg-effects">
@@ -2041,10 +2062,67 @@
         <div id="notification-count" class="notification-badge">3</div>
     </div>
 
-    <!-- ADDED BACK: PWA Install Button -->
-    <button id="install-button" class="hidden">
-        <i class="fas fa-download"></i>
-    </button>
+    <!-- PWA Install Modal - ADDED -->
+    <div id="pwa-install-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Install GK Store App</h3>
+                <button class="modal-close" onclick="closeModal('pwa-install-modal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <div class="w-20 h-20 gradient-bg rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <span class="gk-icon gk-icon-large" style="color: white; font-size: 2rem;">GK</span>
+                    </div>
+                    <h4 class="text-lg font-semibold">Install GK Store App</h4>
+                    <p class="text-zinc-400 mt-1">Get the best experience with our app</p>
+                </div>
+                
+                <div class="pwa-features">
+                    <div class="pwa-feature">
+                        <i class="fas fa-bolt"></i>
+                        <div>
+                            <h5 class="font-medium">Fast Loading</h5>
+                            <p class="text-xs text-zinc-400">Instant access to your content</p>
+                        </div>
+                    </div>
+                    <div class="pwa-feature">
+                        <i class="fas fa-wifi-slash"></i>
+                        <div>
+                            <h5 class="font-medium">Offline Access</h5>
+                            <p class="text-xs text-zinc-400">Use without internet connection</p>
+                        </div>
+                    </div>
+                    <div class="pwa-feature">
+                        <i class="fas fa-mobile-alt"></i>
+                        <div>
+                            <h5 class="font-medium">Home Screen</h5>
+                            <p class="text-xs text-zinc-400">Quick access from your home screen</p>
+                        </div>
+                    </div>
+                    <div class="pwa-feature">
+                        <i class="fas fa-bell"></i>
+                        <div>
+                            <h5 class="font-medium">Push Notifications</h5>
+                            <p class="text-xs text-zinc-400">Get updates about new content</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button class="btn btn-secondary flex-1" onclick="closeModal('pwa-install-modal')">
+                        Not Now
+                    </button>
+                    <button class="btn btn-primary flex-1" id="pwa-install-confirm">
+                        <i class="fas fa-download"></i> Install App
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Welcome Modal -->
     <div id="welcome-modal" class="modal-overlay">
@@ -2078,6 +2156,10 @@
                             <i class="fas fa-globe text-success"></i>
                             <span>Available in multiple languages</span>
                         </div>
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-download text-pink-500"></i>
+                            <span>Install as app for better experience</span>
+                        </div>
                     </div>
                     
                     <button class="btn btn-primary w-full" onclick="closeWelcomeModal()">
@@ -2087,64 +2169,6 @@
                     
                     <p class="text-xs text-zinc-500 mt-4">
                         Swipe up/down or use arrow keys to navigate videos
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ADDED BACK: PWA Install Modal -->
-    <div id="pwa-install-modal" class="modal-overlay hidden">
-        <div class="modal">
-            <div class="modal-body">
-                <div class="text-center">
-                    <div class="w-20 h-20 gradient-bg rounded-2xl flex items-center justify-center mx-auto mb-6">
-                        <i class="fas fa-mobile-alt text-white text-2xl"></i>
-                    </div>
-                    
-                    <h2 class="text-2xl font-bold mb-4">Install GK Store App</h2>
-                    
-                    <p class="text-zinc-400 mb-6">
-                        Install our app for the best experience with offline access and push notifications
-                    </p>
-                    
-                    <div class="pwa-features">
-                        <div class="pwa-feature-item">
-                            <i class="fas fa-wifi-slash"></i>
-                            <div>
-                                <h4 class="font-semibold">Offline Access</h4>
-                                <p class="text-sm text-zinc-400">Use the app without internet connection</p>
-                            </div>
-                        </div>
-                        
-                        <div class="pwa-feature-item">
-                            <i class="fas fa-bell"></i>
-                            <div>
-                                <h4 class="font-semibold">Push Notifications</h4>
-                                <p class="text-sm text-zinc-400">Get instant updates about new content</p>
-                            </div>
-                        </div>
-                        
-                        <div class="pwa-feature-item">
-                            <i class="fas fa-rocket"></i>
-                            <div>
-                                <h4 class="font-semibold">Fast Loading</h4>
-                                <p class="text-sm text-zinc-400">Loads instantly like a native app</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="flex gap-3">
-                        <button class="btn btn-secondary flex-1" onclick="closeModal('pwa-install-modal')">
-                            Later
-                        </button>
-                        <button class="btn btn-primary flex-1" onclick="installPWA()">
-                            <i class="fas fa-download"></i> Install Now
-                        </button>
-                    </div>
-                    
-                    <p class="text-xs text-zinc-500 mt-4">
-                        Tap <i class="fas fa-share"></i> then "Add to Home Screen"
                     </p>
                 </div>
             </div>
@@ -2541,10 +2565,6 @@
     </div>
 
     <script>
-        // ADDED BACK: PWA Installation Variables
-        let deferredPrompt;
-        let pwaInstallShown = localStorage.getItem('pwaInstallShown') === 'true';
-
         // App State Management
         const appState = {
             currentPage: 'auth',
@@ -2589,7 +2609,7 @@
                     }
                 }
             ],
-            accounts: [], // CHANGED: Start with empty accounts array
+            accounts: [],
             notifications: [],
             bookRequests: [],
             language: 'en',
@@ -2635,12 +2655,17 @@
             ]
         };
 
+        // PWA Variables
+        let deferredPrompt = null;
+        let isAppInstalled = false;
+
         // Initialize App
         function initApp() {
             loadPreferences();
             loadSampleData();
             setupEventListeners();
-            registerServiceWorker(); // ADDED: Register service worker
+            registerServiceWorker();
+            setupPWAInstall();
             
             // Check if user is already logged in
             const savedUser = localStorage.getItem('gkStoreUser');
@@ -2656,120 +2681,261 @@
             } else {
                 showPage('auth');
             }
-            
-            // ADDED: Check for PWA installation
-            checkPWAInstallation();
         }
 
-        // ADDED: Register Service Worker
-        function registerServiceWorker() {
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('https://shamsahmadzai06-source.github.io/GKStore/service-worker.js')
-                        .then(registration => {
-                            console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                            
-                            // Check for updates
-                            registration.addEventListener('updatefound', () => {
-                                const newWorker = registration.installing;
-                                console.log('Service Worker update found!');
-                                
-                                newWorker.addEventListener('statechange', () => {
-                                    if (newWorker.state === 'installed') {
-                                        if (navigator.serviceWorker.controller) {
-                                            // New content available
-                                            showToast('info', 'Update Available', 'New version available. Refresh to update.');
-                                        }
-                                    }
-                                });
-                            });
-                        })
-                        .catch(error => {
-                            console.log('ServiceWorker registration failed: ', error);
-                        });
-                });
-            }
-        }
-
-        // ADDED: Check PWA Installation
-        function checkPWAInstallation() {
-            // Check if the app is running in standalone mode (installed)
-            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                               window.navigator.standalone === true;
+        // Setup PWA Install
+        function setupPWAInstall() {
+            // Check if app is already installed
+            isAppInstalled = window.matchMedia('(display-mode: standalone)').matches || 
+                           window.navigator.standalone === true;
             
-            if (isStandalone) {
-                console.log('App is running in standalone mode (PWA installed)');
+            if (isAppInstalled) {
+                console.log('App is already installed');
                 document.body.classList.add('pwa-installed');
-            }
-        }
-
-        // ADDED BACK: PWA Installation Event Listeners
-        window.addEventListener('beforeinstallprompt', (e) => {
-            // Prevent Chrome 67 and earlier from automatically showing the prompt
-            e.preventDefault();
-            // Stash the event so it can be triggered later
-            deferredPrompt = e;
-            
-            // Show install button
-            const installButton = document.getElementById('install-button');
-            if (installButton) {
-                installButton.classList.add('show');
-                installButton.classList.remove('hidden');
-                
-                installButton.addEventListener('click', () => {
-                    showModal('pwa-install-modal');
-                });
-            }
-            
-            // Auto-show install modal on first visit
-            if (!pwaInstallShown && window.matchMedia('(display-mode: browser)').matches) {
-                setTimeout(() => {
-                    showModal('pwa-install-modal');
-                    pwaInstallShown = true;
-                    localStorage.setItem('pwaInstallShown', 'true');
-                }, 3000);
-            }
-        });
-
-        // ADDED BACK: PWA Installation Function
-        function installPWA() {
-            if (!deferredPrompt) {
-                showToast('info', 'Installation', 'Your browser does not support PWA installation');
+                document.getElementById('pwa-install-btn')?.classList.add('hidden');
                 return;
             }
             
-            // Show the install prompt
-            deferredPrompt.prompt();
-            
-            // Wait for the user to respond to the prompt
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('User accepted the install prompt');
-                    showToast('success', 'App Installing', 'GK Store is being installed...');
-                    
-                    // Hide the install button
-                    const installButton = document.getElementById('install-button');
-                    if (installButton) {
-                        installButton.classList.add('hidden');
-                        installButton.classList.remove('show');
+            // Listen for beforeinstallprompt event
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                
+                // Show install button after 3 seconds
+                setTimeout(() => {
+                    const installBtn = document.getElementById('pwa-install-btn');
+                    if (installBtn) {
+                        installBtn.classList.remove('hidden');
+                        installBtn.addEventListener('click', showPWAInstallModal);
                     }
-                    
-                    // Close the modal
-                    closeModal('pwa-install-modal');
+                }, 3000);
+            });
+            
+            // Listen for app installed event
+            window.addEventListener('appinstalled', () => {
+                console.log('App installed successfully');
+                isAppInstalled = true;
+                document.body.classList.add('pwa-installed');
+                const installBtn = document.getElementById('pwa-install-btn');
+                if (installBtn) {
+                    installBtn.classList.add('hidden');
+                }
+                closeModal('pwa-install-modal');
+                showToast('success', 'App Installed', 'GK Store has been installed successfully!');
+            });
+            
+            // Setup install confirm button
+            const installConfirmBtn = document.getElementById('pwa-install-confirm');
+            if (installConfirmBtn) {
+                installConfirmBtn.addEventListener('click', installPWA);
+            }
+        }
+
+        // Show PWA install modal
+        function showPWAInstallModal() {
+            if (isAppInstalled) {
+                showToast('info', 'Already Installed', 'App is already installed on your device');
+                return;
+            }
+            
+            if (!deferredPrompt) {
+                showToast('info', 'Install Available', 'Install option will appear soon. Please wait.');
+                return;
+            }
+            
+            showModal('pwa-install-modal');
+        }
+
+        // Install PWA
+        async function installPWA() {
+            if (!deferredPrompt) {
+                showToast('error', 'Install Failed', 'Installation is not available at the moment');
+                return;
+            }
+            
+            try {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                
+                if (outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
                 } else {
                     console.log('User dismissed the install prompt');
-                    showToast('info', 'Installation', 'You can install the app later from the menu');
                 }
                 
-                // Clear the deferredPrompt variable
                 deferredPrompt = null;
-            });
+            } catch (error) {
+                console.error('Install error:', error);
+                showToast('error', 'Install Failed', 'Could not install the app. Please try again.');
+            }
+        }
+
+        // Register Service Worker
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                // Create inline service worker
+                const serviceWorkerCode = `
+                    const CACHE_NAME = 'gk-store-v1';
+                    const urlsToCache = [
+                        '/',
+                        '/index.html',
+                        'https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-96-96.png',
+                        'https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-192-192.png',
+                        'https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-512-512.png',
+                        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+                    ];
+
+                    self.addEventListener('install', event => {
+                        event.waitUntil(
+                            caches.open(CACHE_NAME)
+                                .then(cache => cache.addAll(urlsToCache))
+                                .then(() => self.skipWaiting())
+                        );
+                    });
+
+                    self.addEventListener('activate', event => {
+                        event.waitUntil(
+                            caches.keys().then(cacheNames => {
+                                return Promise.all(
+                                    cacheNames.map(cacheName => {
+                                        if (cacheName !== CACHE_NAME) {
+                                            return caches.delete(cacheName);
+                                        }
+                                    })
+                                );
+                            }).then(() => self.clients.claim())
+                        );
+                    });
+
+                    self.addEventListener('fetch', event => {
+                        event.respondWith(
+                            caches.match(event.request)
+                                .then(response => {
+                                    if (response) {
+                                        return response;
+                                    }
+                                    return fetch(event.request);
+                                })
+                        );
+                    });
+
+                    self.addEventListener('message', event => {
+                        if (event.data === 'skipWaiting') {
+                            self.skipWaiting();
+                        }
+                    });
+                `;
+
+                const blob = new Blob([serviceWorkerCode], { type: 'application/javascript' });
+                const serviceWorkerUrl = URL.createObjectURL(blob);
+
+                navigator.serviceWorker.register(serviceWorkerUrl)
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                        
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            console.log('Service Worker update found!');
+                            
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed') {
+                                    if (navigator.serviceWorker.controller) {
+                                        // New content available
+                                        showToast('info', 'Update Available', 'New version available. Refresh to update.');
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed: ', error);
+                    });
+            }
+        }
+
+        // Create manifest dynamically
+        function createManifest() {
+            const manifest = {
+                "name": "GK Store",
+                "short_name": "GK Store",
+                "description": "Exclusive Video Marketplace",
+                "start_url": "https://shamsahmadzai06-source.github.io/GKStore/",
+                "display": "standalone",
+                "background_color": "#000000",
+                "theme_color": "#ec4899",
+                "orientation": "portrait",
+                "scope": "/GKStore/",
+                "icons": [
+                    {
+                        "src": "https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-72-72.png",
+                        "sizes": "72x72",
+                        "type": "image/png"
+                    },
+                    {
+                        "src": "https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-96-96.png",
+                        "sizes": "96x96",
+                        "type": "image/png"
+                    },
+                    {
+                        "src": "https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-128-128.png",
+                        "sizes": "128x128",
+                        "type": "image/png"
+                    },
+                    {
+                        "src": "https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-144-144.png",
+                        "sizes": "144x144",
+                        "type": "image/png"
+                    },
+                    {
+                        "src": "https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-152-152.png",
+                        "sizes": "152x152",
+                        "type": "image/png"
+                    },
+                    {
+                        "src": "https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-192-192.png",
+                        "sizes": "192x192",
+                        "type": "image/png"
+                    },
+                    {
+                        "src": "https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-384-384.png",
+                        "sizes": "384x384",
+                        "type": "image/png"
+                    },
+                    {
+                        "src": "https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-512-512.png",
+                        "sizes": "512x512",
+                        "type": "image/png"
+                    }
+                ],
+                "screenshots": [
+                    {
+                        "src": "https://shamsahmadzai06-source.github.io/GKStore/screenshot1.png",
+                        "sizes": "1280x720",
+                        "type": "image/png",
+                        "form_factor": "wide"
+                    }
+                ]
+            };
+
+            // Create manifest link
+            const manifestJson = JSON.stringify(manifest);
+            const blob = new Blob([manifestJson], { type: 'application/json' });
+            const manifestUrl = URL.createObjectURL(blob);
+            
+            // Update manifest link
+            const manifestLink = document.getElementById('app-manifest');
+            if (manifestLink) {
+                manifestLink.href = manifestUrl;
+            }
         }
 
         // Close welcome modal and show login
         function closeWelcomeModal() {
             document.getElementById('welcome-modal').classList.add('hidden');
             showPage('auth');
+            
+            // Create manifest after welcome modal is closed
+            setTimeout(createManifest, 500);
         }
 
         // Load user preferences
@@ -2794,8 +2960,6 @@
 
         // Load sample data
         function loadSampleData() {
-            // CHANGED: Removed hardcoded accounts. Only videos remain.
-            // Sample book requests
             appState.bookRequests = [
                 {
                     id: 1,
@@ -2811,7 +2975,6 @@
                 }
             ];
 
-            // Sample notifications
             appState.notifications = [
                 {
                     id: 1,
@@ -2951,7 +3114,7 @@
                 });
             }
 
-            // ADDED: Network status monitoring
+            // Network status monitoring
             window.addEventListener('online', () => {
                 document.getElementById('offline-indicator').classList.remove('show');
                 showToast('success', 'Back Online', 'Connection restored');
@@ -3481,7 +3644,7 @@
             return `${baseUrl}/storage/v1/object/public/${bucket}/${fileName}`;
         }
 
-        // Upload video function - UPDATED to add account to accounts array
+        // Upload video function
         async function uploadVideo() {
             if (!appState.isAdminLoggedIn) {
                 showToast('error', 'Access Denied', 'Please login as admin first');
@@ -3547,8 +3710,6 @@
                     totalSize.textContent = formatFileSize(file.size);
                 }, 200);
                 
-                // In a real app, you would upload to Supabase here
-                // For demo, we'll simulate success
                 setTimeout(() => {
                     // Complete progress
                     clearInterval(progressInterval);
@@ -3725,7 +3886,7 @@
             loadAdminVideos(tier);
         }
 
-        // Delete video - UPDATED to also remove corresponding account
+        // Delete video
         function deleteVideo(videoId) {
             if (confirm('Are you sure you want to delete this video? The corresponding account will also be removed.')) {
                 // Remove video
@@ -4219,7 +4380,7 @@
             document.getElementById('forgot-password-container').classList.remove('hidden');
         }
 
-        // Login function - FIXED
+        // Login function
         function login(event) {
             event.preventDefault();
             
@@ -4269,7 +4430,7 @@
             }
         }
 
-        // Signup function - FIXED
+        // Signup function
         function signup(event) {
             event.preventDefault();
             
