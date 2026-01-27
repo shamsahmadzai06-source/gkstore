@@ -9,14 +9,17 @@
     <title>GK Store - Video Marketplace</title>
     
     <!-- FIXED: Favicon and Apple Touch Icons with absolute GitHub Pages URLs -->
-    <link rel="icon" type="image/png" href="https://shamsahmadzai06.github.io/GkStore/icon.png">
-    <link rel="apple-touch-icon" href="https://shamsahmadzai06.github.io/GkStore/icon.png">
+    <link rel="icon" type="image/png" href="https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-96-96.png">
+    <link rel="apple-touch-icon" href="https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-192-192.png">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="https://shamsahmadzai06-source.github.io/GKStore/manifest.json">
     
     <!-- iOS PWA Support -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="GK Store">
-    <link rel="apple-touch-startup-image" href="https://shamsahmadzai06.github.io/GkStore/icon.png">
+    <link rel="apple-touch-startup-image" href="https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-512-512.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- 引入 Supabase 客户端库 -->
@@ -1437,8 +1440,6 @@
         <i class="fas fa-wifi-slash"></i> You are currently offline. Some features may be limited.
     </div>
 
-    <!-- REMOVED: PWA Install Button -->
-
     <!-- Gradient Background Effects -->
     <div class="gradient-bg-effects">
         <div class="gradient-circle gradient-1"></div>
@@ -2022,8 +2023,6 @@
         </div>
     </div>
 
-    <!-- REMOVED: PWA Install Modal -->
-
     <!-- Book Account Modal -->
     <div id="book-modal" class="modal-overlay hidden">
         <div class="modal">
@@ -2509,6 +2508,7 @@
             loadPreferences();
             loadSampleData();
             setupEventListeners();
+            registerServiceWorker(); // ADDED: Register service worker
             
             // Check if user is already logged in
             const savedUser = localStorage.getItem('gkStoreUser');
@@ -2523,6 +2523,51 @@
                 }
             } else {
                 showPage('auth');
+            }
+            
+            // ADDED: Check for PWA installation
+            checkPWAInstallation();
+        }
+
+        // ADDED: Register Service Worker
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('https://shamsahmadzai06-source.github.io/GKStore/service-worker.js')
+                        .then(registration => {
+                            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                            
+                            // Check for updates
+                            registration.addEventListener('updatefound', () => {
+                                const newWorker = registration.installing;
+                                console.log('Service Worker update found!');
+                                
+                                newWorker.addEventListener('statechange', () => {
+                                    if (newWorker.state === 'installed') {
+                                        if (navigator.serviceWorker.controller) {
+                                            // New content available
+                                            showToast('info', 'Update Available', 'New version available. Refresh to update.');
+                                        }
+                                    }
+                                });
+                            });
+                        })
+                        .catch(error => {
+                            console.log('ServiceWorker registration failed: ', error);
+                        });
+                });
+            }
+        }
+
+        // ADDED: Check PWA Installation
+        function checkPWAInstallation() {
+            // Check if the app is running in standalone mode (installed)
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                               window.navigator.standalone === true;
+            
+            if (isStandalone) {
+                console.log('App is running in standalone mode (PWA installed)');
+                document.body.classList.add('pwa-installed');
             }
         }
 
@@ -2710,6 +2755,17 @@
                     }
                 });
             }
+
+            // ADDED: Network status monitoring
+            window.addEventListener('online', () => {
+                document.getElementById('offline-indicator').classList.remove('show');
+                showToast('success', 'Back Online', 'Connection restored');
+            });
+
+            window.addEventListener('offline', () => {
+                document.getElementById('offline-indicator').classList.add('show');
+                showToast('error', 'Offline', 'Connection lost. Some features may not work.');
+            });
         }
 
         // Show page
