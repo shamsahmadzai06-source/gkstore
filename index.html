@@ -2518,12 +2518,12 @@
             currentUser: null,
             currentAccount: null,
             isAdminLoggedIn: false,
-            // Backblaze B2 Configuration - FIXED
+            // Backblaze B2 Configuration - IMPORTANT: Replace with your actual credentials
             backblazeConfig: {
-                applicationKeyId: '005b4c9b6d5c7a90000000001',
-                applicationKey: 'K005WbeAFJxWY/cOCx6e8G8v4CJL0xQ',
-                bucketId: 'f7cf8c33e8f2c17d570c0c17',
-                bucketName: 'gkstore-videos',
+                applicationKeyId: 'YOUR_APPLICATION_KEY_ID_HERE', // Replace with your actual Key ID
+                applicationKey: 'YOUR_APPLICATION_KEY_HERE',      // Replace with your actual Application Key
+                bucketId: 'YOUR_BUCKET_ID_HERE',                 // Replace with your actual Bucket ID
+                bucketName: 'YOUR_BUCKET_NAME_HERE',             // Replace with your actual Bucket Name
                 apiUrl: 'https://api.backblazeb2.com/b2api/v2'
             },
             adminCredentials: {
@@ -3112,7 +3112,7 @@
             }
         }
 
-        // Show video overlay (TikTok style) - FIXED
+        // Show video overlay (TikTok style)
         function showVideoOverlay(video) {
             const videoSection = document.getElementById('video-section');
             
@@ -3361,7 +3361,7 @@
             }
         }
 
-        // Load accounts page content - UPDATED: Show video-based accounts only
+        // Load accounts page content
         function loadAccountsContent() {
             const grid = document.getElementById('accounts-grid');
             if (!grid) return;
@@ -3688,7 +3688,7 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // Upload video to Backblaze B2 - FIXED
+        // Upload video to Backblaze B2 - FIXED AND SIMPLIFIED
         async function uploadVideoToBackblaze() {
             if (!appState.isAdminLoggedIn) {
                 showToast('error', 'Access Denied', 'Please login as admin first');
@@ -3707,6 +3707,16 @@
                 return;
             }
             
+            // Check if Backblaze credentials are configured
+            const config = appState.backblazeConfig;
+            if (config.applicationKeyId === 'YOUR_APPLICATION_KEY_ID_HERE' || 
+                config.applicationKey === 'YOUR_APPLICATION_KEY_HERE') {
+                showToast('error', 'Backblaze Configuration Needed', 
+                    'Please configure your Backblaze B2 credentials in the JavaScript code. ' +
+                    'Replace the placeholder values with your actual credentials.');
+                return;
+            }
+            
             // Show upload status
             const uploadStatus = document.getElementById('upload-status');
             const uploadProgress = document.getElementById('upload-progress');
@@ -3722,22 +3732,24 @@
             totalSize.textContent = formatFileSize(file.size);
             
             try {
-                // Step 1: Get authorization token
-                showToast('info', 'Upload', 'Connecting to Backblaze B2...');
+                showToast('info', 'Upload Starting', 'Connecting to Backblaze B2...');
                 
-                const authResponse = await fetch(`${appState.backblazeConfig.apiUrl}/b2_authorize_account`, {
+                // Step 1: Get authorization token
+                const authResponse = await fetch(`${config.apiUrl}/b2_authorize_account`, {
+                    method: 'GET',
                     headers: {
-                        'Authorization': 'Basic ' + btoa(`${appState.backblazeConfig.applicationKeyId}:${appState.backblazeConfig.applicationKey}`)
+                        'Authorization': 'Basic ' + btoa(`${config.applicationKeyId}:${config.applicationKey}`)
                     }
                 });
                 
                 if (!authResponse.ok) {
-                    throw new Error('Failed to authenticate with Backblaze B2');
+                    throw new Error(`Failed to authenticate with Backblaze B2. Status: ${authResponse.status}`);
                 }
                 
                 const authData = await authResponse.json();
                 const apiUrl = authData.apiUrl;
                 const authorizationToken = authData.authorizationToken;
+                const downloadUrl = authData.downloadUrl;
                 
                 // Step 2: Get upload URL
                 const uploadUrlResponse = await fetch(`${apiUrl}/b2api/v2/b2_get_upload_url`, {
@@ -3747,7 +3759,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        bucketId: appState.backblazeConfig.bucketId
+                        bucketId: config.bucketId
                     })
                 });
                 
@@ -3763,7 +3775,27 @@
                 const fileName = `videos/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
                 const fileType = file.type;
                 
-                // Step 4: Upload file with progress tracking
+                // Step 4: Upload file with progress tracking using fetch
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                // Create ReadableStream for progress tracking
+                const fileReader = new FileReader();
+                let uploaded = 0;
+                
+                // Read file as array buffer for manual upload
+                const fileBuffer = await file.arrayBuffer();
+                
+                // Create headers
+                const headers = {
+                    'Authorization': uploadAuthToken,
+                    'X-Bz-File-Name': encodeURIComponent(fileName),
+                    'Content-Type': fileType,
+                    'X-Bz-Content-Sha1': 'do_not_verify',
+                    'Content-Length': file.size
+                };
+                
+                // Create upload with progress tracking
                 const xhr = new XMLHttpRequest();
                 
                 xhr.upload.addEventListener('progress', (event) => {
@@ -3780,95 +3812,89 @@
                     }
                 });
                 
-                // Create promise for XHR
-                const uploadPromise = new Promise((resolve, reject) => {
-                    xhr.onload = () => {
-                        if (xhr.status >= 200 && xhr.status < 300) {
-                            resolve(JSON.parse(xhr.responseText));
-                        } else {
-                            reject(new Error(`Upload failed: ${xhr.statusText}`));
-                        }
-                    };
-                    
-                    xhr.onerror = () => reject(new Error('Network error during upload'));
-                    
-                    xhr.open('POST', uploadUrl);
-                    xhr.setRequestHeader('Authorization', uploadAuthToken);
-                    xhr.setRequestHeader('X-Bz-File-Name', encodeURIComponent(fileName));
-                    xhr.setRequestHeader('Content-Type', fileType);
-                    xhr.setRequestHeader('X-Bz-Content-Sha1', 'do_not_verify');
-                    
-                    xhr.send(file);
-                });
-                
-                // Wait for upload to complete
-                const uploadResult = await uploadPromise;
-                
-                // Step 5: Create video URL
-                const videoUrl = `${authData.downloadUrl}/file/${appState.backblazeConfig.bucketName}/${fileName}`;
-                
-                // Step 6: Create video object
-                const videoId = `vid_${Date.now()}`;
-                const newVideo = {
-                    id: videoId,
-                    title: title,
-                    description: description || 'No description available',
-                    views: 0,
-                    likes: 0,
-                    shares: 0,
-                    duration: "2:30",
-                    url: videoUrl,
-                    tier: tier,
-                    price: price,
-                    createdAt: new Date().toISOString(),
-                    account: {
-                        id: videoId,
-                        title: title,
-                        tier: tier,
-                        price: price,
-                        followers: Math.floor(Math.random() * 100000) + 1000
+                xhr.onload = async function() {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        const uploadResult = JSON.parse(xhr.responseText);
+                        
+                        // Step 5: Create video URL
+                        const videoUrl = `${downloadUrl}/file/${config.bucketName}/${fileName}`;
+                        
+                        // Step 6: Create video object
+                        const videoId = `vid_${Date.now()}`;
+                        const newVideo = {
+                            id: videoId,
+                            title: title,
+                            description: description || 'No description available',
+                            views: 0,
+                            likes: 0,
+                            shares: 0,
+                            duration: "2:30",
+                            url: videoUrl,
+                            tier: tier,
+                            price: price,
+                            createdAt: new Date().toISOString(),
+                            account: {
+                                id: videoId,
+                                title: title,
+                                tier: tier,
+                                price: price,
+                                followers: Math.floor(Math.random() * 100000) + 1000
+                            }
+                        };
+                        
+                        // Create corresponding account
+                        const newAccount = {
+                            id: videoId,
+                            title: title,
+                            description: description || 'No description available',
+                            tier: tier,
+                            price: price,
+                            sold: false,
+                            videoId: videoId,
+                            createdAt: new Date().toISOString()
+                        };
+                        
+                        // Add to local state
+                        appState.videos.unshift(newVideo);
+                        appState.accounts.unshift(newAccount);
+                        appState.currentVideoIndex = 0;
+                        
+                        // Save to localStorage and sync
+                        saveAppData();
+                        
+                        // Update UI
+                        loadHomeContent();
+                        updateAdminStats();
+                        
+                        // Reset form
+                        setTimeout(() => {
+                            document.getElementById('upload-video-form').reset();
+                            clearFileSelection();
+                            uploadStatus.classList.remove('active');
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
+                            
+                            showToast('success', 'Upload Complete', `"${title}" uploaded successfully!`);
+                            closeModal('upload-video-modal');
+                            
+                            // Load the new video
+                            loadVideo(0);
+                            
+                        }, 1000);
+                    } else {
+                        throw new Error(`Upload failed: ${xhr.statusText}`);
                     }
                 };
                 
-                // Create corresponding account
-                const newAccount = {
-                    id: videoId,
-                    title: title,
-                    description: description || 'No description available',
-                    tier: tier,
-                    price: price,
-                    sold: false,
-                    videoId: videoId,
-                    createdAt: new Date().toISOString()
+                xhr.onerror = function() {
+                    throw new Error('Network error during upload');
                 };
                 
-                // Add to local state
-                appState.videos.unshift(newVideo);
-                appState.accounts.unshift(newAccount);
-                appState.currentVideoIndex = 0;
-                
-                // Save to localStorage and sync
-                saveAppData();
-                
-                // Update UI
-                loadHomeContent();
-                updateAdminStats();
-                
-                // Reset form
-                setTimeout(() => {
-                    document.getElementById('upload-video-form').reset();
-                    clearFileSelection();
-                    uploadStatus.classList.remove('active');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
-                    
-                    showToast('success', 'Upload Complete', `"${title}" uploaded successfully!`);
-                    closeModal('upload-video-modal');
-                    
-                    // Load the new video
-                    loadVideo(0);
-                    
-                }, 1000);
+                xhr.open('POST', uploadUrl);
+                for (const [key, value] of Object.entries(headers)) {
+                    xhr.setRequestHeader(key, value);
+                }
+                xhr.send(file);
                 
             } catch (error) {
                 console.error('Upload error:', error);
@@ -3876,6 +3902,14 @@
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
                 uploadStatus.classList.remove('active');
+                
+                // Provide debugging info
+                console.log('Backblaze Config:', {
+                    hasKeyId: !!appState.backblazeConfig.applicationKeyId,
+                    hasKey: !!appState.backblazeConfig.applicationKey,
+                    hasBucketId: !!appState.backblazeConfig.bucketId,
+                    hasBucketName: !!appState.backblazeConfig.bucketName
+                });
             }
         }
 
