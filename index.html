@@ -135,12 +135,6 @@
             border: none;
         }
 
-        .pwa-install-btn:hover {
-            background: var(--primary-dark);
-            transform: scale(1.1);
-            box-shadow: 0 15px 30px rgba(236, 72, 153, 0.4);
-        }
-
         .pwa-install-btn.hidden {
             display: none;
         }
@@ -572,7 +566,7 @@
             margin-top: 1rem;
         }
 
-        /* Action Buttons on Video - UPDATED: Book and Buy Now moved to top */
+        /* Action Buttons on Video - FIXED: Ensure buttons are visible */
         .video-right-actions {
             position: absolute;
             right: 1rem;
@@ -580,7 +574,7 @@
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
-            z-index: 10;
+            z-index: 100;
         }
 
         .video-right-actions .btn-icon {
@@ -588,22 +582,22 @@
             height: 3rem;
             background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(10px);
+            color: white;
         }
 
         .video-right-actions .btn-icon i {
             font-size: 1.25rem;
         }
 
-        /* Book and Buy Now Buttons Container - ADDED */
+        /* Book and Buy Now Buttons Container - FIXED: Ensure visibility */
         .video-top-actions {
             position: absolute;
             right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
+            top: 30%;
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
-            z-index: 10;
+            z-index: 100;
         }
 
         .video-top-actions .btn-icon {
@@ -611,6 +605,7 @@
             height: 3rem;
             background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(10px);
+            color: white;
         }
 
         .video-top-actions .btn-icon i {
@@ -1130,15 +1125,15 @@
             .grid-cols-4 { grid-template-columns: repeat(2, 1fr); }
             .modal { margin: 1rem; }
             .video-container { height: calc(100vh - 120px); }
-            .video-top-actions { top: 40%; }
+            .video-top-actions { top: 20%; }
         }
 
         @media (max-width: 480px) {
             html { font-size: 13px; }
             .nav-item span { display: none; }
             .nav-item { min-width: 3rem; }
-            .video-top-actions { top: 35%; right: 0.5rem; }
-            .video-right-actions { right: 0.5rem; }
+            .video-top-actions { top: 15%; right: 0.5rem; }
+            .video-right-actions { right: 0.5rem; bottom: 4rem; }
         }
 
         /* Dark/Light Mode (Future Enhancement) */
@@ -1728,7 +1723,7 @@
                     </div>
                 </div>
                 
-                <!-- Video Overlay -->
+                <!-- Video Overlay with Action Buttons - FIXED: Buttons are now inside the overlay -->
                 <div id="video-overlay" class="video-overlay hidden">
                     <div class="flex justify-between items-start">
                         <div>
@@ -1737,28 +1732,28 @@
                         </div>
                     </div>
                     
-                    <!-- Top action buttons (Book and Buy Now moved to top) -->
+                    <!-- Top action buttons (Book and Buy Now) - FIXED: Added proper styling -->
                     <div class="video-top-actions">
                         <div class="flex flex-col items-center">
-                            <button class="btn btn-icon" onclick="bookAccount()">
-                                <i class="fas fa-bookmark"></i>
+                            <button class="btn btn-icon gradient-bg" onclick="bookAccount()">
+                                <i class="fas fa-bookmark text-white"></i>
                             </button>
                             <div class="action-label">Book</div>
                         </div>
                         
                         <div class="flex flex-col items-center">
-                            <button class="btn btn-icon" onclick="buyNow()">
-                                <i class="fas fa-shopping-bag"></i>
+                            <button class="btn btn-icon gradient-bg" onclick="buyNow()">
+                                <i class="fas fa-shopping-bag text-white"></i>
                             </button>
                             <div class="action-label">Buy</div>
                         </div>
                     </div>
                     
-                    <!-- Right side action buttons (Only Share button at bottom) -->
+                    <!-- Right side action buttons (Share button at bottom) - FIXED: Added proper styling -->
                     <div class="video-right-actions">
                         <div class="flex flex-col items-center">
-                            <button class="btn btn-icon" onclick="shareVideo()">
-                                <i class="fas fa-share"></i>
+                            <button class="btn btn-icon gradient-bg" onclick="shareVideo()">
+                                <i class="fas fa-share text-white"></i>
                             </button>
                             <div class="action-label">Share</div>
                         </div>
@@ -2633,6 +2628,9 @@
                                 role: 'admin'
                             };
                             
+                            // Save admin login
+                            localStorage.setItem('gkStoreUser', JSON.stringify(appState.currentUser));
+                            
                             // Show admin dashboard if on admin page
                             if (appState.currentPage === 'admin') {
                                 document.getElementById('admin-dashboard').classList.remove('hidden');
@@ -3195,7 +3193,9 @@
                         <source src="${video.url}" type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
-                    ${videoOverlay.outerHTML}
+                    <div class="video-overlay">
+                        ${videoOverlay.innerHTML}
+                    </div>
                 `;
                 // Re-attach event listeners
                 setupEventListeners();
@@ -3438,7 +3438,7 @@
             }
         }
 
-        // Admin login with Firebase Authentication
+        // Admin login with Firebase Authentication - FIXED: Now works properly
         async function adminLogin(event) {
             event.preventDefault();
             
@@ -3452,6 +3452,7 @@
                 
                 if (user.email === appState.adminCredentials.email) {
                     appState.isAdminLoggedIn = true;
+                    appState.isLoggedIn = true;
                     appState.currentUser = {
                         email: user.email,
                         name: 'Admin User',
@@ -3473,6 +3474,9 @@
                     
                     // Load data from Firestore
                     loadDataFromFirestore();
+                    
+                    // Update admin stats
+                    updateAdminStats();
                     
                 } else {
                     showToast('error', 'Admin Login', 'Access denied. Admin only.');
@@ -3603,7 +3607,7 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // UPLOAD VIDEO WITH FIREBASE - FIXED
+        // UPLOAD VIDEO WITH FIREBASE
         async function uploadVideo() {
             if (!appState.isAdminLoggedIn) {
                 showToast('error', 'Access Denied', 'Please login as admin first');
