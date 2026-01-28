@@ -22,11 +22,7 @@
     <link rel="apple-touch-startup-image" href="https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-512-512.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <!-- Removed Firebase SDKs -->
     <style>
         /* ALL YOUR ORIGINAL CSS CODE - KEEPING IT AS IS */
         :root {
@@ -2446,15 +2442,15 @@
                         </div>
                     </div>
                     
-                    <!-- Firebase Configuration Section -->
+                    <!-- Backblaze B2 Configuration Section -->
                     <div class="card glass-effect p-4 mb-4">
-                        <h4 class="font-semibold mb-2">Firebase Configuration</h4>
-                        <p class="text-sm text-zinc-400 mb-3">Firebase is configured and ready for uploads</p>
+                        <h4 class="font-semibold mb-2">Backblaze B2 Configuration</h4>
+                        <p class="text-sm text-zinc-400 mb-3">Backblaze B2 is configured and ready for uploads</p>
                         
                         <!-- Test Connection -->
                         <div class="test-connection mb-3">
-                            <button type="button" class="btn btn-sm btn-secondary w-full" onclick="testFirebaseConnection()">
-                                <i class="fas fa-plug"></i> Test Firebase Connection
+                            <button type="button" class="btn btn-sm btn-secondary w-full" onclick="testB2Connection()">
+                                <i class="fas fa-plug"></i> Test B2 Connection
                             </button>
                             <div id="connection-status" class="connection-status hidden">
                                 <i id="connection-icon" class="fas"></i>
@@ -2600,20 +2596,16 @@
             currentUser: null,
             currentAccount: null,
             isAdminLoggedIn: false,
-            firebaseAuth: null,
-            // Firebase Configuration
-            firebaseConfig: {
-                apiKey: "AIzaSyBawJO9yZy51LLSa6ac7vRZiwEB-Bi59fk",
-                authDomain: "gk-store-46834.firebaseapp.com",
-                projectId: "gk-store-46834",
-                storageBucket: "gk-store-46834.appspot.com",
-                messagingSenderId: "454498586544",
-                appId: "1:454498586544:web:d054a398d8a7927f3ed075"
+            // Backblaze B2 Configuration
+            backblazeConfig: {
+                keyId: "006d1a66df41c7f0000000001",
+                applicationKey: "K006k2bju7K7RiZRtQdn0Jkb5K0+AAg",
+                bucketId: "k-videos-upload-key",
+                bucketName: "gk-store-videos",
+                endpoint: "https://s3.us-west-002.backblazeb2.com",
+                uploadUrl: "",
+                authorizationToken: ""
             },
-            // Firebase Services
-            firebaseApp: null,
-            firebaseStorage: null,
-            firebaseFirestore: null,
             userStats: {
                 registeredUsers: 0,
                 onlineUsers: 0
@@ -2634,77 +2626,12 @@
         let deferredPrompt = null;
         let isAppInstalled = false;
 
-        // Initialize Firebase with Auth
-        function initializeFirebase() {
-            try {
-                console.log('Initializing Firebase...');
-                
-                // Check if Firebase is already initialized
-                if (!firebase.apps.length) {
-                    // Initialize Firebase with your config
-                    appState.firebaseApp = firebase.initializeApp(appState.firebaseConfig);
-                    console.log('Firebase app initialized');
-                } else {
-                    appState.firebaseApp = firebase.apps[0];
-                    console.log('Using existing Firebase app');
-                }
-                
-                // Get Firebase services
-                appState.firebaseStorage = firebase.storage();
-                appState.firebaseFirestore = firebase.firestore();
-                appState.firebaseAuth = firebase.auth();
-                
-                console.log('Firebase services initialized');
-                
-                // Set up auth state listener
-                appState.firebaseAuth.onAuthStateChanged((user) => {
-                    if (user) {
-                        console.log('User authenticated:', user.email);
-                        // Check if user is admin
-                        if (user.email === appState.adminCredentials.email) {
-                            appState.isAdminLoggedIn = true;
-                            appState.currentUser = {
-                                email: user.email,
-                                name: 'Admin User',
-                                role: 'admin'
-                            };
-                            
-                            // Save admin login
-                            localStorage.setItem('gkStoreUser', JSON.stringify(appState.currentUser));
-                            
-                            // Show admin dashboard if on admin page
-                            if (appState.currentPage === 'admin') {
-                                document.getElementById('admin-dashboard').classList.remove('hidden');
-                                updateAdminStats();
-                            }
-                        }
-                    } else {
-                        appState.isAdminLoggedIn = false;
-                    }
-                });
-                
-                return true;
-            } catch (error) {
-                console.error('Firebase initialization error:', error);
-                return false;
-            }
-        }
-
         // Initialize App
         function initApp() {
             loadPreferences();
             setupEventListeners();
             registerServiceWorker();
             setupPWAInstall();
-            
-            // Initialize Firebase
-            setTimeout(() => {
-                if (!initializeFirebase()) {
-                    console.warn('Firebase initialization failed, using demo mode');
-                    // Load demo data if Firebase fails
-                    loadDemoData();
-                }
-            }, 500);
             
             // Check if user is already logged in
             const savedUser = localStorage.getItem('gkStoreUser');
@@ -2719,7 +2646,7 @@
                     }
                     
                     showPage('home');
-                    loadDataFromFirestore();
+                    loadDemoData(); // Load demo data since we removed Firestore
                 } catch (e) {
                     console.error('Error parsing saved user:', e);
                     showPage('auth');
@@ -2729,7 +2656,7 @@
             }
         }
 
-        // Load demo data if Firebase fails
+        // Load demo data
         function loadDemoData() {
             // Demo videos
             appState.videos = [
@@ -2872,73 +2799,6 @@
             }
             updateNotificationCount();
             updateAdminStats();
-        }
-
-        // Load data from Firestore
-        async function loadDataFromFirestore() {
-            try {
-                if (!appState.firebaseFirestore) {
-                    loadDemoData();
-                    return;
-                }
-                
-                const db = appState.firebaseFirestore;
-                
-                // Load videos
-                const videosSnapshot = await db.collection('videos').get();
-                appState.videos = [];
-                videosSnapshot.forEach(doc => {
-                    const videoData = doc.data();
-                    appState.videos.push({
-                        id: doc.id,
-                        ...videoData,
-                        account: {
-                            id: doc.id,
-                            title: videoData.title,
-                            tier: videoData.tier,
-                            price: videoData.price,
-                            followers: 0
-                        }
-                    });
-                });
-                
-                // Load accounts
-                const accountsSnapshot = await db.collection('accounts').get();
-                appState.accounts = [];
-                accountsSnapshot.forEach(doc => {
-                    const accountData = doc.data();
-                    appState.accounts.push({
-                        id: doc.id,
-                        ...accountData
-                    });
-                });
-                
-                // Load notifications
-                const notificationsSnapshot = await db.collection('notifications').orderBy('timestamp', 'desc').limit(10).get();
-                appState.notifications = [];
-                notificationsSnapshot.forEach(doc => {
-                    appState.notifications.push(doc.data());
-                });
-                
-                // Update counts
-                appState.userStats.registeredUsers = appState.accounts.length;
-                appState.userStats.onlineUsers = Math.floor(Math.random() * 10) + 1;
-                
-                // Update UI
-                updateNotificationCount();
-                updateAdminStats();
-                
-                if (appState.currentPage === 'home') {
-                    loadHomeContent();
-                }
-                
-                console.log('Data loaded from Firestore');
-                
-            } catch (error) {
-                console.error('Error loading data from Firestore:', error);
-                // Fallback to demo data
-                loadDemoData();
-            }
         }
 
         // Setup PWA Install
@@ -3564,7 +3424,7 @@
 
         // Load more videos (infinite scroll)
         function loadMoreVideos() {
-            // In a real app, you would load more from Firestore
+            // In a real app, you would load more from storage
             // For demo, we'll just show a message
             showToast('info', 'No More Videos', 'All videos are loaded');
         }
@@ -3742,148 +3602,108 @@
             }
         }
 
-        // Admin login with Firebase Authentication
-        async function adminLogin(event) {
+        // Admin login
+        function adminLogin(event) {
             event.preventDefault();
             
             const email = document.getElementById('admin-email').value;
             const password = document.getElementById('admin-password').value;
             
-            // If Firebase is not initialized, use demo login
-            if (!appState.firebaseAuth) {
-                if (email === appState.adminCredentials.email && password === appState.adminCredentials.password) {
-                    appState.isAdminLoggedIn = true;
-                    appState.isLoggedIn = true;
-                    appState.currentUser = {
-                        email: email,
-                        name: 'Admin User',
-                        role: 'admin'
-                    };
-                    
-                    // Save to localStorage
-                    localStorage.setItem('gkStoreUser', JSON.stringify(appState.currentUser));
-                    
-                    const adminDashboard = document.getElementById('admin-dashboard');
-                    if (adminDashboard) {
-                        adminDashboard.classList.remove('hidden');
-                    }
-                    
-                    showToast('success', 'Admin Login', 'Successfully logged in as admin');
-                    
-                    // Clear form
-                    document.getElementById('admin-login-form').reset();
-                    
-                    // Load data
-                    loadDataFromFirestore();
-                    
-                    // Update admin stats
-                    updateAdminStats();
-                } else {
-                    showToast('error', 'Admin Login', 'Invalid credentials. Use admin@gkstore.com / admin123');
-                }
-                return;
-            }
-            
-            try {
-                // Sign in with Firebase Auth
-                const userCredential = await appState.firebaseAuth.signInWithEmailAndPassword(email, password);
-                const user = userCredential.user;
+            if (email === appState.adminCredentials.email && password === appState.adminCredentials.password) {
+                appState.isAdminLoggedIn = true;
+                appState.isLoggedIn = true;
+                appState.currentUser = {
+                    email: email,
+                    name: 'Admin User',
+                    role: 'admin'
+                };
                 
-                if (user.email === appState.adminCredentials.email) {
-                    appState.isAdminLoggedIn = true;
-                    appState.isLoggedIn = true;
-                    appState.currentUser = {
-                        email: user.email,
-                        name: 'Admin User',
-                        role: 'admin'
-                    };
-                    
-                    // Save to localStorage
-                    localStorage.setItem('gkStoreUser', JSON.stringify(appState.currentUser));
-                    
-                    const adminDashboard = document.getElementById('admin-dashboard');
-                    if (adminDashboard) {
-                        adminDashboard.classList.remove('hidden');
-                    }
-                    
-                    showToast('success', 'Admin Login', 'Successfully logged in as admin');
-                    
-                    // Clear form
-                    document.getElementById('admin-login-form').reset();
-                    
-                    // Load data from Firestore
-                    loadDataFromFirestore();
-                    
-                    // Update admin stats
-                    updateAdminStats();
-                    
-                } else {
-                    showToast('error', 'Admin Login', 'Access denied. Admin only.');
-                    await appState.firebaseAuth.signOut();
+                // Save to localStorage
+                localStorage.setItem('gkStoreUser', JSON.stringify(appState.currentUser));
+                
+                const adminDashboard = document.getElementById('admin-dashboard');
+                if (adminDashboard) {
+                    adminDashboard.classList.remove('hidden');
                 }
-            } catch (error) {
-                console.error('Login error:', error);
-                // Fallback to demo login
-                if (email === appState.adminCredentials.email && password === appState.adminCredentials.password) {
-                    appState.isAdminLoggedIn = true;
-                    appState.isLoggedIn = true;
-                    appState.currentUser = {
-                        email: email,
-                        name: 'Admin User',
-                        role: 'admin'
-                    };
-                    
-                    localStorage.setItem('gkStoreUser', JSON.stringify(appState.currentUser));
-                    
-                    const adminDashboard = document.getElementById('admin-dashboard');
-                    if (adminDashboard) {
-                        adminDashboard.classList.remove('hidden');
-                    }
-                    
-                    showToast('success', 'Admin Login', 'Successfully logged in as admin');
-                    document.getElementById('admin-login-form').reset();
-                    loadDataFromFirestore();
-                    updateAdminStats();
-                } else {
-                    showToast('error', 'Admin Login', error.message || 'Invalid credentials. Use admin@gkstore.com / admin123');
-                }
+                
+                showToast('success', 'Admin Login', 'Successfully logged in as admin');
+                
+                // Clear form
+                document.getElementById('admin-login-form').reset();
+                
+                // Load demo data
+                loadDemoData();
+                
+                // Update admin stats
+                updateAdminStats();
+            } else {
+                showToast('error', 'Admin Login', 'Invalid credentials. Use admin@gkstore.com / admin123');
             }
         }
 
-        // Test Firebase connection
-        function testFirebaseConnection() {
+        // Test Backblaze B2 connection
+        async function testB2Connection() {
             const statusElement = document.getElementById('connection-status');
             const iconElement = document.getElementById('connection-icon');
             const messageElement = document.getElementById('connection-message');
             
-            if (!appState.firebaseStorage || !appState.firebaseFirestore || !appState.firebaseAuth) {
-                statusElement.className = 'connection-status error';
-                iconElement.className = 'fas fa-times-circle';
-                messageElement.textContent = 'Firebase not initialized';
-                statusElement.classList.remove('hidden');
-                return;
-            }
+            statusElement.className = 'connection-status';
+            statusElement.classList.remove('hidden');
+            iconElement.className = 'fas fa-spinner animate-spin';
+            messageElement.textContent = 'Testing connection...';
             
             try {
-                // Test storage connection
-                const storageRef = appState.firebaseStorage.ref();
+                // Get authorization token from Backblaze B2
+                const authResponse = await fetch('https://api.backblazeb2.com/b2api/v2/b2_authorize_account', {
+                    headers: {
+                        'Authorization': 'Basic ' + btoa(appState.backblazeConfig.keyId + ':' + appState.backblazeConfig.applicationKey)
+                    }
+                });
                 
-                // Test firestore connection
-                const db = appState.firebaseFirestore;
+                if (!authResponse.ok) {
+                    throw new Error('Authorization failed');
+                }
+                
+                const authData = await authResponse.json();
+                
+                // Store authorization data
+                appState.backblazeConfig.authorizationToken = authData.authorizationToken;
+                appState.backblazeConfig.apiUrl = authData.apiUrl;
+                appState.backblazeConfig.downloadUrl = authData.downloadUrl;
+                
+                // Get upload URL
+                const uploadUrlResponse = await fetch(`${appState.backblazeConfig.apiUrl}/b2api/v2/b2_get_upload_url`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': appState.backblazeConfig.authorizationToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        bucketId: appState.backblazeConfig.bucketId
+                    })
+                });
+                
+                if (!uploadUrlResponse.ok) {
+                    throw new Error('Failed to get upload URL');
+                }
+                
+                const uploadUrlData = await uploadUrlResponse.json();
+                appState.backblazeConfig.uploadUrl = uploadUrlData.uploadUrl;
+                appState.backblazeConfig.uploadAuthorizationToken = uploadUrlData.authorizationToken;
                 
                 statusElement.className = 'connection-status success';
                 iconElement.className = 'fas fa-check-circle';
-                messageElement.textContent = 'Firebase connected successfully';
-                statusElement.classList.remove('hidden');
+                messageElement.textContent = 'Backblaze B2 connected successfully';
                 
-                showToast('success', 'Connection Successful', 'Firebase is connected and ready');
+                showToast('success', 'Connection Successful', 'Backblaze B2 is connected and ready');
+                
             } catch (error) {
+                console.error('B2 connection error:', error);
                 statusElement.className = 'connection-status error';
                 iconElement.className = 'fas fa-times-circle';
                 messageElement.textContent = 'Connection failed: ' + error.message;
-                statusElement.classList.remove('hidden');
                 
-                showToast('error', 'Connection Failed', 'Could not connect to Firebase');
+                showToast('error', 'Connection Failed', 'Could not connect to Backblaze B2');
             }
         }
 
@@ -3969,7 +3789,7 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // FIXED UPLOAD VIDEO FUNCTION - Now working properly
+        // UPLOAD VIDEO TO BACKBLAZE B2
         async function uploadVideo() {
             if (!appState.isAdminLoggedIn) {
                 showToast('error', 'Access Denied', 'Please login as admin first');
@@ -3995,9 +3815,9 @@
                 return;
             }
             
-            // Check Firebase is initialized
-            if (!appState.firebaseStorage || !appState.firebaseFirestore) {
-                showToast('error', 'Firebase Error', 'Firebase is not initialized. Please check connection.');
+            // Check if we have upload authorization
+            if (!appState.backblazeConfig.uploadUrl || !appState.backblazeConfig.uploadAuthorizationToken) {
+                showToast('error', 'B2 Error', 'Please test the B2 connection first');
                 return;
             }
             
@@ -4016,158 +3836,101 @@
             
             try {
                 // Generate unique file name
-                const fileName = `videos/${tier}/${id}_${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+                const timestamp = Date.now();
+                const fileName = `videos/${tier}/${id}_${timestamp}_${file.name.replace(/\s+/g, '_')}`;
+                const fileContent = file;
+                const fileSize = file.size;
                 
-                // Create storage reference
-                const storageRef = appState.firebaseStorage.ref();
-                const videoRef = storageRef.child(fileName);
+                // Calculate SHA1 hash of the file
+                const fileHash = await calculateSHA1(file);
                 
-                // Upload file to Firebase Storage with metadata
-                const metadata = {
-                    contentType: file.type,
-                    customMetadata: {
-                        'uploadedBy': appState.currentUser?.name || 'Admin',
-                        'videoId': id,
-                        'title': title,
-                        'tier': tier
+                // Upload file to Backblaze B2
+                const uploadResponse = await fetch(appState.backblazeConfig.uploadUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': appState.backblazeConfig.uploadAuthorizationToken,
+                        'X-Bz-File-Name': encodeURIComponent(fileName),
+                        'Content-Type': file.type,
+                        'Content-Length': fileSize.toString(),
+                        'X-Bz-Content-Sha1': fileHash,
+                        'X-Bz-Info-Author': 'unknown'
+                    },
+                    body: fileContent
+                });
+                
+                if (!uploadResponse.ok) {
+                    throw new Error(`Upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`);
+                }
+                
+                const uploadResult = await uploadResponse.json();
+                
+                // Generate download URL
+                const downloadURL = `${appState.backblazeConfig.downloadUrl}/file/${appState.backblazeConfig.bucketName}/${fileName}`;
+                
+                console.log('Upload complete, download URL:', downloadURL);
+                
+                // Generate and show URL
+                document.getElementById('generated-url').textContent = downloadURL;
+                document.getElementById('url-generator').classList.add('active');
+                
+                // Create new video object
+                const newVideo = {
+                    id: id,
+                    title: title,
+                    description: description || 'No description available',
+                    views: 0,
+                    likes: 0,
+                    shares: 0,
+                    duration: "2:30",
+                    url: downloadURL,
+                    tier: tier,
+                    price: price,
+                    createdAt: new Date().toISOString(),
+                    account: {
+                        id: id,
+                        title: title,
+                        tier: tier,
+                        price: price,
+                        followers: 0
                     }
                 };
                 
-                // Upload the file
-                const uploadTask = videoRef.put(file, metadata);
+                // Create corresponding account
+                const newAccount = {
+                    id: id,
+                    title: title,
+                    description: description || 'No description available',
+                    tier: tier,
+                    price: price,
+                    sold: false,
+                    videoId: id,
+                    createdAt: new Date().toISOString()
+                };
                 
-                // Store upload task
-                appState.currentUpload.uploadTask = uploadTask;
+                // Add to local state
+                appState.videos.unshift(newVideo);
+                appState.accounts.unshift(newAccount);
+                appState.currentVideoIndex = 0;
                 
-                // Listen for state changes
-                uploadTask.on('state_changed',
-                    // Progress function
-                    (snapshot) => {
-                        // Calculate progress percentage
-                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        
-                        // Update progress bar
-                        uploadProgress.style.width = progress + '%';
-                        uploadPercentage.textContent = Math.round(progress) + '%';
-                        uploadedSize.textContent = formatFileSize(snapshot.bytesTransferred);
-                    },
-                    // Error function
-                    (error) => {
-                        console.error('Upload error:', error);
-                        showToast('error', 'Upload Failed', error.message || 'Unknown error occurred');
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
-                        uploadStatus.classList.remove('active');
-                    },
-                    // Complete function
-                    async () => {
-                        try {
-                            // Get download URL
-                            const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                            
-                            console.log('Upload complete, download URL:', downloadURL);
-                            
-                            // Generate and show URL
-                            document.getElementById('generated-url').textContent = downloadURL;
-                            document.getElementById('url-generator').classList.add('active');
-                            
-                            // Create new video object
-                            const newVideo = {
-                                id: id,
-                                title: title,
-                                description: description || 'No description available',
-                                views: 0,
-                                likes: 0,
-                                shares: 0,
-                                duration: "2:30",
-                                url: downloadURL,
-                                tier: tier,
-                                price: price,
-                                createdAt: new Date().toISOString(),
-                                account: {
-                                    id: id,
-                                    title: title,
-                                    tier: tier,
-                                    price: price,
-                                    followers: 0
-                                }
-                            };
-                            
-                            // Create corresponding account
-                            const newAccount = {
-                                id: id,
-                                title: title,
-                                description: description || 'No description available',
-                                tier: tier,
-                                price: price,
-                                sold: false,
-                                videoId: id,
-                                createdAt: new Date().toISOString()
-                            };
-                            
-                            // Save to Firestore
-                            const db = appState.firebaseFirestore;
-                            
-                            // Add video to Firestore
-                            await db.collection('videos').doc(id).set({
-                                title: title,
-                                description: description || 'No description available',
-                                price: price,
-                                tier: tier,
-                                url: downloadURL,
-                                views: 0,
-                                likes: 0,
-                                shares: 0,
-                                duration: "2:30",
-                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                            });
-                            
-                            // Add account to Firestore
-                            await db.collection('accounts').doc(id).set({
-                                title: title,
-                                description: description || 'No description available',
-                                tier: tier,
-                                price: price,
-                                sold: false,
-                                videoId: id,
-                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                            });
-                            
-                            // Add to local state
-                            appState.videos.unshift(newVideo);
-                            appState.accounts.unshift(newAccount);
-                            appState.currentVideoIndex = 0;
-                            
-                            // Update UI
-                            loadHomeContent();
-                            updateAdminStats();
-                            
-                            // Reset form
-                            setTimeout(() => {
-                                document.getElementById('upload-video-form').reset();
-                                clearFileSelection();
-                                uploadStatus.classList.remove('active');
-                                document.getElementById('url-generator').classList.remove('active');
-                                submitBtn.disabled = false;
-                                submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
-                                
-                                showToast('success', 'Upload Successful', `Video "${title}" has been uploaded to ${tier} tier`);
-                                
-                                // Load the new video
-                                loadVideo(0);
-                                
-                            }, 2000);
-                            
-                        } catch (error) {
-                            console.error('Error after upload:', error);
-                            showToast('error', 'Upload Failed', 'Upload complete but failed to save data: ' + error.message);
-                            submitBtn.disabled = false;
-                            submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
-                            uploadStatus.classList.remove('active');
-                        }
-                    }
-                );
+                // Update UI
+                loadHomeContent();
+                updateAdminStats();
+                
+                // Reset form
+                setTimeout(() => {
+                    document.getElementById('upload-video-form').reset();
+                    clearFileSelection();
+                    uploadStatus.classList.remove('active');
+                    document.getElementById('url-generator').classList.remove('active');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
+                    
+                    showToast('success', 'Upload Successful', `Video "${title}" has been uploaded to ${tier} tier`);
+                    
+                    // Load the new video
+                    loadVideo(0);
+                    
+                }, 2000);
                 
             } catch (error) {
                 console.error('Upload error:', error);
@@ -4176,6 +3939,29 @@
                 submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
                 uploadStatus.classList.remove('active');
             }
+        }
+
+        // Calculate SHA1 hash of a file
+        async function calculateSHA1(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const buffer = e.target.result;
+                    
+                    // Use Web Crypto API for SHA1
+                    crypto.subtle.digest('SHA-1', buffer)
+                        .then(hashBuffer => {
+                            const hashArray = Array.from(new Uint8Array(hashBuffer));
+                            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                            resolve(hashHex);
+                        })
+                        .catch(reject);
+                };
+                
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(file);
+            });
         }
 
         // Copy generated URL
@@ -4277,15 +4063,12 @@
         async function deleteVideo(videoId) {
             if (confirm('Are you sure you want to delete this video? The corresponding account will also be removed.')) {
                 try {
-                    const db = appState.firebaseFirestore;
-                    
-                    // Delete from Firestore
-                    await db.collection('videos').doc(videoId).delete();
-                    await db.collection('accounts').doc(videoId).delete();
-                    
                     // Remove from local state
                     appState.videos = appState.videos.filter(v => v.id !== videoId);
                     appState.accounts = appState.accounts.filter(a => a.id !== videoId);
+                    
+                    // Note: In a real implementation, you would also delete the file from Backblaze B2
+                    // This would require additional API calls to delete the file from storage
                     
                     loadAdminVideos('all');
                     updateAdminStats();
@@ -4318,7 +4101,7 @@
             
             requestsList.innerHTML = '';
             
-            // In a real app, you would load from Firestore
+            // In a real app, you would load from storage
             // For demo, we'll show a placeholder
             requestsList.classList.add('hidden');
             emptyState.classList.remove('hidden');
@@ -4651,23 +4434,13 @@
         }
 
         // Logout
-        async function logout() {
-            try {
-                // Sign out from Firebase
-                if (appState.firebaseAuth) {
-                    await appState.firebaseAuth.signOut();
-                }
-                
-                appState.isLoggedIn = false;
-                appState.currentUser = null;
-                appState.isAdminLoggedIn = false;
-                localStorage.removeItem('gkStoreUser');
-                showToast('info', 'Logged Out', 'You have been logged out');
-                showPage('auth');
-            } catch (error) {
-                console.error('Logout error:', error);
-                showToast('error', 'Logout Failed', error.message);
-            }
+        function logout() {
+            appState.isLoggedIn = false;
+            appState.currentUser = null;
+            appState.isAdminLoggedIn = false;
+            localStorage.removeItem('gkStoreUser');
+            showToast('info', 'Logged Out', 'You have been logged out');
+            showPage('auth');
         }
 
         // Auth Functions
@@ -4725,8 +4498,8 @@
             // Reset form
             document.getElementById('login-form').reset();
             
-            // Load data from Firestore
-            loadDataFromFirestore();
+            // Load demo data
+            loadDemoData();
             
             // Redirect to home
             setTimeout(() => {
@@ -4777,8 +4550,8 @@
             // Reset form
             document.getElementById('signup-form').reset();
             
-            // Load data from Firestore
-            loadDataFromFirestore();
+            // Load demo data
+            loadDemoData();
             
             // Redirect to home
             setTimeout(() => {
@@ -4821,8 +4594,8 @@
             // Show success message
             showToast('success', 'Login Successful', `Welcome, ${appState.currentUser.name}!`);
             
-            // Load data from Firestore
-            loadDataFromFirestore();
+            // Load demo data
+            loadDemoData();
             
             // Redirect to home
             setTimeout(() => {
