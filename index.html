@@ -22,7 +22,6 @@
     <link rel="apple-touch-startup-image" href="https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-512-512.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Removed Firebase SDKs -->
     <style>
         /* ALL YOUR ORIGINAL CSS CODE - KEEPING IT AS IS */
         :root {
@@ -1541,6 +1540,30 @@
         .auth-switch a:hover {
             text-decoration: underline;
         }
+
+        /* Fix for mobile video playback */
+        .video-player-fixed {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #000;
+        }
+
+        /* Video thumbnail placeholder */
+        .video-thumbnail {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        .video-thumbnail i {
+            font-size: 3rem;
+            color: white;
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -1753,49 +1776,6 @@
                         <p class="text-zinc-400" id="loading-text">Loading premium content...</p>
                     </div>
                 </div>
-                
-                <!-- Video Overlay with Action Buttons - FIXED: Buttons are now properly structured -->
-                <div id="video-overlay" class="video-overlay hidden">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h2 id="video-title" class="video-title"></h2>
-                            <p id="video-description" class="video-description"></p>
-                        </div>
-                    </div>
-                    
-                    <!-- Top action buttons (Book and Buy Now) - FIXED: Proper structure -->
-                    <div class="video-top-actions">
-                        <div class="flex flex-col items-center">
-                            <button class="action-button" onclick="bookAccount()">
-                                <i class="fas fa-bookmark text-white"></i>
-                            </button>
-                            <div class="action-label">Book</div>
-                        </div>
-                        
-                        <div class="flex flex-col items-center">
-                            <button class="action-button" onclick="buyNow()">
-                                <i class="fas fa-shopping-bag text-white"></i>
-                            </button>
-                            <div class="action-label">Buy</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Share button at bottom - FIXED: Proper structure -->
-                    <div class="video-share-action">
-                        <div class="flex flex-col items-center">
-                            <button class="action-button" onclick="shareVideo()">
-                                <i class="fas fa-share text-white"></i>
-                            </button>
-                            <div class="action-label">Share</div>
-                        </div>
-                    </div>
-                    
-                    <div class="video-controls">
-                        <div class="flex justify-between items-center">
-                            <div id="video-stats" class="video-stats"></div>
-                        </div>
-                    </div>
-                </div>
             </div>
             
             <!-- Video Grid -->
@@ -1866,19 +1846,19 @@
                         <h3 class="font-semibold mb-4">Statistics</h3>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="text-center p-4 bg-surface-light rounded-lg">
-                                <div class="text-2xl font-bold gradient-text" id="videos-watched-count">24</div>
+                                <div class="text-2xl font-bold gradient-text" id="videos-watched-count">0</div>
                                 <div class="text-sm text-zinc-400">Videos Watched</div>
                             </div>
                             <div class="text-center p-4 bg-surface-light rounded-lg">
-                                <div class="text-2xl font-bold gradient-text" id="accounts-booked-count">5</div>
+                                <div class="text-2xl font-bold gradient-text" id="accounts-booked-count">0</div>
                                 <div class="text-sm text-zinc-400">Accounts Booked</div>
                             </div>
                             <div class="text-center p-4 bg-surface-light rounded-lg">
-                                <div class="text-2xl font-bold gradient-text" id="watch-time-count">12h</div>
+                                <div class="text-2xl font-bold gradient-text" id="watch-time-count">0h</div>
                                 <div class="text-sm text-zinc-400">Watch Time</div>
                             </div>
                             <div class="text-center p-4 bg-surface-light rounded-lg">
-                                <div class="text-2xl font-bold gradient-text" id="purchases-count">3</div>
+                                <div class="text-2xl font-bold gradient-text" id="purchases-count">0</div>
                                 <div class="text-sm text-zinc-400">Purchases</div>
                             </div>
                         </div>
@@ -1989,25 +1969,25 @@
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                         <div class="card">
                             <div class="card-body text-center">
-                                <div class="text-2xl font-bold gradient-text" id="admin-video-count">12</div>
+                                <div class="text-2xl font-bold gradient-text" id="admin-video-count">0</div>
                                 <div class="text-sm text-zinc-400">Total Videos</div>
                             </div>
                         </div>
                         <div class="card">
                             <div class="card-body text-center">
-                                <div class="text-2xl font-bold gradient-text" id="admin-registered-users">48</div>
+                                <div class="text-2xl font-bold gradient-text" id="admin-registered-users">0</div>
                                 <div class="text-sm text-zinc-400">Registered Users</div>
                             </div>
                         </div>
                         <div class="card">
                             <div class="card-body text-center">
-                                <div class="text-2xl font-bold gradient-text" id="admin-online-users">5</div>
+                                <div class="text-2xl font-bold gradient-text" id="admin-online-users">1</div>
                                 <div class="text-sm text-zinc-400">Online Users</div>
                             </div>
                         </div>
                         <div class="card">
                             <div class="card-body text-center">
-                                <div class="text-2xl font-bold gradient-text" id="admin-sold-count">3</div>
+                                <div class="text-2xl font-bold gradient-text" id="admin-sold-count">0</div>
                                 <div class="text-sm text-zinc-400">Sold Accounts</div>
                             </div>
                         </div>
@@ -2091,7 +2071,7 @@
     <!-- Notification Bell -->
     <div class="notification-bell" onclick="showPage('notifications')">
         <i class="far fa-bell"></i>
-        <div id="notification-count" class="notification-badge">3</div>
+        <div id="notification-count" class="notification-badge hidden">0</div>
     </div>
 
     <!-- PWA Install Modal -->
@@ -2381,35 +2361,21 @@
                         </select>
                     </div>
                     
-                    <!-- File Upload Section -->
+                    <!-- Video URL -->
                     <div class="input-group">
-                        <label class="input-label">Choose Video File <span class="text-danger">*</span></label>
+                        <label class="input-label">Video URL <span class="text-danger">*</span></label>
+                        <input type="url" class="input" id="video-url-input" placeholder="https://example.com/video.mp4" required>
+                        <p class="text-xs text-zinc-400 mt-1">Enter direct URL to video file (MP4 format recommended)</p>
+                    </div>
+                    
+                    <!-- File Upload Section (Alternative) -->
+                    <div class="input-group">
+                        <label class="input-label">Or Upload Video File <span class="text-zinc-400">(Alternative)</span></label>
                         <div class="file-upload-area" id="file-upload-area" onclick="document.getElementById('video-file').click()">
                             <i class="fas fa-cloud-upload-alt text-3xl text-primary mb-2"></i>
-                            <p class="font-medium">Click to select video or drag & drop</p>
-                            <p class="text-sm text-zinc-400 mt-1">Supported: MP4, MOV, AVI, MKV (max 100MB)</p>
+                            <p class="font-medium">Click to select video</p>
+                            <p class="text-sm text-zinc-400 mt-1">MP4 format recommended (max 100MB)</p>
                             <input type="file" id="video-file" accept="video/*" class="hidden" onchange="handleFileSelect(event)">
-                        </div>
-                        
-                        <!-- File Preview -->
-                        <div id="file-preview" class="file-preview">
-                            <div class="file-info">
-                                <i class="fas fa-video text-primary text-lg"></i>
-                                <div class="flex-1">
-                                    <p id="file-name" class="font-medium"></p>
-                                    <p id="file-size" class="text-xs text-zinc-400"></p>
-                                </div>
-                                <button type="button" class="btn btn-sm btn-danger" onclick="clearFileSelection()">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            
-                            <!-- Video Preview -->
-                            <div id="video-preview" class="video-preview">
-                                <video id="preview-player" controls>
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
                         </div>
                     </div>
                     
@@ -2428,39 +2394,8 @@
                         </div>
                     </div>
                     
-                    <!-- Generated URL -->
-                    <div id="url-generator" class="url-generator">
-                        <label class="input-label">Generated Video URL</label>
-                        <div class="url-display" id="generated-url"></div>
-                        <div class="flex gap-2 mt-2">
-                            <button type="button" class="btn btn-sm btn-secondary flex-1" onclick="copyGeneratedUrl()">
-                                <i class="far fa-copy"></i> Copy URL
-                            </button>
-                            <button type="button" class="btn btn-sm btn-primary flex-1" onclick="testVideoUrl()">
-                                <i class="fas fa-play"></i> Test Play
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Backblaze B2 Configuration Section -->
-                    <div class="card glass-effect p-4 mb-4">
-                        <h4 class="font-semibold mb-2">Backblaze B2 Configuration</h4>
-                        <p class="text-sm text-zinc-400 mb-3">Backblaze B2 is configured and ready for uploads</p>
-                        
-                        <!-- Test Connection -->
-                        <div class="test-connection mb-3">
-                            <button type="button" class="btn btn-sm btn-secondary w-full" onclick="testB2Connection()">
-                                <i class="fas fa-plug"></i> Test B2 Connection
-                            </button>
-                            <div id="connection-status" class="connection-status hidden">
-                                <i id="connection-icon" class="fas"></i>
-                                <span id="connection-message"></span>
-                            </div>
-                        </div>
-                    </div>
-                    
                     <button type="button" class="btn btn-primary w-full" onclick="uploadVideo()">
-                        <i class="fas fa-upload"></i> Upload Video
+                        <i class="fas fa-upload"></i> Add Video
                     </button>
                 </form>
             </div>
@@ -2550,13 +2485,6 @@
                         <label class="input-label">WhatsApp Number</label>
                         <input type="tel" class="input" id="new-whatsapp-number" placeholder="Update WhatsApp number">
                     </div>
-                    <div class="flex items-center justify-between">
-                        <span>Enable Notifications</span>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" class="sr-only peer" id="notification-toggle" checked>
-                            <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                        </label>
-                    </div>
                 </div>
                 <button class="btn btn-primary w-full mt-4" onclick="saveAdminSettings()">
                     Save Changes
@@ -2596,15 +2524,11 @@
             currentUser: null,
             currentAccount: null,
             isAdminLoggedIn: false,
-            // Backblaze B2 Configuration - FIXED: Using mock responses for GitHub Pages
-            backblazeConfig: {
-                keyId: "006d1a66df41c7f0000000001",
-                applicationKey: "K006k2bju7K7RiZRtQdn0Jkb5K0+AAg",
-                bucketId: "k-videos-upload-key",
-                bucketName: "gk-store-videos",
-                endpoint: "https://s3.us-west-002.backblazeb2.com",
-                uploadUrl: "",
-                authorizationToken: ""
+            // Using localStorage for cross-device data sharing
+            storageKey: 'gkStoreData',
+            adminCredentials: {
+                email: 'admin@gkstore.com',
+                password: 'admin123'
             },
             userStats: {
                 registeredUsers: 0,
@@ -2613,12 +2537,7 @@
             currentUpload: {
                 file: null,
                 progress: 0,
-                url: '',
-                uploadTask: null
-            },
-            adminCredentials: {
-                email: 'admin@gkstore.com',
-                password: 'admin123'
+                url: ''
             }
         };
 
@@ -2633,6 +2552,9 @@
             registerServiceWorker();
             setupPWAInstall();
             
+            // Load data from localStorage
+            loadAppData();
+            
             // Check if user is already logged in
             const savedUser = localStorage.getItem('gkStoreUser');
             if (savedUser) {
@@ -2646,7 +2568,7 @@
                     }
                     
                     showPage('home');
-                    loadDemoData(); // Load demo data since we removed Firestore
+                    loadInitialData();
                 } catch (e) {
                     console.error('Error parsing saved user:', e);
                     showPage('auth');
@@ -2656,170 +2578,162 @@
             }
         }
 
-        // Load demo data
-        function loadDemoData() {
-            // Demo videos
-            appState.videos = [
-                {
-                    id: 'vid_001',
-                    title: 'Premium TikTok Account',
-                    description: 'Account with 50K+ followers, verified badge, and trending videos.',
-                    views: 1500,
-                    likes: 350,
-                    shares: 45,
-                    duration: '2:30',
-                    url: '',
-                    tier: 'small',
-                    price: 299,
-                    createdAt: new Date().toISOString(),
-                    account: {
-                        id: 'vid_001',
-                        title: 'Premium TikTok Account',
-                        tier: 'small',
-                        price: 299,
-                        followers: 50000
+        // Load app data from localStorage
+        function loadAppData() {
+            try {
+                const savedData = localStorage.getItem(appState.storageKey);
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    appState.videos = data.videos || [];
+                    appState.accounts = data.accounts || [];
+                    appState.notifications = data.notifications || [];
+                    appState.userStats = data.userStats || { registeredUsers: 0, onlineUsers: 0 };
+                    
+                    // Initialize if empty
+                    if (appState.videos.length === 0) {
+                        initializeWithDemoData();
                     }
-                },
-                {
-                    id: 'vid_002',
-                    title: 'Instagram Influencer Account',
-                    description: 'Lifestyle influencer account with 100K+ followers, high engagement rate.',
-                    views: 2300,
-                    likes: 520,
-                    shares: 78,
-                    duration: '3:15',
-                    url: '',
-                    tier: 'medium',
-                    price: 599,
-                    createdAt: new Date().toISOString(),
-                    account: {
-                        id: 'vid_002',
-                        title: 'Instagram Influencer Account',
-                        tier: 'medium',
-                        price: 599,
-                        followers: 100000
-                    }
-                },
-                {
-                    id: 'vid_003',
-                    title: 'YouTube Monetized Channel',
-                    description: 'Gaming channel with 500K+ subscribers, monetized, active community.',
-                    views: 4500,
-                    likes: 890,
-                    shares: 120,
-                    duration: '4:20',
-                    url: '',
-                    tier: 'big',
-                    price: 1299,
-                    createdAt: new Date().toISOString(),
-                    account: {
-                        id: 'vid_003',
-                        title: 'YouTube Monetized Channel',
-                        tier: 'big',
-                        price: 1299,
-                        followers: 500000
-                    }
+                } else {
+                    initializeWithDemoData();
                 }
-            ];
-            
-            // Demo accounts
-            appState.accounts = [
-                {
-                    id: 'acc_001',
-                    title: 'TikTok Pro Account',
-                    description: '50K+ followers, trending content, verified badge',
-                    tier: 'small',
-                    price: 299,
-                    sold: false,
-                    videoId: 'vid_001',
-                    createdAt: new Date().toISOString()
-                },
-                {
-                    id: 'acc_002',
-                    title: 'Instagram Influencer',
-                    description: '100K+ followers, high engagement, lifestyle niche',
-                    tier: 'medium',
-                    price: 599,
-                    sold: false,
-                    videoId: 'vid_002',
-                    createdAt: new Date().toISOString()
-                },
-                {
-                    id: 'acc_003',
-                    title: 'YouTube Gaming Channel',
-                    description: '500K+ subscribers, monetized, active community',
-                    tier: 'big',
-                    price: 1299,
-                    sold: false,
-                    videoId: 'vid_003',
-                    createdAt: new Date().toISOString()
-                }
-            ];
-            
-            // Demo notifications
-            appState.notifications = [
-                {
-                    id: 'notif_001',
-                    title: 'New Video Uploaded',
-                    message: 'Check out our latest premium account showcase',
-                    icon: 'fas fa-video',
-                    color: 'primary',
-                    time: '2 hours ago',
-                    read: false
-                },
-                {
-                    id: 'notif_002',
-                    title: 'Special Offer',
-                    message: '20% discount on all medium tier accounts this week',
-                    icon: 'fas fa-tag',
-                    color: 'success',
-                    time: '1 day ago',
-                    read: false
-                },
-                {
-                    id: 'notif_003',
-                    title: 'Account Booked',
-                    message: 'Your booking request for TikTok account is being processed',
-                    icon: 'fas fa-bookmark',
-                    color: 'secondary',
-                    time: '3 days ago',
-                    read: true
-                }
-            ];
-            
-            // Demo user stats
-            appState.userStats = {
-                registeredUsers: 48,
-                onlineUsers: Math.floor(Math.random() * 10) + 1
-            };
-            
-            // Update UI if needed
-            if (appState.currentPage === 'home') {
-                loadHomeContent();
+            } catch (e) {
+                console.error('Error loading app data:', e);
+                initializeWithDemoData();
             }
+        }
+
+        // Save app data to localStorage
+        function saveAppData() {
+            try {
+                const data = {
+                    videos: appState.videos,
+                    accounts: appState.accounts,
+                    notifications: appState.notifications,
+                    userStats: appState.userStats,
+                    lastUpdated: new Date().toISOString()
+                };
+                localStorage.setItem(appState.storageKey, JSON.stringify(data));
+                
+                // Also sync across devices using broadcast
+                if ('BroadcastChannel' in window) {
+                    const channel = new BroadcastChannel('gkStoreSync');
+                    channel.postMessage({ type: 'dataUpdated', data: data });
+                }
+            } catch (e) {
+                console.error('Error saving app data:', e);
+            }
+        }
+
+        // Listen for data updates from other tabs/devices
+        if ('BroadcastChannel' in window) {
+            const channel = new BroadcastChannel('gkStoreSync');
+            channel.onmessage = (event) => {
+                if (event.data.type === 'dataUpdated') {
+                    // Update app state with new data
+                    appState.videos = event.data.data.videos || appState.videos;
+                    appState.accounts = event.data.data.accounts || appState.accounts;
+                    
+                    // Refresh UI if needed
+                    if (appState.currentPage === 'home') {
+                        loadHomeContent();
+                    } else if (appState.currentPage === 'accounts') {
+                        loadAccountsContent();
+                    }
+                    
+                    showToast('info', 'Data Updated', 'New content available');
+                }
+            };
+        }
+
+        // Initialize with demo data if empty
+        function initializeWithDemoData() {
+            // Only add demo data if there's no data at all
+            if (appState.videos.length === 0) {
+                appState.videos = [
+                    {
+                        id: 'demo_001',
+                        title: 'Welcome to GK Store',
+                        description: 'Get started with premium accounts marketplace',
+                        views: 150,
+                        likes: 45,
+                        shares: 12,
+                        duration: '1:30',
+                        url: 'https://assets.mixkit.co/videos/preview/mixkit-close-up-of-a-blue-tit-1257-large.mp4',
+                        tier: 'small',
+                        price: 199,
+                        createdAt: new Date().toISOString(),
+                        account: {
+                            id: 'demo_001',
+                            title: 'Demo Account',
+                            tier: 'small',
+                            price: 199,
+                            followers: 10000
+                        }
+                    }
+                ];
+                
+                appState.accounts = [
+                    {
+                        id: 'demo_001',
+                        title: 'Demo Account',
+                        description: 'Get started with premium accounts',
+                        tier: 'small',
+                        price: 199,
+                        sold: false,
+                        videoId: 'demo_001',
+                        createdAt: new Date().toISOString()
+                    }
+                ];
+                
+                appState.notifications = [
+                    {
+                        id: 'notif_001',
+                        title: 'Welcome to GK Store',
+                        message: 'Start exploring premium video content',
+                        icon: 'fas fa-play-circle',
+                        color: 'primary',
+                        time: 'Just now',
+                        read: false
+                    }
+                ];
+                
+                appState.userStats = {
+                    registeredUsers: 1,
+                    onlineUsers: 1
+                };
+                
+                saveAppData();
+            }
+        }
+
+        // Load initial data
+        function loadInitialData() {
+            // Update user stats
+            appState.userStats.onlineUsers = Math.max(appState.userStats.onlineUsers || 0, 1);
+            if (appState.currentUser && appState.currentUser.email !== appState.adminCredentials.email) {
+                appState.userStats.registeredUsers = Math.max(appState.userStats.registeredUsers || 0, 1);
+            }
+            
+            saveAppData();
             updateNotificationCount();
             updateAdminStats();
         }
 
         // Setup PWA Install
         function setupPWAInstall() {
-            // Check if app is already installed
             isAppInstalled = window.matchMedia('(display-mode: standalone)').matches || 
                            window.navigator.standalone === true;
             
             if (isAppInstalled) {
-                console.log('App is already installed');
                 document.body.classList.add('pwa-installed');
                 document.getElementById('pwa-install-btn')?.classList.add('hidden');
                 return;
             }
             
-            // Listen for beforeinstallprompt event
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
                 deferredPrompt = e;
                 
-                // Show install button after 3 seconds
                 setTimeout(() => {
                     const installBtn = document.getElementById('pwa-install-btn');
                     if (installBtn) {
@@ -2829,9 +2743,7 @@
                 }, 3000);
             });
             
-            // Listen for app installed event
             window.addEventListener('appinstalled', () => {
-                console.log('App installed successfully');
                 isAppInstalled = true;
                 document.body.classList.add('pwa-installed');
                 const installBtn = document.getElementById('pwa-install-btn');
@@ -2842,7 +2754,6 @@
                 showToast('success', 'App Installed', 'GK Store has been installed successfully!');
             });
             
-            // Setup install confirm button
             const installConfirmBtn = document.getElementById('pwa-install-confirm');
             if (installConfirmBtn) {
                 installConfirmBtn.addEventListener('click', installPWA);
@@ -2893,16 +2804,13 @@
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('https://shamsahmadzai06-source.github.io/GKStore/sw.js')
                     .then(registration => {
-                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                        console.log('ServiceWorker registration successful');
                         
                         registration.addEventListener('updatefound', () => {
                             const newWorker = registration.installing;
-                            console.log('Service Worker update found!');
-                            
                             newWorker.addEventListener('statechange', () => {
                                 if (newWorker.state === 'installed') {
                                     if (navigator.serviceWorker.controller) {
-                                        // New content available
                                         showToast('info', 'Update Available', 'New version available. Refresh to update.');
                                     }
                                 }
@@ -2911,70 +2819,8 @@
                     })
                     .catch(error => {
                         console.log('ServiceWorker registration failed: ', error);
-                        // Create inline service worker as fallback
-                        createInlineServiceWorker();
                     });
             }
-        }
-
-        // Create inline service worker as fallback
-        function createInlineServiceWorker() {
-            const serviceWorkerCode = `
-                const CACHE_NAME = 'gk-store-v1';
-                const urlsToCache = [
-                    '/',
-                    '/index.html',
-                    'https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-96-96.png',
-                    'https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-192-192.png',
-                    'https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-512-512.png',
-                    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
-                ];
-
-                self.addEventListener('install', event => {
-                    event.waitUntil(
-                        caches.open(CACHE_NAME)
-                            .then(cache => cache.addAll(urlsToCache))
-                            .then(() => self.skipWaiting())
-                    );
-                });
-
-                self.addEventListener('activate', event => {
-                    event.waitUntil(
-                        caches.keys().then(cacheNames => {
-                            return Promise.all(
-                                cacheNames.map(cacheName => {
-                                    if (cacheName !== CACHE_NAME) {
-                                        return caches.delete(cacheName);
-                                    }
-                                })
-                            );
-                        }).then(() => self.clients.claim())
-                    );
-                });
-
-                self.addEventListener('fetch', event => {
-                    event.respondWith(
-                        caches.match(event.request)
-                            .then(response => {
-                                if (response) {
-                                    return response;
-                                }
-                                return fetch(event.request);
-                            })
-                    );
-                });
-            `;
-
-            const blob = new Blob([serviceWorkerCode], { type: 'application/javascript' });
-            const serviceWorkerUrl = URL.createObjectURL(blob);
-
-            navigator.serviceWorker.register(serviceWorkerUrl)
-                .then(registration => {
-                    console.log('Inline ServiceWorker registration successful');
-                })
-                .catch(error => {
-                    console.log('Inline ServiceWorker registration failed: ', error);
-                });
         }
 
         // Close welcome modal and show login
@@ -3002,8 +2848,8 @@
             const adminSoldCount = document.getElementById('admin-sold-count');
             
             if (adminVideoCount) adminVideoCount.textContent = appState.videos.length;
-            if (adminRegisteredUsers) adminRegisteredUsers.textContent = appState.userStats.registeredUsers;
-            if (adminOnlineUsers) adminOnlineUsers.textContent = appState.userStats.onlineUsers;
+            if (adminRegisteredUsers) adminRegisteredUsers.textContent = appState.userStats.registeredUsers || 0;
+            if (adminOnlineUsers) adminOnlineUsers.textContent = appState.userStats.onlineUsers || 1;
             
             const soldAccounts = appState.accounts.filter(a => a.sold).length;
             if (adminSoldCount) adminSoldCount.textContent = soldAccounts;
@@ -3095,7 +2941,7 @@
                 }
             });
 
-            // File upload drag and drop
+            // File upload
             const fileUploadArea = document.getElementById('file-upload-area');
             if (fileUploadArea) {
                 fileUploadArea.addEventListener('dragover', (e) => {
@@ -3118,7 +2964,7 @@
                 });
             }
 
-            // Network status monitoring
+            // Network status
             window.addEventListener('online', () => {
                 document.getElementById('offline-indicator').classList.remove('show');
                 showToast('success', 'Back Online', 'Connection restored');
@@ -3132,13 +2978,11 @@
 
         // Show page
         function showPage(page) {
-            // If not logged in and trying to access protected pages, redirect to auth
             const protectedPages = ['home', 'accounts', 'profile', 'contact', 'admin', 'notifications'];
             if (protectedPages.includes(page) && !appState.isLoggedIn) {
                 page = 'auth';
             }
             
-            // If logged in and trying to access auth, redirect to home
             if (page === 'auth' && appState.isLoggedIn) {
                 page = 'home';
             }
@@ -3186,10 +3030,7 @@
             if (appState.videos.length > 0) {
                 loadVideo(appState.currentVideoIndex);
             } else {
-                // Show placeholder if no videos
                 const videoPlaceholder = document.getElementById('video-placeholder');
-                const videoOverlay = document.getElementById('video-overlay');
-                
                 if (videoPlaceholder) {
                     videoPlaceholder.classList.remove('hidden');
                     videoPlaceholder.innerHTML = `
@@ -3197,81 +3038,133 @@
                             <i class="fas fa-video text-4xl text-zinc-600 mb-4"></i>
                             <h3 class="text-xl font-semibold mb-2">No Videos Available</h3>
                             <p class="text-zinc-400">Upload videos from the admin section</p>
+                            ${appState.isAdminLoggedIn ? `
+                                <button class="btn btn-primary mt-4" onclick="showUploadVideo()">
+                                    <i class="fas fa-upload"></i> Upload First Video
+                                </button>
+                            ` : ''}
                         </div>
                     `;
-                }
-                if (videoOverlay) {
-                    videoOverlay.classList.add('hidden');
                 }
             }
             
             loadVideoGrid();
         }
 
-        // Load video - FIXED: Action buttons are now properly placed
+        // Load video - FIXED for mobile playback
         function loadVideo(index) {
             const video = appState.videos[index];
             if (!video) return;
             
             const videoSection = document.getElementById('video-section');
             const videoPlaceholder = document.getElementById('video-placeholder');
-            const videoOverlay = document.getElementById('video-overlay');
             
             if (videoPlaceholder) videoPlaceholder.classList.add('hidden');
-            if (videoOverlay) videoOverlay.classList.remove('hidden');
             
-            document.getElementById('video-title').textContent = video.title;
-            document.getElementById('video-description').textContent = video.description;
-            
-            const statsElement = document.getElementById('video-stats');
-            if (statsElement) {
-                statsElement.innerHTML = `
-                    <span>${video.views ? video.views.toLocaleString() : '0'} views</span>
-                    <span>•</span>
-                    <span>${video.likes ? video.likes.toLocaleString() : '0'} likes</span>
-                    <span>•</span>
-                    <span>${video.duration || '2:30'}</span>
-                `;
-            }
-            
-            appState.currentAccount = video.account;
-            
-            // Set video background
-            videoSection.style.background = 'linear-gradient(135deg, #ec4899, #8b5cf6)';
-            videoSection.style.backgroundSize = 'cover';
-            videoSection.style.backgroundPosition = 'center';
-            
-            // Clear previous video
+            // Clear previous content
             videoSection.innerHTML = '';
             
-            // If video has URL, create video element
-            if (video.url && video.url !== '') {
-                const videoElement = document.createElement('video');
-                videoElement.className = 'video-player';
-                videoElement.controls = true;
-                videoElement.autoplay = true;
-                videoElement.muted = true;
-                
+            // Create video element with proper mobile attributes
+            const videoElement = document.createElement('video');
+            videoElement.className = 'video-player-fixed';
+            videoElement.controls = true;
+            videoElement.playsInline = true; // Essential for iOS
+            videoElement.webkitPlaysInline = true; // For older iOS
+            videoElement.muted = true; // Autoplay requires muted on most browsers
+            videoElement.preload = 'auto';
+            
+            // Handle different video sources
+            let videoSource = video.url;
+            
+            // If no URL but we have a file, create object URL
+            if (!videoSource && appState.currentUpload.file) {
+                videoSource = URL.createObjectURL(appState.currentUpload.file);
+            }
+            
+            if (videoSource) {
                 const source = document.createElement('source');
-                source.src = video.url;
+                source.src = videoSource;
                 source.type = 'video/mp4';
                 videoElement.appendChild(source);
+                
+                // Fallback message
                 videoElement.appendChild(document.createTextNode('Your browser does not support the video tag.'));
                 
+                // Add error handling
+                videoElement.onerror = function() {
+                    console.error('Error loading video:', videoSource);
+                    showToast('error', 'Video Error', 'Could not load video. Please check the URL.');
+                    
+                    // Show thumbnail instead
+                    videoSection.innerHTML = `
+                        <div class="video-thumbnail">
+                            <i class="fas fa-play-circle"></i>
+                        </div>
+                        <div class="video-overlay">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h2 class="video-title">${video.title}</h2>
+                                    <p class="video-description">${video.description}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="video-top-actions">
+                                <div class="flex flex-col items-center">
+                                    <button class="action-button" onclick="bookAccount()">
+                                        <i class="fas fa-bookmark text-white"></i>
+                                    </button>
+                                    <div class="action-label">Book</div>
+                                </div>
+                                
+                                <div class="flex flex-col items-center">
+                                    <button class="action-button" onclick="buyNow()">
+                                        <i class="fas fa-shopping-bag text-white"></i>
+                                    </button>
+                                    <div class="action-label">Buy</div>
+                                </div>
+                            </div>
+                            
+                            <div class="video-share-action">
+                                <div class="flex flex-col items-center">
+                                    <button class="action-button" onclick="shareVideo()">
+                                        <i class="fas fa-share text-white"></i>
+                                    </button>
+                                    <div class="action-label">Share</div>
+                                </div>
+                            </div>
+                            
+                            <div class="video-controls">
+                                <div class="flex justify-between items-center">
+                                    <div class="video-stats">
+                                        <span>${video.views.toLocaleString()} views</span>
+                                        <span>•</span>
+                                        <span>${video.likes.toLocaleString()} likes</span>
+                                        <span>•</span>
+                                        <span>${video.duration}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                };
+                
+                // Try to play video
+                videoElement.load();
+                
+                // Add to section
                 videoSection.appendChild(videoElement);
                 
-                // Create overlay with action buttons
+                // Create overlay
                 const overlay = document.createElement('div');
                 overlay.className = 'video-overlay';
                 overlay.innerHTML = `
                     <div class="flex justify-between items-start">
                         <div>
-                            <h2 id="video-title" class="video-title">${video.title}</h2>
-                            <p id="video-description" class="video-description">${video.description}</p>
+                            <h2 class="video-title">${video.title}</h2>
+                            <p class="video-description">${video.description}</p>
                         </div>
                     </div>
                     
-                    <!-- Top action buttons (Book and Buy Now) -->
                     <div class="video-top-actions">
                         <div class="flex flex-col items-center">
                             <button class="action-button" onclick="bookAccount()">
@@ -3288,7 +3181,6 @@
                         </div>
                     </div>
                     
-                    <!-- Share button at bottom -->
                     <div class="video-share-action">
                         <div class="flex flex-col items-center">
                             <button class="action-button" onclick="shareVideo()">
@@ -3300,30 +3192,36 @@
                     
                     <div class="video-controls">
                         <div class="flex justify-between items-center">
-                            <div id="video-stats" class="video-stats">
-                                <span>${video.views ? video.views.toLocaleString() : '0'} views</span>
+                            <div class="video-stats">
+                                <span>${video.views.toLocaleString()} views</span>
                                 <span>•</span>
-                                <span>${video.likes ? video.likes.toLocaleString() : '0'} likes</span>
+                                <span>${video.likes.toLocaleString()} likes</span>
                                 <span>•</span>
-                                <span>${video.duration || '2:30'}</span>
+                                <span>${video.duration}</span>
                             </div>
                         </div>
                     </div>
                 `;
                 
                 videoSection.appendChild(overlay);
+                
+                // Set current account
+                appState.currentAccount = video.account;
+                
             } else {
-                // Show gradient background with action buttons
+                // No video URL, show thumbnail
                 videoSection.innerHTML = `
+                    <div class="video-thumbnail">
+                        <i class="fas fa-play-circle"></i>
+                    </div>
                     <div class="video-overlay">
                         <div class="flex justify-between items-start">
                             <div>
-                                <h2 id="video-title" class="video-title">${video.title}</h2>
-                                <p id="video-description" class="video-description">${video.description}</p>
+                                <h2 class="video-title">${video.title}</h2>
+                                <p class="video-description">${video.description}</p>
                             </div>
                         </div>
                         
-                        <!-- Top action buttons (Book and Buy Now) -->
                         <div class="video-top-actions">
                             <div class="flex flex-col items-center">
                                 <button class="action-button" onclick="bookAccount()">
@@ -3340,7 +3238,6 @@
                             </div>
                         </div>
                         
-                        <!-- Share button at bottom -->
                         <div class="video-share-action">
                             <div class="flex flex-col items-center">
                                 <button class="action-button" onclick="shareVideo()">
@@ -3352,17 +3249,19 @@
                         
                         <div class="video-controls">
                             <div class="flex justify-between items-center">
-                                <div id="video-stats" class="video-stats">
-                                    <span>${video.views ? video.views.toLocaleString() : '0'} views</span>
+                                <div class="video-stats">
+                                    <span>${video.views.toLocaleString()} views</span>
                                     <span>•</span>
-                                    <span>${video.likes ? video.likes.toLocaleString() : '0'} likes</span>
+                                    <span>${video.likes.toLocaleString()} likes</span>
                                     <span>•</span>
-                                    <span>${video.duration || '2:30'}</span>
+                                    <span>${video.duration}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 `;
+                
+                appState.currentAccount = video.account;
             }
         }
 
@@ -3379,10 +3278,13 @@
 
         // Toggle video playback
         function toggleVideoPlayback() {
-            const videoPlayer = document.querySelector('.video-player');
+            const videoPlayer = document.querySelector('.video-player-fixed');
             if (videoPlayer) {
                 if (videoPlayer.paused) {
-                    videoPlayer.play();
+                    videoPlayer.play().catch(e => {
+                        console.log('Auto-play prevented:', e);
+                        showToast('info', 'Tap to Play', 'Tap the video to start playback');
+                    });
                 } else {
                     videoPlayer.pause();
                 }
@@ -3400,15 +3302,15 @@
                 const videoItem = document.createElement('div');
                 videoItem.className = 'video-item';
                 videoItem.innerHTML = `
-                    <div style="background: linear-gradient(135deg, #ec4899, #8b5cf6); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-play-circle" style="font-size: 3rem; color: white; opacity: 0.8;"></i>
+                    <div class="video-thumbnail">
+                        <i class="fas fa-play-circle"></i>
                     </div>
                     <div class="video-item-overlay">
                         <div class="video-item-title">${video.title}</div>
                         <div class="video-item-stats">
-                            <span><i class="fas fa-eye"></i> ${video.views ? video.views.toLocaleString() : '0'}</span>
-                            <span><i class="fas fa-heart"></i> ${video.likes ? video.likes.toLocaleString() : '0'}</span>
-                            <span>${video.duration || '2:30'}</span>
+                            <span><i class="fas fa-eye"></i> ${video.views.toLocaleString()}</span>
+                            <span><i class="fas fa-heart"></i> ${video.likes.toLocaleString()}</span>
+                            <span>${video.duration}</span>
                         </div>
                     </div>
                 `;
@@ -3422,10 +3324,8 @@
             });
         }
 
-        // Load more videos (infinite scroll)
+        // Load more videos
         function loadMoreVideos() {
-            // In a real app, you would load more from storage
-            // For demo, we'll just show a message
             showToast('info', 'No More Videos', 'All videos are loaded');
         }
 
@@ -3436,16 +3336,22 @@
             
             grid.innerHTML = '';
             
-            // Show empty message if no accounts
+            // Show accounts based on uploaded videos
             if (appState.accounts.length === 0) {
                 grid.innerHTML = `
                     <div class="col-span-3 text-center py-12">
                         <i class="fas fa-box-open text-4xl text-zinc-600 mb-4"></i>
                         <h3 class="text-xl font-semibold mb-2">No Accounts Available</h3>
                         <p class="text-zinc-400 mb-4">Upload videos from the admin section to see accounts here.</p>
-                        <button class="btn btn-primary" onclick="showPage('home')">
-                            <i class="fas fa-video"></i> Browse Videos
-                        </button>
+                        ${appState.isAdminLoggedIn ? `
+                            <button class="btn btn-primary" onclick="showUploadVideo()">
+                                <i class="fas fa-upload"></i> Upload First Video
+                            </button>
+                        ` : `
+                            <button class="btn btn-primary" onclick="showPage('home')">
+                                <i class="fas fa-video"></i> Browse Videos
+                            </button>
+                        `}
                     </div>
                 `;
                 return;
@@ -3513,7 +3419,6 @@
                 filteredAccounts = appState.accounts.filter(account => account.tier === tier);
             }
             
-            // Show empty message if no accounts in the selected tier
             if (filteredAccounts.length === 0) {
                 grid.innerHTML = `
                     <div class="col-span-3 text-center py-12">
@@ -3532,7 +3437,6 @@
                 const accountCard = document.createElement('div');
                 accountCard.className = 'account-card';
                 
-                // Determine icon class based on tier
                 let iconClass = 'account-icon ';
                 let iconText = '';
                 if (account.tier === 'small') {
@@ -3618,7 +3522,6 @@
                     role: 'admin'
                 };
                 
-                // Save to localStorage
                 localStorage.setItem('gkStoreUser', JSON.stringify(appState.currentUser));
                 
                 const adminDashboard = document.getElementById('admin-dashboard');
@@ -3627,59 +3530,20 @@
                 }
                 
                 showToast('success', 'Admin Login', 'Successfully logged in as admin');
-                
-                // Clear form
                 document.getElementById('admin-login-form').reset();
-                
-                // Load demo data
-                loadDemoData();
                 
                 // Update admin stats
                 updateAdminStats();
+                
+                // Refresh content
+                if (appState.currentPage === 'home') {
+                    loadHomeContent();
+                } else if (appState.currentPage === 'accounts') {
+                    loadAccountsContent();
+                }
             } else {
                 showToast('error', 'Admin Login', 'Invalid credentials. Use admin@gkstore.com / admin123');
             }
-        }
-
-        // Test Backblaze B2 connection - FIXED: Using mock response for GitHub Pages
-        async function testB2Connection() {
-            const statusElement = document.getElementById('connection-status');
-            const iconElement = document.getElementById('connection-icon');
-            const messageElement = document.getElementById('connection-message');
-            
-            statusElement.className = 'connection-status';
-            statusElement.classList.remove('hidden');
-            iconElement.className = 'fas fa-spinner animate-spin';
-            messageElement.textContent = 'Testing connection...';
-            
-            // Simulate a delay for the connection test
-            setTimeout(() => {
-                try {
-                    // On GitHub Pages, we cannot make direct API calls to Backblaze B2 due to CORS
-                    // For demo purposes, we'll simulate a successful connection
-                    
-                    // Set mock authorization data
-                    appState.backblazeConfig.authorizationToken = "mock_auth_token_" + Date.now();
-                    appState.backblazeConfig.apiUrl = appState.backblazeConfig.endpoint;
-                    appState.backblazeConfig.downloadUrl = appState.backblazeConfig.endpoint;
-                    appState.backblazeConfig.uploadUrl = appState.backblazeConfig.endpoint + "/upload";
-                    appState.backblazeConfig.uploadAuthorizationToken = "mock_upload_token_" + Date.now();
-                    
-                    statusElement.className = 'connection-status success';
-                    iconElement.className = 'fas fa-check-circle';
-                    messageElement.textContent = 'Backblaze B2 connection simulated successfully';
-                    
-                    showToast('success', 'Connection Simulated', 'Backblaze B2 connection is simulated for demo on GitHub Pages');
-                    
-                } catch (error) {
-                    console.error('B2 connection error:', error);
-                    statusElement.className = 'connection-status error';
-                    iconElement.className = 'fas fa-times-circle';
-                    messageElement.textContent = 'Simulated connection error: ' + error.message;
-                    
-                    showToast('error', 'Connection Failed', 'Simulated connection failed');
-                }
-            }, 1500);
         }
 
         // Show upload video modal
@@ -3696,12 +3560,10 @@
             document.getElementById('video-description-input').value = '';
             document.getElementById('video-price').value = '';
             document.getElementById('video-tier').value = '';
+            document.getElementById('video-url-input').value = '';
             
             // Reset file selection
             clearFileSelection();
-            
-            // Reset connection status
-            document.getElementById('connection-status').classList.add('hidden');
             
             showModal('upload-video-modal');
         }
@@ -3711,48 +3573,32 @@
             const file = event.target.files[0];
             if (!file) return;
             
-            // Check file size (max 100MB)
-            const maxSize = 100 * 1024 * 1024; // 100MB in bytes
+            const maxSize = 100 * 1024 * 1024;
             if (file.size > maxSize) {
                 showToast('error', 'File Too Large', 'Please select a video file smaller than 100MB');
                 return;
             }
             
-            // Check file type
             const validTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'];
             if (!validTypes.includes(file.type)) {
                 showToast('error', 'Invalid File Type', 'Please select a valid video file (MP4, MOV, AVI, MKV)');
                 return;
             }
             
-            // Store file
             appState.currentUpload.file = file;
             
-            // Update UI
-            document.getElementById('file-name').textContent = file.name;
-            document.getElementById('file-size').textContent = formatFileSize(file.size);
-            document.getElementById('file-preview').classList.add('active');
-            
-            // Show video preview
-            const previewPlayer = document.getElementById('preview-player');
-            const videoPreview = document.getElementById('video-preview');
+            // Create object URL for preview (not uploaded yet)
             const videoURL = URL.createObjectURL(file);
-            previewPlayer.src = videoURL;
-            videoPreview.classList.add('active');
+            document.getElementById('video-url-input').value = videoURL;
             
-            // Update status
             showToast('info', 'File Selected', `${file.name} (${formatFileSize(file.size)})`);
         }
 
         // Clear file selection
         function clearFileSelection() {
             appState.currentUpload.file = null;
-            appState.currentUpload.uploadTask = null;
             document.getElementById('video-file').value = '';
-            document.getElementById('file-preview').classList.remove('active');
-            document.getElementById('video-preview').classList.remove('active');
             document.getElementById('upload-status').classList.remove('active');
-            document.getElementById('url-generator').classList.remove('active');
         }
 
         // Format file size
@@ -3764,7 +3610,7 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // UPLOAD VIDEO - FIXED: Simulated upload for GitHub Pages
+        // Upload video - SIMPLIFIED for GitHub Pages
         async function uploadVideo() {
             if (!appState.isAdminLoggedIn) {
                 showToast('error', 'Access Denied', 'Please login as admin first');
@@ -3776,12 +3622,11 @@
             const description = document.getElementById('video-description-input').value;
             const price = parseFloat(document.getElementById('video-price').value);
             const tier = document.getElementById('video-tier').value;
-            
-            const file = appState.currentUpload.file;
+            let videoUrl = document.getElementById('video-url-input').value;
             
             // Validation
-            if (!id || !title || !price || !tier || !file) {
-                showToast('error', 'Validation Error', 'Please fill all required fields and select a video file');
+            if (!id || !title || !price || !tier || !videoUrl) {
+                showToast('error', 'Validation Error', 'Please fill all required fields');
                 return;
             }
             
@@ -3794,42 +3639,27 @@
             const uploadStatus = document.getElementById('upload-status');
             const uploadProgress = document.getElementById('upload-progress');
             const uploadPercentage = document.getElementById('upload-percentage');
-            const uploadedSize = document.getElementById('uploaded-size');
-            const totalSize = document.getElementById('total-size');
             const submitBtn = document.querySelector('#upload-video-form button[type="button"]');
             
             uploadStatus.classList.add('active');
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Uploading...';
-            totalSize.textContent = formatFileSize(file.size);
+            submitBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Adding Video...';
             
             try {
-                // Simulate upload progress for GitHub Pages
-                const simulateUpload = () => {
-                    return new Promise((resolve) => {
-                        let progress = 0;
-                        const interval = setInterval(() => {
-                            progress += 10;
-                            uploadProgress.style.width = progress + '%';
-                            uploadPercentage.textContent = progress + '%';
-                            uploadedSize.textContent = formatFileSize((file.size * progress) / 100);
-                            
-                            if (progress >= 100) {
-                                clearInterval(interval);
-                                resolve();
-                            }
-                        }, 200);
-                    });
-                };
-                
-                await simulateUpload();
-                
-                // Generate mock download URL for demo
-                const mockDownloadURL = `https://example.com/gk-store/videos/${tier}/${id}_${Date.now()}.mp4`;
-                
-                // Show generated URL
-                document.getElementById('generated-url').textContent = mockDownloadURL;
-                document.getElementById('url-generator').classList.add('active');
+                // Simulate upload progress
+                await new Promise(resolve => {
+                    let progress = 0;
+                    const interval = setInterval(() => {
+                        progress += 10;
+                        uploadProgress.style.width = progress + '%';
+                        uploadPercentage.textContent = progress + '%';
+                        
+                        if (progress >= 100) {
+                            clearInterval(interval);
+                            resolve();
+                        }
+                    }, 100);
+                });
                 
                 // Create new video object
                 const newVideo = {
@@ -3840,7 +3670,7 @@
                     likes: 0,
                     shares: 0,
                     duration: "2:30",
-                    url: mockDownloadURL,
+                    url: videoUrl,
                     tier: tier,
                     price: price,
                     createdAt: new Date().toISOString(),
@@ -3849,7 +3679,7 @@
                         title: title,
                         tier: tier,
                         price: price,
-                        followers: 0
+                        followers: Math.floor(Math.random() * 100000) + 1000
                     }
                 };
                 
@@ -3870,6 +3700,9 @@
                 appState.accounts.unshift(newAccount);
                 appState.currentVideoIndex = 0;
                 
+                // Save to localStorage
+                saveAppData();
+                
                 // Update UI
                 loadHomeContent();
                 updateAdminStats();
@@ -3879,45 +3712,23 @@
                     document.getElementById('upload-video-form').reset();
                     clearFileSelection();
                     uploadStatus.classList.remove('active');
-                    document.getElementById('url-generator').classList.remove('active');
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
+                    submitBtn.innerHTML = '<i class="fas fa-upload"></i> Add Video';
                     
-                    showToast('success', 'Upload Simulated', `Video "${title}" has been added to ${tier} tier (demo mode)`);
+                    showToast('success', 'Video Added', `"${title}" has been added to ${tier} tier`);
+                    closeModal('upload-video-modal');
                     
                     // Load the new video
                     loadVideo(0);
                     
-                }, 2000);
+                }, 1000);
                 
             } catch (error) {
                 console.error('Upload error:', error);
                 showToast('error', 'Upload Failed', error.message || 'Unknown error occurred');
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
+                submitBtn.innerHTML = '<i class="fas fa-upload"></i> Add Video';
                 uploadStatus.classList.remove('active');
-            }
-        }
-
-        // Copy generated URL
-        function copyGeneratedUrl() {
-            const url = document.getElementById('generated-url').textContent;
-            if (url) {
-                navigator.clipboard.writeText(url)
-                    .then(() => {
-                        showToast('success', 'URL Copied', 'Video URL copied to clipboard');
-                    })
-                    .catch(() => {
-                        showToast('error', 'Copy Failed', 'Could not copy URL');
-                    });
-            }
-        }
-
-        // Test video URL
-        function testVideoUrl() {
-            const url = document.getElementById('generated-url').textContent;
-            if (url) {
-                window.open(url, '_blank');
             }
         }
 
@@ -4002,8 +3813,16 @@
                     appState.videos = appState.videos.filter(v => v.id !== videoId);
                     appState.accounts = appState.accounts.filter(a => a.id !== videoId);
                     
+                    // Save changes
+                    saveAppData();
+                    
                     loadAdminVideos('all');
                     updateAdminStats();
+                    
+                    // Refresh home page if needed
+                    if (appState.currentPage === 'home') {
+                        loadHomeContent();
+                    }
                     
                     showToast('success', 'Video Deleted', 'Video and corresponding account have been removed');
                 } catch (error) {
@@ -4032,9 +3851,6 @@
             if (!requestsList || !emptyState) return;
             
             requestsList.innerHTML = '';
-            
-            // In a real app, you would load from storage
-            // For demo, we'll show a placeholder
             requestsList.classList.add('hidden');
             emptyState.classList.remove('hidden');
         }
@@ -4163,7 +3979,6 @@
             appState.language = lang;
             localStorage.setItem('appLanguage', lang);
             
-            // Update language checkmarks
             document.querySelectorAll('[id^="lang-"]').forEach(check => {
                 check.classList.add('hidden');
             });
@@ -4173,7 +3988,6 @@
                 activeCheck.classList.remove('hidden');
             }
             
-            // Update RTL/LTR
             const rtlLanguages = ['ar', 'fa', 'ur', 'ps'];
             if (rtlLanguages.includes(lang)) {
                 document.body.setAttribute('dir', 'rtl');
@@ -4182,7 +3996,6 @@
             }
             
             closeModal('language-modal');
-            
             showToast('success', 'Language Updated', 'Language preference saved');
         }
 
@@ -4190,9 +4003,7 @@
         function toggleTheme() {
             appState.theme = appState.theme === 'dark' ? 'light' : 'dark';
             localStorage.setItem('appTheme', appState.theme);
-            
             document.documentElement.setAttribute('data-theme', appState.theme);
-            
             showToast('success', 'Theme Updated', `Switched to ${appState.theme} mode`);
         }
 
@@ -4262,7 +4073,6 @@
         function bookAccount() {
             if (!appState.currentAccount) return;
             
-            // Set modal content
             document.getElementById('book-account-name').textContent = appState.currentAccount.title;
             document.getElementById('book-account-tier').textContent = appState.currentAccount.tier;
             document.getElementById('book-account-price').textContent = `$${appState.currentAccount.price ? appState.currentAccount.price.toLocaleString() : '0'}`;
@@ -4273,7 +4083,6 @@
         function buyNow() {
             if (!appState.currentAccount) return;
             
-            // Set modal content
             document.getElementById('buy-account-name').textContent = appState.currentAccount.title;
             document.getElementById('buy-account-tier').textContent = appState.currentAccount.tier;
             document.getElementById('buy-account-price').textContent = `$${appState.currentAccount.price ? appState.currentAccount.price.toLocaleString() : '0'}`;
@@ -4296,7 +4105,6 @@
             showToast('success', 'Request Submitted', 'We will contact you shortly on WhatsApp');
             closeModal('book-modal');
             
-            // Clear form
             document.getElementById('book-name').value = '';
             document.getElementById('book-whatsapp').value = '';
             document.getElementById('book-notes').value = '';
@@ -4402,7 +4210,6 @@
             const password = document.getElementById('login-password').value;
             const rememberMe = document.getElementById('remember-me').checked;
             
-            // For demo, allow any login
             appState.currentUser = {
                 email: email,
                 name: email.split('@')[0],
@@ -4411,29 +4218,25 @@
             
             appState.isLoggedIn = true;
             
-            // Save to localStorage if remember me is checked
             if (rememberMe) {
                 localStorage.setItem('gkStoreUser', JSON.stringify(appState.currentUser));
             }
             
             // Update user stats
-            appState.userStats.onlineUsers++;
+            appState.userStats.onlineUsers = (appState.userStats.onlineUsers || 0) + 1;
+            if (email !== appState.adminCredentials.email) {
+                appState.userStats.registeredUsers = (appState.userStats.registeredUsers || 0) + 1;
+            }
+            saveAppData();
             
             // Update profile page
             document.getElementById('user-name').textContent = appState.currentUser.name;
             document.getElementById('user-email').textContent = appState.currentUser.email;
             document.getElementById('member-since').textContent = new Date().toISOString().split('T')[0];
             
-            // Show success message
             showToast('success', 'Login Successful', `Welcome back, ${appState.currentUser.name}!`);
-            
-            // Reset form
             document.getElementById('login-form').reset();
             
-            // Load demo data
-            loadDemoData();
-            
-            // Redirect to home
             setTimeout(() => {
                 showPage('home');
             }, 500);
@@ -4448,7 +4251,6 @@
             const password = document.getElementById('signup-password').value;
             const confirmPassword = document.getElementById('signup-confirm-password').value;
             
-            // Validation
             if (password !== confirmPassword) {
                 showToast('error', 'Signup Failed', 'Passwords do not match');
                 return;
@@ -4459,7 +4261,6 @@
                 return;
             }
             
-            // Create new user
             appState.currentUser = {
                 email: email,
                 name: name,
@@ -4467,25 +4268,20 @@
             };
             
             appState.isLoggedIn = true;
-            
-            // Save to localStorage
             localStorage.setItem('gkStoreUser', JSON.stringify(appState.currentUser));
             
-            // Update profile page
+            // Update user stats
+            appState.userStats.onlineUsers = (appState.userStats.onlineUsers || 0) + 1;
+            appState.userStats.registeredUsers = (appState.userStats.registeredUsers || 0) + 1;
+            saveAppData();
+            
             document.getElementById('user-name').textContent = appState.currentUser.name;
             document.getElementById('user-email').textContent = appState.currentUser.email;
             document.getElementById('member-since').textContent = new Date().toISOString().split('T')[0];
             
-            // Show success message
             showToast('success', 'Account Created', `Welcome to GK Store, ${name}!`);
-            
-            // Reset form
             document.getElementById('signup-form').reset();
             
-            // Load demo data
-            loadDemoData();
-            
-            // Redirect to home
             setTimeout(() => {
                 showPage('home');
             }, 500);
@@ -4498,15 +4294,12 @@
             const email = document.getElementById('reset-email').value;
             
             showToast('success', 'Reset Link Sent', 'Check your email for password reset instructions');
-            
-            // Reset form and go back to login
             document.getElementById('forgot-password-form').reset();
             showLoginForm();
         }
 
         // Social login function
         function socialLogin(provider) {
-            // Create a mock user
             appState.currentUser = {
                 email: `user_${Date.now()}@${provider}.com`,
                 name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} User`,
@@ -4514,22 +4307,19 @@
             };
             
             appState.isLoggedIn = true;
-            
-            // Save to localStorage
             localStorage.setItem('gkStoreUser', JSON.stringify(appState.currentUser));
             
-            // Update profile page
+            // Update user stats
+            appState.userStats.onlineUsers = (appState.userStats.onlineUsers || 0) + 1;
+            appState.userStats.registeredUsers = (appState.userStats.registeredUsers || 0) + 1;
+            saveAppData();
+            
             document.getElementById('user-name').textContent = appState.currentUser.name;
             document.getElementById('user-email').textContent = appState.currentUser.email;
             document.getElementById('member-since').textContent = new Date().toISOString().split('T')[0];
             
-            // Show success message
             showToast('success', 'Login Successful', `Welcome, ${appState.currentUser.name}!`);
             
-            // Load demo data
-            loadDemoData();
-            
-            // Redirect to home
             setTimeout(() => {
                 showPage('home');
             }, 500);
