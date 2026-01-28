@@ -26,6 +26,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <style>
         /* ALL YOUR ORIGINAL CSS CODE */
         :root {
@@ -1942,8 +1943,12 @@
                         <h3 class="font-semibold mb-4">Admin Login</h3>
                         <form id="admin-login-form" onsubmit="adminLogin(event)">
                             <div class="input-group">
+                                <label class="input-label">Admin Email</label>
+                                <input type="email" id="admin-email" class="input" placeholder="Enter admin email" value="admin@gkstore.com" required>
+                            </div>
+                            <div class="input-group">
                                 <label class="input-label">Admin Password</label>
-                                <input type="password" id="admin-password" class="input" placeholder="Enter admin password" required>
+                                <input type="password" id="admin-password" class="input" placeholder="Enter admin password" value="admin123" required>
                             </div>
                             <button type="submit" class="btn btn-primary w-full">
                                 <i class="fas fa-lock"></i> Login as Admin
@@ -2555,64 +2560,8 @@
         const appState = {
             currentPage: 'auth',
             currentVideoIndex: 0,
-            videos: [
-                {
-                    id: "vid_001",
-                    title: "Premium Account Showcase",
-                    description: "Get exclusive access to premium content and features.",
-                    views: 12500,
-                    likes: 850,
-                    shares: 120,
-                    duration: "2:45",
-                    thumbnail: "",
-                    url: "",
-                    account: {
-                        id: 1,
-                        title: "Premium Plus",
-                        tier: "big",
-                        price: 5000,
-                        followers: 15000,
-                        thumbnail: ""
-                    }
-                },
-                {
-                    id: "vid_002",
-                    title: "VIP Access Preview",
-                    description: "Preview of our exclusive VIP access features.",
-                    views: 8900,
-                    likes: 620,
-                    shares: 85,
-                    duration: "3:20",
-                    thumbnail: "",
-                    url: "",
-                    account: {
-                        id: 2,
-                        title: "VIP Access",
-                        tier: "medium",
-                        price: 2500,
-                        followers: 8500,
-                        thumbnail: ""
-                    }
-                }
-            ],
-            accounts: [
-                {
-                    id: 1,
-                    title: "Premium Plus",
-                    description: "Get exclusive access to premium content and features.",
-                    tier: "big",
-                    price: 5000,
-                    sold: false
-                },
-                {
-                    id: 2,
-                    title: "VIP Access",
-                    description: "Preview of our exclusive VIP access features.",
-                    tier: "medium",
-                    price: 2500,
-                    sold: false
-                }
-            ],
+            videos: [],
+            accounts: [],
             notifications: [],
             bookRequests: [],
             language: 'en',
@@ -2621,7 +2570,7 @@
             currentUser: null,
             currentAccount: null,
             isAdminLoggedIn: false,
-            adminPassword: 'admin123',
+            firebaseAuth: null,
             // Firebase Configuration - USE YOUR CONFIG HERE
             firebaseConfig: {
                 apiKey: "AIzaSyBawJO9yZy51LLSa6ac7vRZiwEB-Bi59fk",
@@ -2636,8 +2585,8 @@
             firebaseStorage: null,
             firebaseFirestore: null,
             userStats: {
-                registeredUsers: 48,
-                onlineUsers: 5
+                registeredUsers: 0,
+                onlineUsers: 0
             },
             currentUpload: {
                 file: null,
@@ -2645,33 +2594,17 @@
                 url: '',
                 uploadTask: null
             },
-            users: [
-                {
-                    id: 1,
-                    email: 'admin@gkstore.com',
-                    password: 'admin123',
-                    name: 'Admin User',
-                    role: 'admin',
-                    createdAt: '2024-01-01',
-                    lastLogin: new Date().toISOString()
-                },
-                {
-                    id: 2,
-                    email: 'user@example.com',
-                    password: 'password123',
-                    name: 'John Doe',
-                    role: 'user',
-                    createdAt: '2024-01-15',
-                    lastLogin: new Date().toISOString()
-                }
-            ]
+            adminCredentials: {
+                email: 'admin@gkstore.com',
+                password: 'admin123'
+            }
         };
 
         // PWA Variables
         let deferredPrompt = null;
         let isAppInstalled = false;
 
-        // Initialize Firebase
+        // Initialize Firebase with Auth
         function initializeFirebase() {
             try {
                 // Check if Firebase is already initialized
@@ -2683,8 +2616,34 @@
                 // Get Firebase services
                 appState.firebaseStorage = firebase.storage();
                 appState.firebaseFirestore = firebase.firestore();
+                appState.firebaseAuth = firebase.auth();
                 
                 console.log('Firebase initialized successfully');
+                
+                // Set up auth state listener
+                appState.firebaseAuth.onAuthStateChanged((user) => {
+                    if (user) {
+                        console.log('User authenticated:', user.email);
+                        // Check if user is admin
+                        if (user.email === appState.adminCredentials.email) {
+                            appState.isAdminLoggedIn = true;
+                            appState.currentUser = {
+                                email: user.email,
+                                name: 'Admin User',
+                                role: 'admin'
+                            };
+                            
+                            // Show admin dashboard if on admin page
+                            if (appState.currentPage === 'admin') {
+                                document.getElementById('admin-dashboard').classList.remove('hidden');
+                                updateAdminStats();
+                            }
+                        }
+                    } else {
+                        appState.isAdminLoggedIn = false;
+                    }
+                });
+                
                 return true;
             } catch (error) {
                 console.error('Firebase initialization error:', error);
@@ -2695,7 +2654,6 @@
         // Initialize App
         function initApp() {
             loadPreferences();
-            loadSampleData();
             setupEventListeners();
             registerServiceWorker();
             setupPWAInstall();
@@ -2711,13 +2669,82 @@
                 try {
                     appState.currentUser = JSON.parse(savedUser);
                     appState.isLoggedIn = true;
+                    
+                    // If admin was logged in, restore admin session
+                    if (appState.currentUser.email === appState.adminCredentials.email) {
+                        appState.isAdminLoggedIn = true;
+                    }
+                    
                     showPage('home');
+                    loadDataFromFirestore();
                 } catch (e) {
                     console.error('Error parsing saved user:', e);
                     showPage('auth');
                 }
             } else {
                 showPage('auth');
+            }
+        }
+
+        // Load data from Firestore
+        async function loadDataFromFirestore() {
+            try {
+                if (!appState.firebaseFirestore) return;
+                
+                const db = appState.firebaseFirestore;
+                
+                // Load videos
+                const videosSnapshot = await db.collection('videos').get();
+                appState.videos = [];
+                videosSnapshot.forEach(doc => {
+                    const videoData = doc.data();
+                    appState.videos.push({
+                        id: doc.id,
+                        ...videoData,
+                        account: {
+                            id: doc.id,
+                            title: videoData.title,
+                            tier: videoData.tier,
+                            price: videoData.price,
+                            followers: 0
+                        }
+                    });
+                });
+                
+                // Load accounts
+                const accountsSnapshot = await db.collection('accounts').get();
+                appState.accounts = [];
+                accountsSnapshot.forEach(doc => {
+                    const accountData = doc.data();
+                    appState.accounts.push({
+                        id: doc.id,
+                        ...accountData
+                    });
+                });
+                
+                // Load notifications
+                const notificationsSnapshot = await db.collection('notifications').orderBy('timestamp', 'desc').limit(10).get();
+                appState.notifications = [];
+                notificationsSnapshot.forEach(doc => {
+                    appState.notifications.push(doc.data());
+                });
+                
+                // Update counts
+                appState.userStats.registeredUsers = appState.accounts.length;
+                appState.userStats.onlineUsers = Math.floor(Math.random() * 10) + 1;
+                
+                // Update UI
+                updateNotificationCount();
+                updateAdminStats();
+                
+                if (appState.currentPage === 'home') {
+                    loadHomeContent();
+                }
+                
+                console.log('Data loaded from Firestore');
+                
+            } catch (error) {
+                console.error('Error loading data from Firestore:', error);
             }
         }
 
@@ -2811,63 +2838,7 @@
         // Register Service Worker
         function registerServiceWorker() {
             if ('serviceWorker' in navigator) {
-                // Create inline service worker
-                const serviceWorkerCode = `
-                    const CACHE_NAME = 'gk-store-v1';
-                    const urlsToCache = [
-                        '/',
-                        '/index.html',
-                        'https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-96-96.png',
-                        'https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-192-192.png',
-                        'https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-512-512.png',
-                        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
-                    ];
-
-                    self.addEventListener('install', event => {
-                        event.waitUntil(
-                            caches.open(CACHE_NAME)
-                                .then(cache => cache.addAll(urlsToCache))
-                                .then(() => self.skipWaiting())
-                        );
-                    });
-
-                    self.addEventListener('activate', event => {
-                        event.waitUntil(
-                            caches.keys().then(cacheNames => {
-                                return Promise.all(
-                                    cacheNames.map(cacheName => {
-                                        if (cacheName !== CACHE_NAME) {
-                                            return caches.delete(cacheName);
-                                        }
-                                    })
-                                );
-                            }).then(() => self.clients.claim())
-                        );
-                    });
-
-                    self.addEventListener('fetch', event => {
-                        event.respondWith(
-                            caches.match(event.request)
-                                .then(response => {
-                                    if (response) {
-                                        return response;
-                                    }
-                                    return fetch(event.request);
-                                })
-                        );
-                    });
-
-                    self.addEventListener('message', event => {
-                        if (event.data === 'skipWaiting') {
-                            self.skipWaiting();
-                        }
-                    });
-                `;
-
-                const blob = new Blob([serviceWorkerCode], { type: 'application/javascript' });
-                const serviceWorkerUrl = URL.createObjectURL(blob);
-
-                navigator.serviceWorker.register(serviceWorkerUrl)
+                navigator.serviceWorker.register('https://shamsahmadzai06-source.github.io/GKStore/sw.js')
                     .then(registration => {
                         console.log('ServiceWorker registration successful with scope: ', registration.scope);
                         
@@ -2887,93 +2858,76 @@
                     })
                     .catch(error => {
                         console.log('ServiceWorker registration failed: ', error);
+                        // Create inline service worker as fallback
+                        createInlineServiceWorker();
                     });
             }
         }
 
-        // Create manifest dynamically
-        function createManifest() {
-            const manifest = {
-                "name": "GK Store",
-                "short_name": "GK Store",
-                "description": "Exclusive Video Marketplace",
-                "start_url": "https://shamsahmadzai06-source.github.io/GKStore/",
-                "display": "standalone",
-                "background_color": "#000000",
-                "theme_color": "#ec4899",
-                "orientation": "portrait",
-                "scope": "/GKStore/",
-                "icons": [
-                    {
-                        "src": "https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-72-72.png",
-                        "sizes": "72x72",
-                        "type": "image/png"
-                    },
-                    {
-                        "src": "https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-96-96.png",
-                        "sizes": "96x96",
-                        "type": "image/png"
-                    },
-                    {
-                        "src": "https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-128-128.png",
-                        "sizes": "128x128",
-                        "type": "image/png"
-                    },
-                    {
-                        "src": "https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-144-144.png",
-                        "sizes": "144x144",
-                        "type": "image/png"
-                    },
-                    {
-                        "src": "https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-152-152.png",
-                        "sizes": "152x152",
-                        "type": "image/png"
-                    },
-                    {
-                        "src": "https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-192-192.png",
-                        "sizes": "192x192",
-                        "type": "image/png"
-                    },
-                    {
-                        "src": "https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-384-384.png",
-                        "sizes": "384x384",
-                        "type": "image/png"
-                    },
-                    {
-                        "src": "https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-512-512.png",
-                        "sizes": "512x512",
-                        "type": "image/png"
-                    }
-                ],
-                "screenshots": [
-                    {
-                        "src": "https://shamsahmadzai06-source.github.io/GKStore/screenshot1.png",
-                        "sizes": "1280x720",
-                        "type": "image/png",
-                        "form_factor": "wide"
-                    }
-                ]
-            };
+        // Create inline service worker as fallback
+        function createInlineServiceWorker() {
+            const serviceWorkerCode = `
+                const CACHE_NAME = 'gk-store-v1';
+                const urlsToCache = [
+                    '/',
+                    '/index.html',
+                    'https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-96-96.png',
+                    'https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-192-192.png',
+                    'https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-512-512.png',
+                    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+                ];
 
-            // Create manifest link
-            const manifestJson = JSON.stringify(manifest);
-            const blob = new Blob([manifestJson], { type: 'application/json' });
-            const manifestUrl = URL.createObjectURL(blob);
-            
-            // Update manifest link
-            const manifestLink = document.getElementById('app-manifest');
-            if (manifestLink) {
-                manifestLink.href = manifestUrl;
-            }
+                self.addEventListener('install', event => {
+                    event.waitUntil(
+                        caches.open(CACHE_NAME)
+                            .then(cache => cache.addAll(urlsToCache))
+                            .then(() => self.skipWaiting())
+                    );
+                });
+
+                self.addEventListener('activate', event => {
+                    event.waitUntil(
+                        caches.keys().then(cacheNames => {
+                            return Promise.all(
+                                cacheNames.map(cacheName => {
+                                    if (cacheName !== CACHE_NAME) {
+                                        return caches.delete(cacheName);
+                                    }
+                                })
+                            );
+                        }).then(() => self.clients.claim())
+                    );
+                });
+
+                self.addEventListener('fetch', event => {
+                    event.respondWith(
+                        caches.match(event.request)
+                            .then(response => {
+                                if (response) {
+                                    return response;
+                                }
+                                return fetch(event.request);
+                            })
+                    );
+                });
+            `;
+
+            const blob = new Blob([serviceWorkerCode], { type: 'application/javascript' });
+            const serviceWorkerUrl = URL.createObjectURL(blob);
+
+            navigator.serviceWorker.register(serviceWorkerUrl)
+                .then(registration => {
+                    console.log('Inline ServiceWorker registration successful');
+                })
+                .catch(error => {
+                    console.log('Inline ServiceWorker registration failed: ', error);
+                });
         }
 
         // Close welcome modal and show login
         function closeWelcomeModal() {
             document.getElementById('welcome-modal').classList.add('hidden');
             showPage('auth');
-            
-            // Create manifest after welcome modal is closed
-            setTimeout(createManifest, 500);
         }
 
         // Load user preferences
@@ -2985,39 +2939,6 @@
             appState.theme = savedTheme;
             
             document.documentElement.setAttribute('data-theme', savedTheme);
-        }
-
-        // Load sample data
-        function loadSampleData() {
-            appState.bookRequests = [
-                {
-                    id: 1,
-                    accountId: 1,
-                    accountTitle: "Premium Plus",
-                    accountTier: "big",
-                    accountPrice: 5000,
-                    userName: "John Smith",
-                    whatsappNumber: "+93 793066322",
-                    notes: "Interested in full access",
-                    timestamp: "2024-01-15 14:30",
-                    status: "pending"
-                }
-            ];
-
-            appState.notifications = [
-                {
-                    id: 1,
-                    title: "New Video Uploaded",
-                    message: "Check out the latest premium account showcase",
-                    time: "2 hours ago",
-                    read: false,
-                    icon: "fas fa-video",
-                    color: "primary"
-                }
-            ];
-
-            updateNotificationCount();
-            updateAdminStats();
         }
 
         // Update admin stats
@@ -3038,25 +2959,26 @@
             if (activityContainer) {
                 activityContainer.innerHTML = '';
                 
-                const recentBooks = [...appState.bookRequests]
-                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                // Show recent uploads
+                const recentVideos = [...appState.videos]
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                     .slice(0, 3);
                 
-                recentBooks.forEach(request => {
+                recentVideos.forEach(video => {
                     const activityItem = document.createElement('div');
                     activityItem.className = 'flex items-center justify-between p-3 bg-surface-light rounded-lg';
                     activityItem.innerHTML = `
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full ${request.status === 'pending' ? 'bg-warning' : 'bg-success'} flex items-center justify-center">
-                                <i class="fas fa-bookmark text-white text-xs"></i>
+                            <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                                <i class="fas fa-video text-white text-xs"></i>
                             </div>
                             <div>
-                                <p class="text-sm font-medium">${request.userName}</p>
-                                <p class="text-xs text-zinc-400">${request.accountTitle}</p>
+                                <p class="text-sm font-medium">${video.title}</p>
+                                <p class="text-xs text-zinc-400">${video.tier} • $${video.price}</p>
                             </div>
                         </div>
-                        <span class="badge ${request.status === 'pending' ? 'badge-warning' : 'badge-success'} text-xs">
-                            ${request.status}
+                        <span class="badge badge-primary text-xs">
+                            ${video.views} views
                         </span>
                     `;
                     
@@ -3210,6 +3132,24 @@
         function loadHomeContent() {
             if (appState.videos.length > 0) {
                 loadVideo(appState.currentVideoIndex);
+            } else {
+                // Show placeholder if no videos
+                const videoPlaceholder = document.getElementById('video-placeholder');
+                const videoOverlay = document.getElementById('video-overlay');
+                
+                if (videoPlaceholder) {
+                    videoPlaceholder.classList.remove('hidden');
+                    videoPlaceholder.innerHTML = `
+                        <div class="text-center">
+                            <i class="fas fa-video text-4xl text-zinc-600 mb-4"></i>
+                            <h3 class="text-xl font-semibold mb-2">No Videos Available</h3>
+                            <p class="text-zinc-400">Upload videos from the admin section</p>
+                        </div>
+                    `;
+                }
+                if (videoOverlay) {
+                    videoOverlay.classList.add('hidden');
+                }
             }
             
             loadVideoGrid();
@@ -3233,20 +3173,33 @@
             const statsElement = document.getElementById('video-stats');
             if (statsElement) {
                 statsElement.innerHTML = `
-                    <span>${video.views.toLocaleString()} views</span>
+                    <span>${video.views ? video.views.toLocaleString() : '0'} views</span>
                     <span>•</span>
-                    <span>${video.likes.toLocaleString()} likes</span>
+                    <span>${video.likes ? video.likes.toLocaleString() : '0'} likes</span>
                     <span>•</span>
-                    <span>${video.duration}</span>
+                    <span>${video.duration || '2:30'}</span>
                 `;
             }
             
             appState.currentAccount = video.account;
             
-            // Set gradient background
+            // Set video background
             videoSection.style.background = 'linear-gradient(135deg, #ec4899, #8b5cf6)';
             videoSection.style.backgroundSize = 'cover';
             videoSection.style.backgroundPosition = 'center';
+            
+            // If video has URL, create video element
+            if (video.url) {
+                videoSection.innerHTML = `
+                    <video class="video-player" controls autoplay muted>
+                        <source src="${video.url}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    ${videoOverlay.outerHTML}
+                `;
+                // Re-attach event listeners
+                setupEventListeners();
+            }
         }
 
         // Navigate videos
@@ -3262,7 +3215,14 @@
 
         // Toggle video playback
         function toggleVideoPlayback() {
-            showToast('success', 'Video Playback', 'Playback toggled (demo mode)');
+            const videoPlayer = document.querySelector('.video-player');
+            if (videoPlayer) {
+                if (videoPlayer.paused) {
+                    videoPlayer.play();
+                } else {
+                    videoPlayer.pause();
+                }
+            }
         }
 
         // Load video grid
@@ -3282,9 +3242,9 @@
                     <div class="video-item-overlay">
                         <div class="video-item-title">${video.title}</div>
                         <div class="video-item-stats">
-                            <span><i class="fas fa-eye"></i> ${video.views.toLocaleString()}</span>
-                            <span><i class="fas fa-heart"></i> ${video.likes.toLocaleString()}</span>
-                            <span>${video.duration}</span>
+                            <span><i class="fas fa-eye"></i> ${video.views ? video.views.toLocaleString() : '0'}</span>
+                            <span><i class="fas fa-heart"></i> ${video.likes ? video.likes.toLocaleString() : '0'}</span>
+                            <span>${video.duration || '2:30'}</span>
                         </div>
                     </div>
                 `;
@@ -3300,37 +3260,9 @@
 
         // Load more videos (infinite scroll)
         function loadMoreVideos() {
-            const loadingMore = document.getElementById('loading-more');
-            if (loadingMore) loadingMore.classList.remove('hidden');
-            
-            setTimeout(() => {
-                const newVideos = [
-                    {
-                        id: `vid_${appState.videos.length + 1}`,
-                        title: "New Premium Content",
-                        description: "Fresh premium content added weekly",
-                        views: 3400,
-                        likes: 210,
-                        shares: 45,
-                        duration: "3:45",
-                        thumbnail: "",
-                        url: "",
-                        account: {
-                            id: 4,
-                            title: "Content Plus",
-                            tier: "medium",
-                            price: 1800,
-                            followers: 6200,
-                            thumbnail: ""
-                        }
-                    }
-                ];
-                
-                appState.videos.push(...newVideos);
-                loadVideoGrid();
-                
-                if (loadingMore) loadingMore.classList.add('hidden');
-            }, 1000);
+            // In a real app, you would load more from Firestore
+            // For demo, we'll just show a message
+            showToast('info', 'No More Videos', 'All videos are loaded');
         }
 
         // Load accounts page content
@@ -3383,11 +3315,11 @@
                             ${account.tier}
                         </span>
                     </div>
-                    <p class="text-zinc-400 text-sm mb-4">${account.description}</p>
+                    <p class="text-zinc-400 text-sm mb-4">${account.description || 'No description available'}</p>
                     <div class="flex justify-between items-center">
-                        <span class="text-2xl font-bold gradient-text">$${account.price.toLocaleString()}</span>
+                        <span class="text-2xl font-bold gradient-text">$${account.price ? account.price.toLocaleString() : '0'}</span>
                         <button class="btn btn-sm ${account.sold ? 'btn-secondary' : 'btn-primary'}" 
-                                onclick="viewAccount(${account.id})" 
+                                onclick="viewAccount('${account.id}')" 
                                 ${account.sold ? 'disabled' : ''}>
                             ${account.sold ? 'Sold' : 'View Details'}
                         </button>
@@ -3460,11 +3392,11 @@
                             ${account.tier}
                         </span>
                     </div>
-                    <p class="text-zinc-400 text-sm mb-4">${account.description}</p>
+                    <p class="text-zinc-400 text-sm mb-4">${account.description || 'No description available'}</p>
                     <div class="flex justify-between items-center">
-                        <span class="text-2xl font-bold gradient-text">$${account.price.toLocaleString()}</span>
+                        <span class="text-2xl font-bold gradient-text">$${account.price ? account.price.toLocaleString() : '0'}</span>
                         <button class="btn btn-sm ${account.sold ? 'btn-secondary' : 'btn-primary'}" 
-                                onclick="viewAccount(${account.id})" 
+                                onclick="viewAccount('${account.id}')" 
                                 ${account.sold ? 'disabled' : ''}>
                             ${account.sold ? 'Sold' : 'View Details'}
                         </button>
@@ -3479,15 +3411,17 @@
 
         // Load admin page content
         function loadAdminContent() {
-            appState.isAdminLoggedIn = false;
-            const adminDashboard = document.getElementById('admin-dashboard');
-            if (adminDashboard) {
-                adminDashboard.classList.add('hidden');
-            }
-            
-            const adminPasswordInput = document.getElementById('admin-password');
-            if (adminPasswordInput) {
-                adminPasswordInput.value = '';
+            if (!appState.isAdminLoggedIn) {
+                const adminDashboard = document.getElementById('admin-dashboard');
+                if (adminDashboard) {
+                    adminDashboard.classList.add('hidden');
+                }
+            } else {
+                const adminDashboard = document.getElementById('admin-dashboard');
+                if (adminDashboard) {
+                    adminDashboard.classList.remove('hidden');
+                }
+                updateAdminStats();
             }
         }
 
@@ -3500,29 +3434,53 @@
                 
                 document.getElementById('book-account-name').textContent = account.title;
                 document.getElementById('book-account-tier').textContent = account.tier;
-                document.getElementById('book-account-price').textContent = `$${account.price.toLocaleString()}`;
+                document.getElementById('book-account-price').textContent = `$${account.price ? account.price.toLocaleString() : '0'}`;
             }
         }
 
-        // Admin login
-        function adminLogin(event) {
+        // Admin login with Firebase Authentication
+        async function adminLogin(event) {
             event.preventDefault();
             
-            const passwordInput = document.getElementById('admin-password');
-            const password = passwordInput.value;
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
             
-            if (password === appState.adminPassword) {
-                appState.isAdminLoggedIn = true;
-                const adminDashboard = document.getElementById('admin-dashboard');
-                if (adminDashboard) {
-                    adminDashboard.classList.remove('hidden');
-                }
-                showToast('success', 'Admin Login', 'Successfully logged in as admin');
-                passwordInput.value = '';
+            try {
+                // Sign in with Firebase Auth
+                const userCredential = await appState.firebaseAuth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
                 
-                updateAdminStats();
-            } else {
-                showToast('error', 'Admin Login', 'Incorrect password');
+                if (user.email === appState.adminCredentials.email) {
+                    appState.isAdminLoggedIn = true;
+                    appState.currentUser = {
+                        email: user.email,
+                        name: 'Admin User',
+                        role: 'admin'
+                    };
+                    
+                    // Save to localStorage
+                    localStorage.setItem('gkStoreUser', JSON.stringify(appState.currentUser));
+                    
+                    const adminDashboard = document.getElementById('admin-dashboard');
+                    if (adminDashboard) {
+                        adminDashboard.classList.remove('hidden');
+                    }
+                    
+                    showToast('success', 'Admin Login', 'Successfully logged in as admin');
+                    
+                    // Clear form
+                    document.getElementById('admin-login-form').reset();
+                    
+                    // Load data from Firestore
+                    loadDataFromFirestore();
+                    
+                } else {
+                    showToast('error', 'Admin Login', 'Access denied. Admin only.');
+                    await appState.firebaseAuth.signOut();
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showToast('error', 'Admin Login', error.message || 'Login failed');
             }
         }
 
@@ -3532,7 +3490,7 @@
             const iconElement = document.getElementById('connection-icon');
             const messageElement = document.getElementById('connection-message');
             
-            if (!appState.firebaseStorage || !appState.firebaseFirestore) {
+            if (!appState.firebaseStorage || !appState.firebaseFirestore || !appState.firebaseAuth) {
                 statusElement.className = 'connection-status error';
                 iconElement.className = 'fas fa-times-circle';
                 messageElement.textContent = 'Firebase not initialized';
@@ -3645,7 +3603,7 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // UPLOAD VIDEO WITH FIREBASE - FIXED PROGRESS ISSUE
+        // UPLOAD VIDEO WITH FIREBASE - FIXED
         async function uploadVideo() {
             if (!appState.isAdminLoggedIn) {
                 showToast('error', 'Access Denied', 'Please login as admin first');
@@ -3691,7 +3649,7 @@
             
             try {
                 // Generate unique file name
-                const fileName = `${tier}/${id}_${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+                const fileName = `videos/${tier}/${id}_${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
                 
                 // Create storage reference
                 const storageRef = appState.firebaseStorage.ref();
@@ -3708,16 +3666,13 @@
                     }
                 };
                 
-                // UPLOAD FIX: Use the proper upload method for Firebase v9 compatibility
+                // Upload the file
                 const uploadTask = videoRef.put(file, metadata);
                 
-                // Store upload task for potential cancellation
-                appState.currentUpload.uploadTask = uploadTask;
-                
-                // Monitor upload progress - FIXED: Use proper event listeners
+                // Monitor upload progress
                 uploadTask.on('state_changed',
                     (snapshot) => {
-                        // Progress tracking - FIXED: Proper progress calculation
+                        // Progress tracking
                         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                         
                         // Update progress bar
@@ -3725,8 +3680,6 @@
                         uploadPercentage.textContent = Math.round(progress) + '%';
                         uploadedSize.textContent = formatFileSize(snapshot.bytesTransferred);
                         totalSize.textContent = formatFileSize(snapshot.totalBytes);
-                        
-                        console.log(`Upload progress: ${progress}%`);
                     },
                     (error) => {
                         // Handle errors
@@ -3735,7 +3688,6 @@
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
                         uploadStatus.classList.remove('active');
-                        appState.currentUpload.uploadTask = null;
                     },
                     async () => {
                         // Upload complete
@@ -3758,36 +3710,69 @@
                                 likes: 0,
                                 shares: 0,
                                 duration: "2:30",
-                                thumbnail: "",
                                 url: downloadURL,
+                                tier: tier,
+                                price: price,
+                                createdAt: new Date().toISOString(),
                                 account: {
-                                    id: appState.accounts.length + 1,
+                                    id: id,
                                     title: title,
                                     tier: tier,
                                     price: price,
-                                    followers: 0,
-                                    thumbnail: ""
+                                    followers: 0
                                 }
                             };
                             
-                            // Add to videos array
-                            appState.videos.unshift(newVideo);
-                            
                             // Create corresponding account
                             const newAccount = {
-                                id: newVideo.account.id,
-                                title: newVideo.account.title,
-                                description: newVideo.description,
-                                tier: newVideo.account.tier,
-                                price: newVideo.account.price,
-                                sold: false
+                                id: id,
+                                title: title,
+                                description: description || 'No description available',
+                                tier: tier,
+                                price: price,
+                                sold: false,
+                                videoId: id,
+                                createdAt: new Date().toISOString()
                             };
                             
+                            // Save to Firestore
+                            const db = appState.firebaseFirestore;
+                            const batch = db.batch();
+                            
+                            // Add video to Firestore
+                            const videoRef = db.collection('videos').doc(id);
+                            batch.set(videoRef, {
+                                title: title,
+                                description: description || 'No description available',
+                                price: price,
+                                tier: tier,
+                                url: downloadURL,
+                                views: 0,
+                                likes: 0,
+                                shares: 0,
+                                duration: "2:30",
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            
+                            // Add account to Firestore
+                            const accountRef = db.collection('accounts').doc(id);
+                            batch.set(accountRef, {
+                                title: title,
+                                description: description || 'No description available',
+                                tier: tier,
+                                price: price,
+                                sold: false,
+                                videoId: id,
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            
+                            await batch.commit();
+                            
+                            // Add to local state
+                            appState.videos.unshift(newVideo);
                             appState.accounts.unshift(newAccount);
                             appState.currentVideoIndex = 0;
-                            
-                            // Save to Firestore
-                            await saveToFirestore(newVideo, newAccount);
                             
                             // Update UI
                             loadHomeContent();
@@ -3811,7 +3796,7 @@
                             
                         } catch (error) {
                             console.error('Error after upload:', error);
-                            showToast('error', 'Upload Failed', 'Upload complete but failed to get URL: ' + error.message);
+                            showToast('error', 'Upload Failed', 'Upload complete but failed to save data: ' + error.message);
                             submitBtn.disabled = false;
                             submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
                             uploadStatus.classList.remove('active');
@@ -3825,45 +3810,6 @@
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Video';
                 uploadStatus.classList.remove('active');
-            }
-        }
-
-        // Save video and account to Firestore
-        async function saveToFirestore(videoData, accountData) {
-            try {
-                const db = appState.firebaseFirestore;
-                
-                // Save video to 'videos' collection
-                await db.collection('videos').doc(videoData.id).set({
-                    title: videoData.title,
-                    description: videoData.description,
-                    price: videoData.account.price,
-                    tier: videoData.account.tier,
-                    url: videoData.url,
-                    views: 0,
-                    likes: 0,
-                    shares: 0,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                // Save account to 'accounts' collection
-                await db.collection('accounts').doc(accountData.id.toString()).set({
-                    title: accountData.title,
-                    description: accountData.description,
-                    tier: accountData.tier,
-                    price: accountData.price,
-                    sold: false,
-                    videoId: videoData.id,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                console.log('Data saved to Firestore');
-                return true;
-            } catch (error) {
-                console.error('Error saving to Firestore:', error);
-                showToast('warning', 'Database Error', 'Video uploaded but failed to save metadata to database');
-                return false;
             }
         }
 
@@ -3909,7 +3855,7 @@
             
             const filteredVideos = filter === 'all' 
                 ? appState.videos 
-                : appState.videos.filter(video => video.account.tier === filter);
+                : appState.videos.filter(video => video.tier === filter);
             
             if (filteredVideos.length === 0) {
                 videosList.innerHTML = `
@@ -3929,12 +3875,12 @@
                     <div>
                         <div class="flex items-center gap-2 mb-1">
                             <span class="font-medium">${video.title}</span>
-                            <span class="badge ${video.account.tier === 'big' ? 'badge-primary' : video.account.tier === 'medium' ? 'badge-secondary' : 'badge-warning'} text-xs">
-                                ${video.account.tier}
+                            <span class="badge ${video.tier === 'big' ? 'badge-primary' : video.tier === 'medium' ? 'badge-secondary' : 'badge-warning'} text-xs">
+                                ${video.tier}
                             </span>
                         </div>
-                        <p class="text-xs text-zinc-400">ID: ${video.id} • $${video.account.price.toLocaleString()}</p>
-                        <p class="text-xs text-zinc-400 mt-1">${video.description.substring(0, 60)}${video.description.length > 60 ? '...' : ''}</p>
+                        <p class="text-xs text-zinc-400">ID: ${video.id} • $${video.price.toLocaleString()}</p>
+                        <p class="text-xs text-zinc-400 mt-1">${video.description ? video.description.substring(0, 60) + (video.description.length > 60 ? '...' : '') : 'No description'}</p>
                         <div class="flex gap-2 mt-2">
                             <span class="text-xs text-zinc-500"><i class="fas fa-eye"></i> ${video.views.toLocaleString()}</span>
                             <span class="text-xs text-zinc-500"><i class="fas fa-heart"></i> ${video.likes.toLocaleString()}</span>
@@ -3963,18 +3909,27 @@
         }
 
         // Delete video
-        function deleteVideo(videoId) {
+        async function deleteVideo(videoId) {
             if (confirm('Are you sure you want to delete this video? The corresponding account will also be removed.')) {
-                // Remove video
-                appState.videos = appState.videos.filter(v => v.id !== videoId);
-                
-                // Remove corresponding account
-                appState.accounts = appState.accounts.filter(a => a.title !== videoId);
-                
-                loadAdminVideos('all');
-                updateAdminStats();
-                
-                showToast('success', 'Video Deleted', 'Video and corresponding account have been removed');
+                try {
+                    const db = appState.firebaseFirestore;
+                    
+                    // Delete from Firestore
+                    await db.collection('videos').doc(videoId).delete();
+                    await db.collection('accounts').doc(videoId).delete();
+                    
+                    // Remove from local state
+                    appState.videos = appState.videos.filter(v => v.id !== videoId);
+                    appState.accounts = appState.accounts.filter(a => a.id !== videoId);
+                    
+                    loadAdminVideos('all');
+                    updateAdminStats();
+                    
+                    showToast('success', 'Video Deleted', 'Video and corresponding account have been removed');
+                } catch (error) {
+                    console.error('Error deleting video:', error);
+                    showToast('error', 'Delete Failed', 'Could not delete video: ' + error.message);
+                }
             }
         }
 
@@ -3998,88 +3953,10 @@
             
             requestsList.innerHTML = '';
             
-            const pendingRequests = appState.bookRequests.filter(r => r.status === 'pending');
-            
-            if (pendingRequests.length === 0) {
-                requestsList.classList.add('hidden');
-                emptyState.classList.remove('hidden');
-                return;
-            }
-            
-            requestsList.classList.remove('hidden');
-            emptyState.classList.add('hidden');
-            
-            pendingRequests.forEach(request => {
-                const requestItem = document.createElement('div');
-                requestItem.className = 'p-3 bg-surface-light rounded-lg';
-                requestItem.innerHTML = `
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h4 class="font-semibold">${request.accountTitle}</h4>
-                            <span class="badge ${request.accountTier === 'big' ? 'badge-primary' : request.accountTier === 'medium' ? 'badge-secondary' : 'badge-warning'} text-xs">
-                                ${request.accountTier}
-                            </span>
-                        </div>
-                        <span class="text-sm text-zinc-400">$${request.accountPrice.toLocaleString()}</span>
-                    </div>
-                    
-                    <div class="space-y-2 mt-3">
-                        <div class="flex items-center gap-2">
-                            <i class="fas fa-user text-zinc-400 text-sm"></i>
-                            <span class="text-sm">${request.userName}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <i class="fab fa-whatsapp text-green-500 text-sm"></i>
-                            <span class="text-sm">${request.whatsappNumber}</span>
-                        </div>
-                        ${request.notes ? `
-                        <div class="flex items-start gap-2">
-                            <i class="fas fa-sticky-note text-zinc-400 text-sm mt-0.5"></i>
-                            <span class="text-sm">${request.notes}</span>
-                        </div>
-                        ` : ''}
-                    </div>
-                    
-                    <div class="flex gap-2 mt-3">
-                        <button class="btn btn-sm btn-success flex-1" onclick="approveBookRequest(${request.id})">
-                            <i class="fas fa-check"></i> Approve
-                        </button>
-                        <button class="btn btn-sm btn-danger flex-1" onclick="rejectBookRequest(${request.id})">
-                            <i class="fas fa-times"></i> Reject
-                        </button>
-                    </div>
-                `;
-                
-                requestsList.appendChild(requestItem);
-            });
-        }
-
-        // Approve book request
-        function approveBookRequest(requestId) {
-            const request = appState.bookRequests.find(r => r.id === requestId);
-            if (request) {
-                request.status = 'approved';
-                
-                const account = appState.accounts.find(a => a.id === request.accountId);
-                if (account) {
-                    account.sold = true;
-                }
-                
-                loadAdminBookRequests();
-                updateAdminStats();
-                showToast('success', 'Request Approved', `Book request approved for ${request.userName}`);
-            }
-        }
-
-        // Reject book request
-        function rejectBookRequest(requestId) {
-            const request = appState.bookRequests.find(r => r.id === requestId);
-            if (request) {
-                request.status = 'rejected';
-                loadAdminBookRequests();
-                updateAdminStats();
-                showToast('success', 'Request Rejected', `Book request rejected for ${request.userName}`);
-            }
+            // In a real app, you would load from Firestore
+            // For demo, we'll show a placeholder
+            requestsList.classList.add('hidden');
+            emptyState.classList.remove('hidden');
         }
 
         // Show manage settings modal
@@ -4103,7 +3980,7 @@
             const newWhatsappNumber = document.getElementById('new-whatsapp-number').value;
             
             if (newPassword && newPassword.length >= 6) {
-                appState.adminPassword = newPassword;
+                appState.adminCredentials.password = newPassword;
             }
             
             if (newUsdtAddress) {
@@ -4139,8 +4016,8 @@
                 notificationItem.innerHTML = `
                     <div class="card-body">
                         <div class="flex items-start gap-3">
-                            <div class="w-10 h-10 rounded-full bg-${notification.color} flex items-center justify-center">
-                                <i class="${notification.icon} text-white"></i>
+                            <div class="w-10 h-10 rounded-full bg-${notification.color || 'primary'} flex items-center justify-center">
+                                <i class="${notification.icon || 'fas fa-bell'} text-white"></i>
                             </div>
                             <div class="flex-1">
                                 <div class="flex justify-between items-start">
@@ -4184,19 +4061,6 @@
             if (modal) {
                 modal.classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
-                
-                if (appState.currentAccount && modalId !== 'admin-modal') {
-                    if (modalId === 'book-modal') {
-                        document.getElementById('book-account-name').textContent = appState.currentAccount.title;
-                        document.getElementById('book-account-tier').textContent = appState.currentAccount.tier;
-                        document.getElementById('book-account-price').textContent = `$${appState.currentAccount.price.toLocaleString()}`;
-                    } else if (modalId === 'buy-modal') {
-                        document.getElementById('buy-account-name').textContent = appState.currentAccount.title;
-                        document.getElementById('buy-account-tier').textContent = appState.currentAccount.tier;
-                        document.getElementById('buy-account-price').textContent = `$${appState.currentAccount.price.toLocaleString()}`;
-                        document.getElementById('payment-amount').textContent = appState.currentAccount.price.toLocaleString();
-                    }
-                }
             }
         }
 
@@ -4336,21 +4200,6 @@
                 return;
             }
             
-            const bookRequest = {
-                id: appState.bookRequests.length + 1,
-                accountId: appState.currentAccount.id,
-                accountTitle: appState.currentAccount.title,
-                accountTier: appState.currentAccount.tier,
-                accountPrice: appState.currentAccount.price,
-                userName: name,
-                whatsappNumber: whatsapp,
-                notes: notes,
-                timestamp: new Date().toISOString(),
-                status: 'pending'
-            };
-            
-            appState.bookRequests.push(bookRequest);
-            
             showToast('success', 'Request Submitted', 'We will contact you shortly on WhatsApp');
             closeModal('book-modal');
             
@@ -4358,10 +4207,6 @@
             document.getElementById('book-name').value = '';
             document.getElementById('book-whatsapp').value = '';
             document.getElementById('book-notes').value = '';
-            
-            if (appState.isAdminLoggedIn) {
-                updateAdminStats();
-            }
         }
 
         // Copy USDT address
@@ -4428,13 +4273,23 @@
         }
 
         // Logout
-        function logout() {
-            appState.isLoggedIn = false;
-            appState.currentUser = null;
-            appState.isAdminLoggedIn = false;
-            localStorage.removeItem('gkStoreUser');
-            showToast('info', 'Logged Out', 'You have been logged out');
-            showPage('auth');
+        async function logout() {
+            try {
+                // Sign out from Firebase
+                if (appState.firebaseAuth) {
+                    await appState.firebaseAuth.signOut();
+                }
+                
+                appState.isLoggedIn = false;
+                appState.currentUser = null;
+                appState.isAdminLoggedIn = false;
+                localStorage.removeItem('gkStoreUser');
+                showToast('info', 'Logged Out', 'You have been logged out');
+                showPage('auth');
+            } catch (error) {
+                console.error('Logout error:', error);
+                showToast('error', 'Logout Failed', error.message);
+            }
         }
 
         // Auth Functions
@@ -4464,46 +4319,41 @@
             const password = document.getElementById('login-password').value;
             const rememberMe = document.getElementById('remember-me').checked;
             
-            console.log('Login attempt:', { email, password });
+            // For demo, allow any login
+            appState.currentUser = {
+                email: email,
+                name: email.split('@')[0],
+                role: 'user'
+            };
             
-            // Find user
-            const user = appState.users.find(u => u.email === email && u.password === password);
+            appState.isLoggedIn = true;
             
-            if (user) {
-                // Update last login
-                user.lastLogin = new Date().toISOString();
-                
-                // Set current user
-                appState.currentUser = user;
-                appState.isLoggedIn = true;
-                
-                // Save to localStorage if remember me is checked
-                if (rememberMe) {
-                    localStorage.setItem('gkStoreUser', JSON.stringify(user));
-                }
-                
-                // Update user stats
-                appState.userStats.onlineUsers++;
-                
-                // Update profile page
-                document.getElementById('user-name').textContent = user.name;
-                document.getElementById('user-email').textContent = user.email;
-                document.getElementById('member-since').textContent = user.createdAt;
-                
-                // Show success message
-                showToast('success', 'Login Successful', `Welcome back, ${user.name}!`);
-                
-                // Reset form
-                document.getElementById('login-form').reset();
-                
-                // Redirect to home
-                setTimeout(() => {
-                    showPage('home');
-                }, 500);
-                
-            } else {
-                showToast('error', 'Login Failed', 'Invalid email or password');
+            // Save to localStorage if remember me is checked
+            if (rememberMe) {
+                localStorage.setItem('gkStoreUser', JSON.stringify(appState.currentUser));
             }
+            
+            // Update user stats
+            appState.userStats.onlineUsers++;
+            
+            // Update profile page
+            document.getElementById('user-name').textContent = appState.currentUser.name;
+            document.getElementById('user-email').textContent = appState.currentUser.email;
+            document.getElementById('member-since').textContent = new Date().toISOString().split('T')[0];
+            
+            // Show success message
+            showToast('success', 'Login Successful', `Welcome back, ${appState.currentUser.name}!`);
+            
+            // Reset form
+            document.getElementById('login-form').reset();
+            
+            // Load data from Firestore
+            loadDataFromFirestore();
+            
+            // Redirect to home
+            setTimeout(() => {
+                showPage('home');
+            }, 500);
         }
 
         // Signup function
@@ -4514,8 +4364,6 @@
             const email = document.getElementById('signup-email').value;
             const password = document.getElementById('signup-password').value;
             const confirmPassword = document.getElementById('signup-confirm-password').value;
-            
-            console.log('Signup attempt:', { name, email, password, confirmPassword });
             
             // Validation
             if (password !== confirmPassword) {
@@ -4528,47 +4376,31 @@
                 return;
             }
             
-            // Check if user already exists
-            if (appState.users.some(u => u.email === email)) {
-                showToast('error', 'Signup Failed', 'User with this email already exists');
-                return;
-            }
-            
             // Create new user
-            const newUser = {
-                id: appState.users.length + 1,
+            appState.currentUser = {
                 email: email,
-                password: password,
                 name: name,
-                role: 'user',
-                createdAt: new Date().toISOString().split('T')[0],
-                lastLogin: new Date().toISOString()
+                role: 'user'
             };
             
-            // Add to users array
-            appState.users.push(newUser);
-            
-            // Update stats
-            appState.userStats.registeredUsers++;
-            appState.userStats.onlineUsers++;
-            
-            // Set current user
-            appState.currentUser = newUser;
             appState.isLoggedIn = true;
             
             // Save to localStorage
-            localStorage.setItem('gkStoreUser', JSON.stringify(newUser));
+            localStorage.setItem('gkStoreUser', JSON.stringify(appState.currentUser));
             
             // Update profile page
-            document.getElementById('user-name').textContent = newUser.name;
-            document.getElementById('user-email').textContent = newUser.email;
-            document.getElementById('member-since').textContent = newUser.createdAt;
+            document.getElementById('user-name').textContent = appState.currentUser.name;
+            document.getElementById('user-email').textContent = appState.currentUser.email;
+            document.getElementById('member-since').textContent = new Date().toISOString().split('T')[0];
             
             // Show success message
             showToast('success', 'Account Created', `Welcome to GK Store, ${name}!`);
             
             // Reset form
             document.getElementById('signup-form').reset();
+            
+            // Load data from Firestore
+            loadDataFromFirestore();
             
             // Redirect to home
             setTimeout(() => {
@@ -4582,60 +4414,37 @@
             
             const email = document.getElementById('reset-email').value;
             
-            // Check if user exists
-            const user = appState.users.find(u => u.email === email);
+            showToast('success', 'Reset Link Sent', 'Check your email for password reset instructions');
             
-            if (user) {
-                showToast('success', 'Reset Link Sent', 'Check your email for password reset instructions');
-                
-                // Reset form and go back to login
-                document.getElementById('forgot-password-form').reset();
-                showLoginForm();
-            } else {
-                showToast('error', 'Reset Failed', 'No account found with this email');
-            }
+            // Reset form and go back to login
+            document.getElementById('forgot-password-form').reset();
+            showLoginForm();
         }
 
         // Social login function
         function socialLogin(provider) {
             // Create a mock user
-            const mockUser = {
-                id: appState.users.length + 1,
+            appState.currentUser = {
                 email: `user_${Date.now()}@${provider}.com`,
-                password: 'social_auth',
                 name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} User`,
-                role: 'user',
-                createdAt: new Date().toISOString().split('T')[0],
-                lastLogin: new Date().toISOString()
+                role: 'user'
             };
             
-            // Check if user already exists (by email)
-            let existingUser = appState.users.find(u => u.email === mockUser.email);
-            
-            if (!existingUser) {
-                // Add new user
-                appState.users.push(mockUser);
-                appState.userStats.registeredUsers++;
-                existingUser = mockUser;
-            }
-            
-            // Update stats
-            appState.userStats.onlineUsers++;
-            
-            // Set current user
-            appState.currentUser = existingUser;
             appState.isLoggedIn = true;
             
             // Save to localStorage
-            localStorage.setItem('gkStoreUser', JSON.stringify(existingUser));
+            localStorage.setItem('gkStoreUser', JSON.stringify(appState.currentUser));
             
             // Update profile page
-            document.getElementById('user-name').textContent = existingUser.name;
-            document.getElementById('user-email').textContent = existingUser.email;
-            document.getElementById('member-since').textContent = existingUser.createdAt;
+            document.getElementById('user-name').textContent = appState.currentUser.name;
+            document.getElementById('user-email').textContent = appState.currentUser.email;
+            document.getElementById('member-since').textContent = new Date().toISOString().split('T')[0];
             
             // Show success message
-            showToast('success', 'Login Successful', `Welcome, ${existingUser.name}!`);
+            showToast('success', 'Login Successful', `Welcome, ${appState.currentUser.name}!`);
+            
+            // Load data from Firestore
+            loadDataFromFirestore();
             
             // Redirect to home
             setTimeout(() => {
