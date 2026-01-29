@@ -1,0 +1,8 @@
+{
+  "name": "gk-store-single-file",
+  "version": "1.0.0",
+  "description": "GK Store Single File PWA",
+  "scripts": {
+    "start": "echo 'Deploying single file app'"
+  }
+}
