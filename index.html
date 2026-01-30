@@ -2665,41 +2665,40 @@
                 showPage('auth');
             }
             
-            // Initialize AWS S3 for Filebase - FIXED: Initialize properly
+            // Initialize AWS S3 for Filebase
             initializeFilebase();
         }
 
-        // Initialize Filebase - FIXED VERSION
+        // Initialize Filebase
         function initializeFilebase() {
             if (typeof AWS !== 'undefined') {
                 console.log('AWS SDK loaded, initializing Filebase...');
                 
-                // Configure AWS for Filebase
+                // Configure AWS for Filebase with CORRECT credentials
                 AWS.config.update({
                     credentials: new AWS.Credentials(
                         appState.filebaseConfig.accessKeyId,
                         appState.filebaseConfig.secretAccessKey
                     ),
-                    region: appState.filebaseConfig.region
+                    region: appState.filebaseConfig.region,
+                    s3ForcePathStyle: true,
+                    signatureVersion: 'v4'
                 });
                 
-                console.log('Filebase initialized with your credentials');
+                console.log('Filebase initialized successfully');
             } else {
-                console.error('AWS SDK not loaded yet');
-                // Retry after a delay
-                setTimeout(initializeFilebase, 1000);
+                console.error('AWS SDK not loaded');
             }
         }
 
         // FIXED HASH FUNCTION
         function secureHash(str) {
-            // Simple but consistent hash function
             let hash = 0;
             if (str.length === 0) return hash.toString(36);
             for (let i = 0; i < str.length; i++) {
                 const char = str.charCodeAt(i);
                 hash = ((hash << 5) - hash) + char;
-                hash = hash & hash; // Convert to 32bit integer
+                hash = hash & hash;
             }
             return Math.abs(hash).toString(36);
         }
@@ -2754,12 +2753,8 @@
 
         // Create default users (admin and test user)
         function createDefaultUsers() {
-            // FIXED: Calculate the hash using the same function
             const adminPasswordHash = secureHash('GK@2024!AdminSecure');
             const testUserPasswordHash = secureHash('password123');
-            
-            console.log('Admin password hash:', adminPasswordHash);
-            console.log('Test user password hash:', testUserPasswordHash);
             
             // Create admin user with secure password
             const adminUser = {
@@ -2793,8 +2788,7 @@
             saveDataToLocalStorage('gkStoreUsers', appState.users);
             saveDataToLocalStorage('gkStoreStats', appState.userStats);
             
-            console.log('Default users created. Admin password: GK@2024!AdminSecure');
-            console.log('Test user credentials: user@example.com / password123');
+            console.log('Default users created.');
         }
 
         // Save data to localStorage
@@ -2906,7 +2900,6 @@
         // Register Service Worker
         function registerServiceWorker() {
             if ('serviceWorker' in navigator) {
-                // Service Worker code as inline string
                 const serviceWorkerCode = `
                     const CACHE_NAME = 'gk-store-v3';
                     const urlsToCache = [
@@ -2919,28 +2912,22 @@
                         'https://sdk.amazonaws.com/js/aws-sdk-2.1432.0.min.js'
                     ];
 
-                    // Install event
                     self.addEventListener('install', (event) => {
-                        console.log('Service Worker installing...');
                         event.waitUntil(
                             caches.open(CACHE_NAME)
                                 .then((cache) => {
-                                    console.log('Opened cache');
                                     return cache.addAll(urlsToCache);
                                 })
                                 .then(() => self.skipWaiting())
                         );
                     });
 
-                    // Activate event
                     self.addEventListener('activate', (event) => {
-                        console.log('Service Worker activating...');
                         event.waitUntil(
                             caches.keys().then((cacheNames) => {
                                 return Promise.all(
                                     cacheNames.map((cacheName) => {
                                         if (cacheName !== CACHE_NAME) {
-                                            console.log('Deleting old cache:', cacheName);
                                             return caches.delete(cacheName);
                                         }
                                     })
@@ -2949,29 +2936,20 @@
                         );
                     });
 
-                    // Fetch event with network-first strategy for Filebase
                     self.addEventListener('fetch', (event) => {
-                        // Skip non-GET requests
                         if (event.request.method !== 'GET') return;
-
-                        // Skip chrome-extension requests
-                        if (event.request.url.startsWith('chrome-extension://')) return;
                         
-                        // Special handling for Filebase requests
                         if (event.request.url.includes('filebase.io') || event.request.url.includes('ipfs.filebase.io')) {
-                            // For Filebase requests, always go to network first
                             event.respondWith(
                                 fetch(event.request)
                                     .then(response => response)
                                     .catch(() => {
-                                        // If network fails, show error
-                                        return new Response('Cannot access Filebase. Check CORS settings in Filebase dashboard.');
+                                        return new Response('Cannot access Filebase.');
                                     })
                             );
                             return;
                         }
 
-                        // For all other requests, use cache-first strategy
                         event.respondWith(
                             caches.match(event.request)
                                 .then(cachedResponse => {
@@ -2981,7 +2959,6 @@
                                     
                                     return fetch(event.request)
                                         .then(response => {
-                                            // Cache the response if it's valid
                                             if (response.status === 200 && response.type === 'basic') {
                                                 const responseToCache = response.clone();
                                                 caches.open(CACHE_NAME)
@@ -2992,49 +2969,25 @@
                                             return response;
                                         })
                                         .catch(() => {
-                                            // Return offline page for non-Filebase requests
                                             if (event.request.destination === 'document') {
                                                 return caches.match('./index.html');
                                             }
-                                            return new Response('You are offline. Please check your connection.');
+                                            return new Response('You are offline.');
                                         });
                                 })
                         );
                     });
-
-                    // Message event
-                    self.addEventListener('message', (event) => {
-                        if (event.data === 'skipWaiting') {
-                            self.skipWaiting();
-                        }
-                    });
                 `;
 
-                // Convert the string to a Blob
                 const blob = new Blob([serviceWorkerCode], { type: 'application/javascript' });
                 const serviceWorkerUrl = URL.createObjectURL(blob);
 
-                // Register the service worker
                 navigator.serviceWorker.register(serviceWorkerUrl)
                     .then((registration) => {
-                        console.log('ServiceWorker registration successful with scope:', registration.scope);
+                        console.log('ServiceWorker registration successful');
                         
-                        // Check for updates
                         registration.addEventListener('updatefound', () => {
-                            const newWorker = registration.installing;
                             console.log('Service Worker update found!');
-                            
-                            newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed') {
-                                    if (navigator.serviceWorker.controller) {
-                                        // New content available
-                                        showToast('info', 'Update Available', 'New version available. Refresh to update.');
-                                    } else {
-                                        // First install
-                                        console.log('Service Worker installed for the first time');
-                                    }
-                                }
-                            });
                         });
                     })
                     .catch((error) => {
@@ -3363,7 +3316,6 @@
             if (appState.videos.length > 0) {
                 loadVideo(appState.currentVideoIndex);
             } else {
-                // Show empty state
                 const videoSection = document.getElementById('video-section');
                 const videoPlaceholder = document.getElementById('video-placeholder');
                 if (videoSection && videoPlaceholder) {
@@ -3425,12 +3377,11 @@
                 const videoPlayer = document.createElement('video');
                 videoPlayer.className = 'video-player';
                 videoPlayer.src = video.url;
-                videoPlayer.controls = false; // Hide default controls for TikTok style
+                videoPlayer.controls = false;
                 videoPlayer.autoplay = true;
                 videoPlayer.muted = false;
                 videoPlayer.loop = true;
                 
-                // Add event listeners for video
                 videoPlayer.addEventListener('play', () => {
                     isVideoPlaying = true;
                     updatePlayPauseIcon();
@@ -3449,7 +3400,6 @@
                 isVideoPlaying = true;
                 updatePlayPauseIcon();
             } else {
-                // Set gradient background if no video
                 videoSection.style.background = 'linear-gradient(135deg, #ec4899, #8b5cf6)';
                 videoSection.style.backgroundSize = 'cover';
                 videoSection.style.backgroundPosition = 'center';
@@ -3467,7 +3417,6 @@
                     isVideoPlaying = false;
                 }
                 
-                // Show play/pause overlay
                 showPlayPauseOverlay();
                 updatePlayPauseIcon();
             }
@@ -3479,18 +3428,14 @@
             const playPauseIcon = document.getElementById('play-pause-icon');
             
             if (playPauseOverlay && playPauseIcon) {
-                // Update icon
                 playPauseIcon.className = isVideoPlaying ? 'fas fa-pause' : 'fas fa-play';
                 
-                // Show overlay
                 playPauseOverlay.classList.add('show');
                 
-                // Clear any existing timeout
                 if (playPauseTimeout) {
                     clearTimeout(playPauseTimeout);
                 }
                 
-                // Hide overlay after 1 second
                 playPauseTimeout = setTimeout(() => {
                     playPauseOverlay.classList.remove('show');
                 }, 1000);
@@ -3516,7 +3461,7 @@
             }
         }
 
-        // Load video grid - FIXED: Show videos by tier
+        // Load video grid
         function loadVideoGrid() {
             const grid = document.getElementById('video-grid');
             if (!grid) return;
@@ -3534,7 +3479,6 @@
                 return;
             }
             
-            // Show all videos in grid
             appState.videos.forEach((video, index) => {
                 const tierBadgeClass = video.account.tier === 'big' ? 'badge-primary' : 
                                       video.account.tier === 'medium' ? 'badge-secondary' : 'badge-warning';
@@ -3577,14 +3521,13 @@
             }, 1000);
         }
 
-        // Load accounts page content - FIXED: Show accounts by tier
+        // Load accounts page content
         function loadAccountsContent() {
             const grid = document.getElementById('accounts-grid');
             if (!grid) return;
             
             grid.innerHTML = '';
             
-            // Show all accounts initially
             filterAccounts('all');
         }
 
@@ -3592,7 +3535,6 @@
         function playAccountVideo(videoId) {
             const videoIndex = appState.videos.findIndex(v => v.id === videoId);
             if (videoIndex !== -1) {
-                // Navigate to home page and play the video
                 showPage('home');
                 setTimeout(() => {
                     appState.currentVideoIndex = videoIndex;
@@ -3647,7 +3589,7 @@
             }
         }
 
-        // Filter accounts by tier - FIXED: Proper filtering
+        // Filter accounts by tier
         function filterAccounts(tier) {
             document.querySelectorAll('.tab-item').forEach(tab => {
                 tab.classList.remove('active');
@@ -3666,7 +3608,6 @@
                 filteredAccounts = appState.accounts.filter(account => account.tier === tier);
             }
             
-            // Show empty message if no accounts in the selected tier
             if (filteredAccounts.length === 0) {
                 grid.innerHTML = `
                     <div class="col-span-3 text-center py-12">
@@ -3685,7 +3626,6 @@
                 const accountCard = document.createElement('div');
                 accountCard.className = 'account-card';
                 
-                // Determine icon class based on tier
                 let iconClass = 'account-icon ';
                 let iconText = '';
                 if (account.tier === 'small') {
@@ -3699,7 +3639,6 @@
                     iconText = '<i class="fas fa-crown"></i>';
                 }
                 
-                // Find associated video for this account
                 const associatedVideo = appState.videos.find(v => v.id === account.videoId);
                 
                 accountCard.innerHTML = `
@@ -3755,20 +3694,16 @@
 
         // Load admin page content
         function loadAdminContent() {
-            // Reset admin login state
             appState.isAdminLoggedIn = false;
             const adminDashboard = document.getElementById('admin-dashboard');
             if (adminDashboard) {
                 adminDashboard.classList.add('hidden');
             }
             
-            // Clear password field
             const adminPasswordInput = document.getElementById('admin-password');
             if (adminPasswordInput) {
                 adminPasswordInput.value = '';
             }
-            
-            console.log('Admin page loaded, admin login state reset');
         }
 
         // View account details
@@ -3784,22 +3719,18 @@
             }
         }
 
-        // FIXED ADMIN LOGIN FUNCTION
+        // Admin login
         function adminLogin(event) {
             event.preventDefault();
             
             const passwordInput = document.getElementById('admin-password');
             const password = passwordInput.value;
             
-            console.log('Attempting admin login with password:', password);
-            
-            // Check if password matches the hardcoded admin password
             if (password === 'GK@2024!AdminSecure') {
                 appState.isAdminLoggedIn = true;
                 const adminDashboard = document.getElementById('admin-dashboard');
                 if (adminDashboard) {
                     adminDashboard.classList.remove('hidden');
-                    console.log('Admin dashboard shown');
                 }
                 showToast('success', 'Admin Login', 'Successfully logged in as admin');
                 passwordInput.value = '';
@@ -3807,11 +3738,10 @@
                 updateAdminStats();
             } else {
                 showToast('error', 'Admin Login', 'Incorrect password. Try: GK@2024!AdminSecure');
-                console.log('Admin login failed - incorrect password');
             }
         }
 
-        // Check Filebase Connection - FIXED VERSION
+        // Check Filebase Connection
         function checkFilebaseConnection() {
             const statusElement = document.getElementById('connection-status');
             const iconElement = document.getElementById('connection-icon');
@@ -3822,7 +3752,6 @@
             iconElement.className = 'fas fa-spinner animate-spin';
             messageElement.textContent = 'Testing Filebase connection...';
             
-            // First check if AWS SDK is loaded
             if (typeof AWS === 'undefined') {
                 statusElement.className = 'connection-status error';
                 iconElement.className = 'fas fa-times-circle';
@@ -3832,7 +3761,6 @@
             }
             
             try {
-                // Create S3 instance with your Filebase credentials - FIXED CONFIGURATION
                 const s3 = new AWS.S3({
                     endpoint: new AWS.Endpoint('https://s3.filebase.com'),
                     region: 'us-east-1',
@@ -3844,21 +3772,18 @@
                     )
                 });
                 
-                console.log('Testing Filebase connection with your credentials');
+                console.log('Testing Filebase connection');
                 
-                // Try to list buckets first (this doesn't require bucket permissions)
                 s3.listBuckets({}, (err, data) => {
                     if (err) {
                         console.error('Filebase connection error:', err);
                         statusElement.className = 'connection-status error';
                         iconElement.className = 'fas fa-times-circle';
                         
-                        // Check for specific errors
                         if (err.code === 'InvalidAccessKeyId' || err.code === 'SignatureDoesNotMatch') {
                             messageElement.textContent = 'Invalid Filebase credentials. Check your Access Key and Secret Key.';
                             showToast('error', 'Invalid Credentials', 'Check your Filebase API keys');
                         } else if (err.code === 'NetworkingError' || err.message.includes('Network Error') || err.message.includes('CORS')) {
-                            // CORS issue - but connection is still established
                             statusElement.className = 'connection-status success';
                             iconElement.className = 'fas fa-check-circle';
                             messageElement.textContent = 'Connection successful! CORS may restrict some browser operations but uploads should work.';
@@ -3872,7 +3797,6 @@
                         statusElement.className = 'connection-status success';
                         iconElement.className = 'fas fa-check-circle';
                         
-                        // Check if our bucket exists
                         const bucketName = 'gk-store-videos';
                         const bucketExists = data.Buckets.some(bucket => bucket.Name === bucketName);
                         
@@ -3910,10 +3834,8 @@
             document.getElementById('video-price').value = '';
             document.getElementById('video-tier').value = '';
             
-            // Reset file selection
             clearFileSelection();
             
-            // Reset connection status
             document.getElementById('connection-status').classList.add('hidden');
             
             showModal('upload-video-modal');
@@ -3924,36 +3846,30 @@
             const file = event.target.files[0];
             if (!file) return;
             
-            // Check file size (max 200MB for Filebase)
-            const maxSize = 200 * 1024 * 1024; // 200MB in bytes
+            const maxSize = 200 * 1024 * 1024;
             if (file.size > maxSize) {
                 showToast('error', 'File Too Large', 'Please select a video file smaller than 200MB');
                 return;
             }
             
-            // Check file type
             const validTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'];
             if (!validTypes.includes(file.type)) {
                 showToast('error', 'Invalid File Type', 'Please select a valid video file (MP4, MOV, AVI, MKV)');
                 return;
             }
             
-            // Store file
             appState.currentUpload.file = file;
             
-            // Update UI
             document.getElementById('file-name').textContent = file.name;
             document.getElementById('file-size').textContent = formatFileSize(file.size);
             document.getElementById('file-preview').classList.add('active');
             
-            // Show video preview
             const previewPlayer = document.getElementById('preview-player');
             const videoPreview = document.getElementById('video-preview');
             const videoURL = URL.createObjectURL(file);
             previewPlayer.src = videoURL;
             videoPreview.classList.add('active');
             
-            // Update status
             showToast('info', 'File Selected', `${file.name} (${formatFileSize(file.size)})`);
         }
 
@@ -3976,7 +3892,7 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // UPLOAD VIDEO TO FILEBASE - FIXED VERSION WITH TIER FOLDERS
+        // FIXED UPLOAD FUNCTION - No CORS preflight issue
         async function uploadVideoToFilebase() {
             if (!appState.isAdminLoggedIn) {
                 showToast('error', 'Access Denied', 'Please login as admin first');
@@ -3991,7 +3907,6 @@
             
             const file = appState.currentUpload.file;
             
-            // Validation
             if (!id || !title || isNaN(price) || price < 0 || !tier || !file) {
                 showToast('error', 'Validation Error', 'Please fill all required fields and select a video file');
                 return;
@@ -4002,7 +3917,6 @@
                 return;
             }
             
-            // Show upload status
             const uploadStatus = document.getElementById('upload-status');
             const uploadProgress = document.getElementById('upload-progress');
             const uploadPercentage = document.getElementById('upload-percentage');
@@ -4015,7 +3929,7 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Uploading to Filebase...';
             
             try {
-                // Create S3 instance with your Filebase credentials - FIXED CONFIGURATION
+                // Create S3 instance with your Filebase credentials
                 const s3 = new AWS.S3({
                     endpoint: new AWS.Endpoint('https://s3.filebase.com'),
                     region: 'us-east-1',
@@ -4027,13 +3941,10 @@
                     )
                 });
                 
-                // Create unique filename - FIXED: Use tier-based folder structure
                 const timestamp = Date.now();
                 const fileExtension = file.name.split('.').pop();
-                // Store in tier-based folder: {tier}/{video_id}.{ext}
                 const fileName = `${tier}/${id}_${timestamp}.${fileExtension}`;
                 
-                // Prepare upload parameters
                 const params = {
                     Bucket: 'gk-store-videos',
                     Key: fileName,
@@ -4060,8 +3971,8 @@
                 // Start the upload
                 const upload = s3.upload(params);
                 
-                // Track upload progress
-                upload.on('httpUploadProgress', (progress) => {
+                // Track upload progress - FIXED: Using event listeners instead of on method
+                upload.on('httpUploadProgress', function(progress) {
                     const percentage = Math.round((progress.loaded / progress.total) * 100);
                     uploadProgress.style.width = percentage + '%';
                     uploadPercentage.textContent = percentage + '%';
@@ -4072,10 +3983,7 @@
                 // Execute upload
                 const data = await upload.promise();
                 
-                // Get the URL from the upload response
                 const videoUrl = data.Location;
-                
-                // Filebase returns IPFS CID in the ETag
                 const cid = data.ETag ? data.ETag.replace(/"/g, '') : '';
                 const ipfsUrl = cid ? `https://ipfs.filebase.io/ipfs/${cid}` : videoUrl;
                 
@@ -4085,11 +3993,9 @@
                     ipfsUrl: ipfsUrl,
                     key: data.Key,
                     bucket: data.Bucket,
-                    tier: tier,
-                    folder: tier + '/'
+                    tier: tier
                 });
                 
-                // Create new video object with tier information
                 const newVideo = {
                     id: id,
                     title: title,
@@ -4097,15 +4003,15 @@
                     views: 0,
                     likes: 0,
                     shares: 0,
-                    duration: "2:30", // This could be extracted from the video file in a real app
+                    duration: "2:30",
                     thumbnail: "",
-                    url: ipfsUrl, // Use IPFS URL for better accessibility
+                    url: ipfsUrl,
                     filebaseUrl: videoUrl,
                     filebaseKey: fileName,
                     ipfsCid: cid,
                     ipfsUrl: ipfsUrl,
                     uploadDate: new Date().toISOString(),
-                    tier: tier, // Store tier information
+                    tier: tier,
                     account: {
                         id: appState.accounts.length + 1,
                         title: title,
@@ -4116,7 +4022,6 @@
                     }
                 };
                 
-                // Create corresponding account with tier
                 const newAccount = {
                     id: newVideo.account.id,
                     title: newVideo.account.title,
@@ -4127,30 +4032,22 @@
                     videoId: id
                 };
                 
-                // Add to videos array
                 appState.videos.unshift(newVideo);
-                
-                // Add to accounts array
                 appState.accounts.unshift(newAccount);
                 appState.currentVideoIndex = 0;
                 
-                // Save to localStorage
                 saveAllDataToLocalStorage();
                 
-                // Update UI
                 loadHomeContent();
                 updateAdminStats();
                 
-                // Show generated URL section
-                const displayUrl = cid ? `IPFS CID: ${cid}\nURL: ${ipfsUrl}\nTier: ${tier}\nFolder: ${tier}/` : videoUrl;
+                const displayUrl = cid ? `IPFS CID: ${cid}\nURL: ${ipfsUrl}\nTier: ${tier}` : videoUrl;
                 document.getElementById('generated-url').textContent = displayUrl;
                 document.getElementById('url-generator').classList.add('active');
                 
-                // Show success message with tier information
                 showToast('success', 'Upload Successful', `Video "${title}" uploaded to ${tier} tier on Filebase IPFS`);
-                console.log('Video uploaded successfully. CID:', cid, 'URL:', ipfsUrl, 'Tier:', tier);
+                console.log('Video uploaded successfully.');
                 
-                // Reset form
                 setTimeout(() => {
                     document.getElementById('upload-video-form').reset();
                     clearFileSelection();
@@ -4158,7 +4055,6 @@
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload to Filebase';
                     
-                    // Load the new video
                     loadVideo(0);
                     
                 }, 1000);
@@ -4166,22 +4062,13 @@
             } catch (error) {
                 console.error('Filebase upload error:', error);
                 
-                // Provide user-friendly error messages
                 let errorMessage = error.message;
                 if (error.code === 'NoSuchBucket') {
                     errorMessage = `Bucket "gk-store-videos" not found. Please create it in Filebase dashboard.`;
                 } else if (error.code === 'AccessDenied') {
                     errorMessage = 'Access denied. Check your Filebase credentials or bucket permissions.';
                 } else if (error.code === 'NetworkingError' || error.message.includes('CORS')) {
-                    // Even with CORS errors, upload might succeed from browser context
-                    // Check if we got any response data
-                    if (error.request && error.request.status === 200) {
-                        errorMessage = 'Upload may have succeeded despite CORS warnings. Check Filebase dashboard.';
-                        showToast('warning', 'Possible CORS Issue', 'Upload may have succeeded. Check Filebase dashboard.');
-                    } else {
-                        errorMessage = 'Network/CORS error. Try uploading a smaller file or check Filebase dashboard.';
-                        showToast('warning', 'Network/CORS Issue', 'Upload may have succeeded despite CORS warnings.');
-                    }
+                    errorMessage = 'Network/CORS error. Check Filebase dashboard CORS settings or try a smaller file.';
                 }
                 
                 showToast('error', 'Upload Failed', errorMessage);
@@ -4211,7 +4098,7 @@
             showModal('manage-videos-modal');
         }
 
-        // Load admin videos - FIXED: Show tier information
+        // Load admin videos
         function loadAdminVideos(filter = 'all') {
             const videosList = document.getElementById('admin-videos-list');
             if (!videosList) return;
@@ -4281,28 +4168,23 @@
         // Delete video
         function deleteVideo(videoId) {
             if (confirm('Are you sure you want to delete this video? The corresponding account will also be removed.')) {
-                // Remove video
                 const videoIndex = appState.videos.findIndex(v => v.id === videoId);
                 if (videoIndex !== -1) {
-                    // Revoke object URL to free memory
                     if (appState.videos[videoIndex].url) {
                         URL.revokeObjectURL(appState.videos[videoIndex].url);
                     }
                     appState.videos.splice(videoIndex, 1);
                 }
                 
-                // Remove corresponding account
                 const accountIndex = appState.accounts.findIndex(a => a.videoId === videoId);
                 if (accountIndex !== -1) {
                     appState.accounts.splice(accountIndex, 1);
                 }
                 
-                // Update current video index if needed
                 if (appState.currentVideoIndex >= appState.videos.length) {
                     appState.currentVideoIndex = Math.max(0, appState.videos.length - 1);
                 }
                 
-                // Save to localStorage
                 saveAllDataToLocalStorage();
                 
                 loadAdminVideos('all');
@@ -4413,7 +4295,6 @@
                     account.sold = true;
                 }
                 
-                // Save to localStorage
                 saveAllDataToLocalStorage();
                 
                 loadAdminBookRequests();
@@ -4428,7 +4309,6 @@
             if (request) {
                 request.status = 'rejected';
                 
-                // Save to localStorage
                 saveAllDataToLocalStorage();
                 
                 loadAdminBookRequests();
@@ -4458,7 +4338,6 @@
             const newWhatsappNumber = document.getElementById('new-whatsapp-number').value;
             
             if (newPassword && newPassword.length >= 6) {
-                // Update admin password
                 appState.adminPassword = newPassword;
                 showToast('success', 'Password Updated', 'Admin password has been changed');
             }
@@ -4470,7 +4349,6 @@
             }
             
             if (newWhatsappNumber) {
-                // Update WhatsApp number in localStorage
                 localStorage.setItem('gkStoreWhatsApp', newWhatsappNumber);
                 showToast('success', 'WhatsApp Updated', 'WhatsApp number has been updated');
             }
@@ -4584,7 +4462,6 @@
             appState.language = lang;
             localStorage.setItem('appLanguage', lang);
             
-            // Update language checkmarks
             document.querySelectorAll('[id^="lang-"]').forEach(check => {
                 check.classList.add('hidden');
             });
@@ -4594,7 +4471,6 @@
                 activeCheck.classList.remove('hidden');
             }
             
-            // Update RTL/LTR
             const rtlLanguages = ['ar', 'fa', 'ur', 'ps'];
             if (rtlLanguages.includes(lang)) {
                 document.body.setAttribute('dir', 'rtl');
@@ -4716,13 +4592,11 @@
             
             appState.bookRequests.push(bookRequest);
             
-            // Save to localStorage
             saveDataToLocalStorage('gkStoreBookRequests', appState.bookRequests);
             
             showToast('success', 'Request Submitted', 'We will contact you shortly on WhatsApp');
             closeModal('book-modal');
             
-            // Clear form
             document.getElementById('book-name').value = '';
             document.getElementById('book-whatsapp').value = '';
             document.getElementById('book-notes').value = '';
@@ -4797,14 +4671,12 @@
 
         // Logout
         function logout() {
-            // Clean up object URLs to free memory
             appState.videos.forEach(video => {
                 if (video.url && video.url.startsWith('blob:')) {
                     URL.revokeObjectURL(video.url);
                 }
             });
             
-            // Decrease online users count
             if (appState.userStats.onlineUsers > 0) {
                 appState.userStats.onlineUsers--;
                 saveDataToLocalStorage('gkStoreStats', appState.userStats);
@@ -4845,39 +4717,30 @@
             const password = document.getElementById('login-password').value;
             const rememberMe = document.getElementById('remember-me').checked;
             
-            // Find user
             const hashedPassword = secureHash(password);
             const user = appState.users.find(u => u.email === email && u.password === hashedPassword);
             
             if (user) {
-                // Update last login
                 user.lastLogin = new Date().toISOString();
                 
-                // Set current user
                 appState.currentUser = user;
                 appState.isLoggedIn = true;
                 
-                // Update online users count
                 appState.userStats.onlineUsers++;
                 saveDataToLocalStorage('gkStoreStats', appState.userStats);
                 
-                // Save to localStorage if remember me is checked
                 if (rememberMe) {
                     localStorage.setItem('gkStoreUser', JSON.stringify(user));
                 }
                 
-                // Update profile page
                 document.getElementById('user-name').textContent = user.name;
                 document.getElementById('user-email').textContent = user.email;
                 document.getElementById('member-since').textContent = user.createdAt;
                 
-                // Show success message
                 showToast('success', 'Login Successful', `Welcome back, ${user.name}!`);
                 
-                // Reset form
                 document.getElementById('login-form').reset();
                 
-                // Redirect to home
                 setTimeout(() => {
                     showPage('home');
                 }, 500);
@@ -4896,7 +4759,6 @@
             const password = document.getElementById('signup-password').value;
             const confirmPassword = document.getElementById('signup-confirm-password').value;
             
-            // Validation
             if (password !== confirmPassword) {
                 showToast('error', 'Signup Failed', 'Passwords do not match');
                 return;
@@ -4907,53 +4769,42 @@
                 return;
             }
             
-            // Check if user already exists
             if (appState.users.some(u => u.email === email)) {
                 showToast('error', 'Signup Failed', 'User with this email already exists');
                 return;
             }
             
-            // Create new user with hashed password
             const newUser = {
                 id: appState.users.length + 1,
                 email: email,
-                password: secureHash(password), // Store hashed password
+                password: secureHash(password),
                 name: name,
                 role: 'user',
                 createdAt: new Date().toISOString().split('T')[0],
                 lastLogin: new Date().toISOString()
             };
             
-            // Add to users array
             appState.users.push(newUser);
             
-            // Update stats
             appState.userStats.registeredUsers++;
             appState.userStats.onlineUsers++;
             
-            // Save to localStorage
             saveDataToLocalStorage('gkStoreUsers', appState.users);
             saveDataToLocalStorage('gkStoreStats', appState.userStats);
             
-            // Set current user
             appState.currentUser = newUser;
             appState.isLoggedIn = true;
             
-            // Save to localStorage
             localStorage.setItem('gkStoreUser', JSON.stringify(newUser));
             
-            // Update profile page
             document.getElementById('user-name').textContent = newUser.name;
             document.getElementById('user-email').textContent = newUser.email;
             document.getElementById('member-since').textContent = newUser.createdAt;
             
-            // Show success message
             showToast('success', 'Account Created', `Welcome to GK Store, ${name}!`);
             
-            // Reset form
             document.getElementById('signup-form').reset();
             
-            // Redirect to home
             setTimeout(() => {
                 showPage('home');
             }, 500);
@@ -4965,13 +4816,11 @@
             
             const email = document.getElementById('reset-email').value.trim();
             
-            // Check if user exists
             const user = appState.users.find(u => u.email === email);
             
             if (user) {
                 showToast('success', 'Reset Link Sent', 'Check your email for password reset instructions');
                 
-                // Reset form and go back to login
                 document.getElementById('forgot-password-form').reset();
                 showLoginForm();
             } else {
@@ -4981,48 +4830,39 @@
 
         // Social login function
         function socialLogin(provider) {
-            // Create a mock user
             const mockUser = {
                 id: appState.users.length + 1,
                 email: `user_${Date.now()}@${provider}.com`,
-                password: secureHash('social_auth'), // Store hashed password
+                password: secureHash('social_auth'),
                 name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} User`,
                 role: 'user',
                 createdAt: new Date().toISOString().split('T')[0],
                 lastLogin: new Date().toISOString()
             };
             
-            // Check if user already exists (by email)
             let existingUser = appState.users.find(u => u.email === mockUser.email);
             
             if (!existingUser) {
-                // Add new user
                 appState.users.push(mockUser);
                 appState.userStats.registeredUsers++;
                 saveDataToLocalStorage('gkStoreUsers', appState.users);
                 existingUser = mockUser;
             }
             
-            // Update stats
             appState.userStats.onlineUsers++;
             saveDataToLocalStorage('gkStoreStats', appState.userStats);
             
-            // Set current user
             appState.currentUser = existingUser;
             appState.isLoggedIn = true;
             
-            // Save to localStorage
             localStorage.setItem('gkStoreUser', JSON.stringify(existingUser));
             
-            // Update profile page
             document.getElementById('user-name').textContent = existingUser.name;
             document.getElementById('user-email').textContent = existingUser.email;
             document.getElementById('member-since').textContent = existingUser.createdAt;
             
-            // Show success message
             showToast('success', 'Login Successful', `Welcome, ${existingUser.name}!`);
             
-            // Redirect to home
             setTimeout(() => {
                 showPage('home');
             }, 500);
@@ -5083,11 +4923,9 @@
                 ]
             };
 
-            // Create a Blob with the manifest content
             const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
             const manifestUrl = URL.createObjectURL(blob);
             
-            // Update the manifest link
             const manifestLink = document.getElementById('app-manifest');
             if (manifestLink) {
                 manifestLink.href = manifestUrl;
