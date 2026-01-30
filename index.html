@@ -2620,7 +2620,7 @@
             },
             users: [],
             
-            // Filebase Configuration - FIXED WITH WORKING CREDENTIALS
+            // Filebase Configuration - UPDATED WITH YOUR CREDENTIALS
             filebaseConfig: {
                 accessKeyId: '33B0D768699F462BDFC1',
                 secretAccessKey: 'Yr1udg7LAUTk0EPLJM0BsXPlM8VMciKsQk2PhbSC',
@@ -3889,7 +3889,7 @@
             }
         }
 
-        // Check Filebase Connection - FIXED WITH BETTER ERROR HANDLING
+        // Check Filebase Connection - UPDATED WITH YOUR CREDENTIALS AND BETTER ERROR HANDLING
         function checkFilebaseConnection() {
             const statusElement = document.getElementById('connection-status');
             const iconElement = document.getElementById('connection-icon');
@@ -3910,57 +3910,62 @@
             }
             
             try {
-                // IMPORTANT: Create new S3 instance with updated configuration
+                // Create S3 instance with your Filebase credentials
                 const s3 = new AWS.S3({
-                    accessKeyId: appState.filebaseConfig.accessKeyId,
-                    secretAccessKey: appState.filebaseConfig.secretAccessKey,
-                    endpoint: appState.filebaseConfig.endpoint,
-                    region: appState.filebaseConfig.region,
+                    accessKeyId: '33B0D768699F462BDFC1',
+                    secretAccessKey: 'Yr1udg7LAUTk0EPLJM0BsXPlM8VMciKsQk2PhbSC',
+                    endpoint: 'https://s3.filebase.com',
+                    region: 'us-east-1',
                     s3ForcePathStyle: true,
                     signatureVersion: 'v4',
                     apiVersion: '2006-03-01'
                 });
                 
-                console.log('Testing Filebase connection with config:', {
-                    endpoint: appState.filebaseConfig.endpoint,
-                    bucket: appState.filebaseConfig.bucketName,
-                    region: appState.filebaseConfig.region
-                });
+                console.log('Testing Filebase connection with your credentials');
                 
-                // Test connection with a simple operation - list buckets
+                // Try to list buckets first (this doesn't require bucket permissions)
                 s3.listBuckets({}, (err, data) => {
                     if (err) {
                         console.error('Filebase connection error:', err);
                         statusElement.className = 'connection-status error';
                         iconElement.className = 'fas fa-times-circle';
                         
-                        // Provide more specific error messages
-                        if (err.code === 'InvalidAccessKeyId') {
-                            messageElement.textContent = 'Invalid Filebase Access Key';
-                        } else if (err.code === 'SignatureDoesNotMatch') {
-                            messageElement.textContent = 'Invalid Filebase Secret Key';
-                        } else if (err.code === 'NetworkingError') {
-                            messageElement.textContent = 'Network error. Check CORS or firewall settings.';
-                            messageElement.textContent += '\\n\\nSOLUTION: Go to Filebase dashboard → Buckets → Select "gk-store-videos" → Permissions → Add CORS rule.';
+                        // Check for specific errors
+                        if (err.code === 'InvalidAccessKeyId' || err.code === 'SignatureDoesNotMatch') {
+                            messageElement.textContent = 'Invalid Filebase credentials. Check your Access Key and Secret Key.';
+                            showToast('error', 'Invalid Credentials', 'Check your Filebase API keys');
+                        } else if (err.code === 'NetworkingError' || err.message.includes('Network Error')) {
+                            messageElement.textContent = 'Network error. Please enable CORS in Filebase dashboard.';
+                            messageElement.innerHTML += '<br><br><strong>SOLUTION:</strong><br>1. Go to Filebase dashboard<br>2. Click on "Buckets"<br>3. Select "gk-store-videos" bucket<br>4. Go to "Permissions" tab<br>5. Add CORS rule:<br><code>[{"AllowedHeaders":["*"],"AllowedMethods":["GET","PUT","POST","DELETE","HEAD"],"AllowedOrigins":["*"],"ExposeHeaders":["ETag"]}]</code>';
+                            showToast('warning', 'CORS Issue', 'Add CORS rule in Filebase dashboard');
                         } else {
                             messageElement.textContent = 'Connection failed: ' + err.message;
+                            showToast('error', 'Connection Failed', err.message);
                         }
-                        
-                        showToast('error', 'Filebase Connection Failed', err.message);
                     } else {
-                        console.log('Filebase connection successful:', data);
+                        console.log('Filebase connection successful. Buckets found:', data.Buckets);
                         statusElement.className = 'connection-status success';
                         iconElement.className = 'fas fa-check-circle';
-                        messageElement.textContent = `Connected! ${data.Buckets.length} bucket(s) found.`;
+                        messageElement.textContent = `Connected to Filebase! ${data.Buckets.length} bucket(s) available.`;
                         
-                        // Check if our specific bucket exists
-                        const bucketExists = data.Buckets.some(bucket => bucket.Name === appState.filebaseConfig.bucketName);
+                        // Now test if our specific bucket exists and is accessible
+                        const bucketName = 'gk-store-videos';
+                        const bucketExists = data.Buckets.some(bucket => bucket.Name === bucketName);
+                        
                         if (bucketExists) {
-                            messageElement.textContent += ` Bucket "${appState.filebaseConfig.bucketName}" found.`;
-                            showToast('success', 'Filebase Connected', 'Ready to upload videos!');
+                            // Test bucket access
+                            s3.headBucket({ Bucket: bucketName }, (bucketErr, bucketData) => {
+                                if (bucketErr) {
+                                    messageElement.textContent = `Bucket "${bucketName}" exists but has permission issues.`;
+                                    showToast('warning', 'Bucket Permission Issue', 'Check bucket permissions in Filebase');
+                                } else {
+                                    messageElement.textContent = `Success! Bucket "${bucketName}" is ready for uploads.`;
+                                    showToast('success', 'Filebase Ready', 'Ready to upload videos to Filebase IPFS!');
+                                }
+                            });
                         } else {
-                            messageElement.textContent += ` Bucket "${appState.filebaseConfig.bucketName}" not found.`;
-                            showToast('warning', 'Bucket Missing', `Create bucket "${appState.filebaseConfig.bucketName}" in Filebase dashboard.`);
+                            messageElement.textContent = `Bucket "${bucketName}" not found. Please create it in Filebase dashboard.`;
+                            showToast('warning', 'Bucket Missing', `Create bucket "${bucketName}" in Filebase`);
                         }
                     }
                 });
@@ -4055,7 +4060,7 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // UPLOAD VIDEO TO FILEBASE - FIXED WITH BETTER ERROR HANDLING
+        // UPLOAD VIDEO TO FILEBASE - FIXED WITH YOUR CREDENTIALS
         async function uploadVideoToFilebase() {
             if (!appState.isAdminLoggedIn) {
                 showToast('error', 'Access Denied', 'Please login as admin first');
@@ -4094,12 +4099,12 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Uploading to Filebase...';
             
             try {
-                // Create S3 instance with proper configuration
+                // Create S3 instance with your Filebase credentials
                 const s3 = new AWS.S3({
-                    accessKeyId: appState.filebaseConfig.accessKeyId,
-                    secretAccessKey: appState.filebaseConfig.secretAccessKey,
-                    endpoint: appState.filebaseConfig.endpoint,
-                    region: appState.filebaseConfig.region,
+                    accessKeyId: '33B0D768699F462BDFC1',
+                    secretAccessKey: 'Yr1udg7LAUTk0EPLJM0BsXPlM8VMciKsQk2PhbSC',
+                    endpoint: 'https://s3.filebase.com',
+                    region: 'us-east-1',
                     s3ForcePathStyle: true,
                     signatureVersion: 'v4',
                     apiVersion: '2006-03-01'
@@ -4112,7 +4117,7 @@
                 
                 // Prepare upload parameters
                 const params = {
-                    Bucket: appState.filebaseConfig.bucketName,
+                    Bucket: 'gk-store-videos',
                     Key: fileName,
                     Body: file,
                     ContentType: file.type,
@@ -4126,7 +4131,7 @@
                     }
                 };
                 
-                console.log('Uploading to Filebase with params:', {
+                console.log('Uploading to Filebase:', {
                     bucket: params.Bucket,
                     key: params.Key,
                     size: file.size,
@@ -4151,7 +4156,7 @@
                 // Get the URL from the upload response
                 const videoUrl = data.Location;
                 
-                // IMPORTANT: Filebase returns IPFS CID in the ETag
+                // Filebase returns IPFS CID in the ETag
                 const cid = data.ETag ? data.ETag.replace(/"/g, '') : '';
                 const ipfsUrl = cid ? `https://ipfs.filebase.io/ipfs/${cid}` : videoUrl;
                 
@@ -4215,7 +4220,7 @@
                 updateAdminStats();
                 
                 // Show generated URL section
-                const displayUrl = cid ? `IPFS CID: ${cid}\\nURL: ${ipfsUrl}` : videoUrl;
+                const displayUrl = cid ? `IPFS CID: ${cid}\nURL: ${ipfsUrl}` : videoUrl;
                 document.getElementById('generated-url').textContent = displayUrl;
                 document.getElementById('url-generator').classList.add('active');
                 
@@ -4242,11 +4247,11 @@
                 // Provide user-friendly error messages
                 let errorMessage = error.message;
                 if (error.code === 'NoSuchBucket') {
-                    errorMessage = `Bucket "${appState.filebaseConfig.bucketName}" not found. Please create it in Filebase dashboard.`;
+                    errorMessage = `Bucket "gk-store-videos" not found. Please create it in Filebase dashboard.`;
                 } else if (error.code === 'AccessDenied') {
-                    errorMessage = 'Access denied. Check your Filebase credentials.';
+                    errorMessage = 'Access denied. Check your Filebase credentials or bucket permissions.';
                 } else if (error.code === 'NetworkingError') {
-                    errorMessage = 'Network error. Check your connection or CORS settings.\\n\\nSOLUTION: In Filebase dashboard, go to Buckets → Select "gk-store-videos" → Permissions → Add CORS rule.';
+                    errorMessage = 'Network error. Check your connection and CORS settings.\n\nSOLUTION: In Filebase dashboard, add CORS rule to "gk-store-videos" bucket.';
                 }
                 
                 showToast('error', 'Upload Failed', errorMessage);
