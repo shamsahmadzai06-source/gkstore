@@ -27,7 +27,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* ALL YOUR ORIGINAL CSS CODE - EXACTLY AS IS */
-        /* [All your CSS code remains exactly the same] */
         :root {
             --primary: #ec4899;
             --primary-dark: #db2777;
@@ -2681,8 +2680,7 @@
                     secretAccessKey: appState.filebaseConfig.secretAccessKey,
                     region: appState.filebaseConfig.region,
                     s3ForcePathStyle: true,
-                    signatureVersion: 'v4',
-                    endpoint: new AWS.Endpoint(appState.filebaseConfig.endpoint)
+                    signatureVersion: 'v4'
                 });
                 
                 console.log('Filebase initialized successfully');
