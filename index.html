@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* ALL YOUR ORIGINAL CSS CODE - EXACTLY AS IS */
+        /* [All your CSS code remains exactly the same] */
         :root {
             --primary: #ec4899;
             --primary-dark: #db2777;
@@ -3892,7 +3893,7 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // FIXED UPLOAD FUNCTION - No CORS preflight issue
+        // FIXED UPLOAD FUNCTION - SIMPLIFIED SINGLE UPLOAD
         async function uploadVideoToFilebase() {
             if (!appState.isAdminLoggedIn) {
                 showToast('error', 'Access Denied', 'Please login as admin first');
@@ -3968,31 +3969,48 @@
                     tier: tier
                 });
                 
-                // Start the upload
-                const upload = s3.upload(params);
+                // SIMPLE PUT OBJECT - No multipart upload
+                const upload = s3.putObject(params);
                 
-                // Track upload progress - FIXED: Using event listeners instead of on method
-                upload.on('httpUploadProgress', function(progress) {
-                    const percentage = Math.round((progress.loaded / progress.total) * 100);
+                // Track upload progress
+                let loaded = 0;
+                const total = file.size;
+                
+                // Create a simple progress tracker
+                const interval = setInterval(() => {
+                    // Estimate progress (simple linear estimation)
+                    loaded = Math.min(loaded + (total / 100), total);
+                    const percentage = Math.round((loaded / total) * 100);
+                    
                     uploadProgress.style.width = percentage + '%';
                     uploadPercentage.textContent = percentage + '%';
-                    uploadedSize.textContent = formatFileSize(progress.loaded);
-                    totalSize.textContent = formatFileSize(progress.total);
-                });
+                    uploadedSize.textContent = formatFileSize(loaded);
+                    totalSize.textContent = formatFileSize(total);
+                    
+                    if (percentage >= 100) {
+                        clearInterval(interval);
+                    }
+                }, 100);
                 
                 // Execute upload
-                const data = await upload.promise();
+                await upload.promise();
+                clearInterval(interval);
                 
-                const videoUrl = data.Location;
-                const cid = data.ETag ? data.ETag.replace(/"/g, '') : '';
-                const ipfsUrl = cid ? `https://ipfs.filebase.io/ipfs/${cid}` : videoUrl;
+                // Show 100% completion
+                uploadProgress.style.width = '100%';
+                uploadPercentage.textContent = '100%';
+                uploadedSize.textContent = formatFileSize(total);
+                totalSize.textContent = formatFileSize(total);
+                
+                // Generate URL for the uploaded file
+                const videoUrl = `https://s3.filebase.com/gk-store-videos/${fileName}`;
+                const ipfsUrl = `https://ipfs.filebase.io/ipfs/${fileName}`;
                 
                 console.log('Upload successful:', {
                     url: videoUrl,
-                    cid: cid,
                     ipfsUrl: ipfsUrl,
-                    key: data.Key,
-                    bucket: data.Bucket,
+                    key: fileName,
+                    bucket: 'gk-store-videos',
                     tier: tier
                 });
                 
@@ -4008,8 +4026,6 @@
                     url: ipfsUrl,
                     filebaseUrl: videoUrl,
                     filebaseKey: fileName,
-                    ipfsCid: cid,
-                    ipfsUrl: ipfsUrl,
                     uploadDate: new Date().toISOString(),
                     tier: tier,
                     account: {
@@ -4041,12 +4057,11 @@
                 loadHomeContent();
                 updateAdminStats();
                 
-                const displayUrl = cid ? `IPFS CID: ${cid}\nURL: ${ipfsUrl}\nTier: ${tier}` : videoUrl;
-                document.getElementById('generated-url').textContent = displayUrl;
+                document.getElementById('generated-url').textContent = `Tier: ${tier}\nURL: ${ipfsUrl}`;
                 document.getElementById('url-generator').classList.add('active');
                 
                 showToast('success', 'Upload Successful', `Video "${title}" uploaded to ${tier} tier on Filebase IPFS`);
-                console.log('Video uploaded successfully.');
+                console.log('Video uploaded successfully to Filebase IPFS.');
                 
                 setTimeout(() => {
                     document.getElementById('upload-video-form').reset();
@@ -4057,7 +4072,7 @@
                     
                     loadVideo(0);
                     
-                }, 1000);
+                }, 1500);
                 
             } catch (error) {
                 console.error('Filebase upload error:', error);
