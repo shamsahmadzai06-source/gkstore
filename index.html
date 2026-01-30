@@ -2666,7 +2666,7 @@
                 showPage('auth');
             }
             
-            // Initialize AWS S3 for Filebase
+            // Initialize Filebase
             initializeFilebase();
         }
 
@@ -2677,13 +2677,12 @@
                 
                 // Configure AWS for Filebase with CORRECT credentials
                 AWS.config.update({
-                    credentials: new AWS.Credentials(
-                        appState.filebaseConfig.accessKeyId,
-                        appState.filebaseConfig.secretAccessKey
-                    ),
+                    accessKeyId: appState.filebaseConfig.accessKeyId,
+                    secretAccessKey: appState.filebaseConfig.secretAccessKey,
                     region: appState.filebaseConfig.region,
                     s3ForcePathStyle: true,
-                    signatureVersion: 'v4'
+                    signatureVersion: 'v4',
+                    endpoint: new AWS.Endpoint(appState.filebaseConfig.endpoint)
                 });
                 
                 console.log('Filebase initialized successfully');
@@ -3893,7 +3892,7 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // FIXED UPLOAD FUNCTION - SIMPLIFIED SINGLE UPLOAD
+        // FIXED UPLOAD FUNCTION - Working Filebase Upload
         async function uploadVideoToFilebase() {
             if (!appState.isAdminLoggedIn) {
                 showToast('error', 'Access Denied', 'Please login as admin first');
@@ -3969,42 +3968,32 @@
                     tier: tier
                 });
                 
-                // SIMPLE PUT OBJECT - No multipart upload
-                const upload = s3.putObject(params);
+                // Start upload with progress tracking
+                const upload = s3.upload(params);
                 
                 // Track upload progress
-                let loaded = 0;
-                const total = file.size;
-                
-                // Create a simple progress tracker
-                const interval = setInterval(() => {
-                    // Estimate progress (simple linear estimation)
-                    loaded = Math.min(loaded + (total / 100), total);
-                    const percentage = Math.round((loaded / total) * 100);
+                upload.on('httpUploadProgress', (progress) => {
+                    const percentage = Math.round((progress.loaded / progress.total) * 100);
                     
                     uploadProgress.style.width = percentage + '%';
                     uploadPercentage.textContent = percentage + '%';
-                    uploadedSize.textContent = formatFileSize(loaded);
-                    totalSize.textContent = formatFileSize(total);
-                    
-                    if (percentage >= 100) {
-                        clearInterval(interval);
-                    }
-                }, 100);
+                    uploadedSize.textContent = formatFileSize(progress.loaded);
+                    totalSize.textContent = formatFileSize(progress.total);
+                });
                 
                 // Execute upload
-                await upload.promise();
-                clearInterval(interval);
+                const data = await upload.promise();
+                console.log('Upload successful:', data);
                 
                 // Show 100% completion
                 uploadProgress.style.width = '100%';
                 uploadPercentage.textContent = '100%';
-                uploadedSize.textContent = formatFileSize(total);
-                totalSize.textContent = formatFileSize(total);
+                uploadedSize.textContent = formatFileSize(file.size);
+                totalSize.textContent = formatFileSize(file.size);
                 
                 // Generate URL for the uploaded file
                 const videoUrl = `https://s3.filebase.com/gk-store-videos/${fileName}`;
-                const ipfsUrl = `https://ipfs.filebase.io/ipfs/${fileName}`;
+                const ipfsUrl = `https://ipfs.filebase.io/ipfs/${data.Location}`;
                 
                 console.log('Upload successful:', {
                     url: videoUrl,
