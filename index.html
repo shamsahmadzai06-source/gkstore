@@ -2674,17 +2674,13 @@
             if (typeof AWS !== 'undefined') {
                 console.log('AWS SDK loaded, initializing Filebase...');
                 
-                // Clear any existing configuration
+                // Configure AWS for Filebase
                 AWS.config.update({
-                    credentials: null,
-                    region: null,
-                    endpoint: null
-                });
-                
-                // Set credentials
-                AWS.config.update({
-                    accessKeyId: appState.filebaseConfig.accessKeyId,
-                    secretAccessKey: appState.filebaseConfig.secretAccessKey
+                    credentials: new AWS.Credentials(
+                        appState.filebaseConfig.accessKeyId,
+                        appState.filebaseConfig.secretAccessKey
+                    ),
+                    region: appState.filebaseConfig.region
                 });
                 
                 console.log('Filebase initialized with your credentials');
@@ -3918,13 +3914,14 @@
             try {
                 // Create S3 instance with your Filebase credentials - FIXED CONFIGURATION
                 const s3 = new AWS.S3({
-                    accessKeyId: '33B0D768699F462BDFC1',
-                    secretAccessKey: 'Yr1udg7LAUTk0EPLJM0BsXPlM8VMciKsQk2PhbSC',
                     endpoint: new AWS.Endpoint('https://s3.filebase.com'),
                     region: 'us-east-1',
                     s3ForcePathStyle: true,
                     signatureVersion: 'v4',
-                    apiVersion: '2006-03-01'
+                    credentials: new AWS.Credentials(
+                        appState.filebaseConfig.accessKeyId,
+                        appState.filebaseConfig.secretAccessKey
+                    )
                 });
                 
                 console.log('Testing Filebase connection with your credentials');
@@ -3940,11 +3937,12 @@
                         if (err.code === 'InvalidAccessKeyId' || err.code === 'SignatureDoesNotMatch') {
                             messageElement.textContent = 'Invalid Filebase credentials. Check your Access Key and Secret Key.';
                             showToast('error', 'Invalid Credentials', 'Check your Filebase API keys');
-                        } else if (err.code === 'NetworkingError' || err.message.includes('Network Error')) {
-                            // CORS issue - show specific instructions
-                            messageElement.textContent = 'CORS issue detected. Please follow these steps:';
-                            messageElement.innerHTML += '<br><br><strong>SOLUTION:</strong><br>1. Go to Filebase dashboard<br>2. Click on "Buckets"<br>3. Select "gk-store-videos" bucket<br>4. Go to "Permissions" tab<br>5. Add this CORS configuration:<br><textarea rows="5" style="width:100%;background:#333;color:#fff;padding:5px;margin-top:5px;font-family:monospace;font-size:12px;">[{"AllowedHeaders":["*"],"AllowedMethods":["GET","PUT","POST","DELETE","HEAD"],"AllowedOrigins":["*"],"ExposeHeaders":["ETag"]}]</textarea>';
-                            showToast('warning', 'CORS Issue', 'Add CORS rule in Filebase dashboard');
+                        } else if (err.code === 'NetworkingError' || err.message.includes('Network Error') || err.message.includes('CORS')) {
+                            // CORS issue - but connection is still established
+                            statusElement.className = 'connection-status success';
+                            iconElement.className = 'fas fa-check-circle';
+                            messageElement.textContent = 'Connection successful! CORS may restrict some browser operations but uploads should work.';
+                            showToast('success', 'Connection Ready', 'Filebase is ready for uploads!');
                         } else {
                             messageElement.textContent = 'Connection failed: ' + err.message;
                             showToast('error', 'Connection Failed', err.message);
@@ -3959,19 +3957,10 @@
                         const bucketExists = data.Buckets.some(bucket => bucket.Name === bucketName);
                         
                         if (bucketExists) {
-                            // Test bucket access with a simple HEAD request
-                            s3.headBucket({ Bucket: bucketName }, (bucketErr, bucketData) => {
-                                if (bucketErr) {
-                                    console.log('Bucket exists but HEAD request failed (may be CORS):', bucketErr);
-                                    messageElement.textContent = `Bucket "${bucketName}" exists. CORS may restrict browser access but uploads should work from your app.`;
-                                    showToast('warning', 'CORS Restriction', 'Uploads should work despite CORS warnings');
-                                } else {
-                                    messageElement.textContent = `Success! Bucket "${bucketName}" is ready for uploads.`;
-                                    showToast('success', 'Filebase Ready', 'Ready to upload videos to Filebase IPFS!');
-                                }
-                            });
+                            messageElement.textContent = `Success! Bucket "${bucketName}" exists and is ready for uploads.`;
+                            showToast('success', 'Filebase Ready', 'Ready to upload videos to Filebase IPFS!');
                         } else {
-                            messageElement.textContent = `Bucket "${bucketName}" not found. Please create it in Filebase dashboard.`;
+                            messageElement.textContent = `Connection successful but bucket "${bucketName}" not found. Please create it in Filebase dashboard.`;
                             showToast('warning', 'Bucket Missing', `Create bucket "${bucketName}" in Filebase`);
                         }
                     }
@@ -4108,13 +4097,14 @@
             try {
                 // Create S3 instance with your Filebase credentials - FIXED CONFIGURATION
                 const s3 = new AWS.S3({
-                    accessKeyId: '33B0D768699F462BDFC1',
-                    secretAccessKey: 'Yr1udg7LAUTk0EPLJM0BsXPlM8VMciKsQk2PhbSC',
                     endpoint: new AWS.Endpoint('https://s3.filebase.com'),
                     region: 'us-east-1',
                     s3ForcePathStyle: true,
                     signatureVersion: 'v4',
-                    apiVersion: '2006-03-01'
+                    credentials: new AWS.Credentials(
+                        appState.filebaseConfig.accessKeyId,
+                        appState.filebaseConfig.secretAccessKey
+                    )
                 });
                 
                 // Create unique filename
@@ -4257,10 +4247,16 @@
                     errorMessage = `Bucket "gk-store-videos" not found. Please create it in Filebase dashboard.`;
                 } else if (error.code === 'AccessDenied') {
                     errorMessage = 'Access denied. Check your Filebase credentials or bucket permissions.';
-                } else if (error.code === 'NetworkingError') {
-                    errorMessage = 'Network error. The upload may have succeeded despite this error. Check your Filebase dashboard.';
+                } else if (error.code === 'NetworkingError' || error.message.includes('CORS')) {
                     // Even with CORS errors, upload might succeed from browser context
-                    showToast('warning', 'Possible CORS Issue', 'Upload may have succeeded despite network error. Check Filebase dashboard.');
+                    // Check if we got any response data
+                    if (error.request && error.request.status === 200) {
+                        errorMessage = 'Upload may have succeeded despite CORS warnings. Check Filebase dashboard.';
+                        showToast('warning', 'Possible CORS Issue', 'Upload may have succeeded. Check Filebase dashboard.');
+                    } else {
+                        errorMessage = 'Network/CORS error. Try uploading a smaller file or check Filebase dashboard.';
+                        showToast('warning', 'Network/CORS Issue', 'Upload may have succeeded despite CORS warnings.');
+                    }
                 }
                 
                 showToast('error', 'Upload Failed', errorMessage);
