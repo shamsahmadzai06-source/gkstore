@@ -2620,12 +2620,12 @@
             },
             users: [],
             
-            // Filebase Configuration - UPDATED WITH YOUR CREDENTIALS
+            // FIXED: Filebase Configuration - CORRECT SETTINGS
             filebaseConfig: {
                 accessKeyId: '33B0D768699F462BDFC1',
                 secretAccessKey: 'Yr1udg7LAUTk0EPLJM0BsXPlM8VMciKsQk2PhbSC',
                 endpoint: 'https://s3.filebase.com',
-                bucketName: 'gk-store-videos',
+                bucketName: 'gk-store-videos',  // Must match your bucket name exactly
                 region: 'us-east-1',
                 s3ForcePathStyle: true,
                 signatureVersion: 'v4'
@@ -2638,6 +2638,7 @@
         let currentVideoPlayer = null;
         let playPauseTimeout = null;
         let isVideoPlaying = true;
+        let s3Client = null; // Added S3 client reference
 
         // Initialize App
         function initApp() {
@@ -2669,7 +2670,7 @@
             initializeFilebase();
         }
 
-        // Initialize Filebase
+        // FIXED: Initialize Filebase with proper configuration
         function initializeFilebase() {
             if (typeof AWS !== 'undefined') {
                 console.log('AWS SDK loaded, initializing Filebase...');
@@ -2678,13 +2679,436 @@
                 AWS.config.update({
                     accessKeyId: appState.filebaseConfig.accessKeyId,
                     secretAccessKey: appState.filebaseConfig.secretAccessKey,
-                    region: appState.filebaseConfig.region
+                    region: appState.filebaseConfig.region,
+                    s3ForcePathStyle: true,
+                    signatureVersion: 'v4'
+                });
+                
+                // Create S3 instance with Filebase endpoint
+                s3Client = new AWS.S3({
+                    endpoint: new AWS.Endpoint(appState.filebaseConfig.endpoint),
+                    region: appState.filebaseConfig.region,
+                    s3ForcePathStyle: true,
+                    signatureVersion: 'v4'
                 });
                 
                 console.log('Filebase initialized successfully');
+                
+                // Test connection immediately
+                setTimeout(() => {
+                    checkFilebaseConnection();
+                }, 1000);
+                
             } else {
                 console.error('AWS SDK not loaded');
+                showToast('error', 'AWS SDK Error', 'Failed to load AWS SDK. Please refresh the page.');
             }
+        }
+
+        // FIXED: Check Filebase Connection
+        function checkFilebaseConnection() {
+            const statusElement = document.getElementById('connection-status');
+            const iconElement = document.getElementById('connection-icon');
+            const messageElement = document.getElementById('connection-message');
+            
+            if (!statusElement) return;
+            
+            statusElement.className = 'connection-status';
+            statusElement.classList.remove('hidden');
+            iconElement.className = 'fas fa-spinner animate-spin';
+            messageElement.textContent = 'Testing Filebase connection...';
+            
+            if (!s3Client) {
+                statusElement.className = 'connection-status error';
+                iconElement.className = 'fas fa-times-circle';
+                messageElement.textContent = 'S3 client not initialized';
+                return;
+            }
+            
+            try {
+                // Try to list buckets to test connection
+                s3Client.listBuckets({}, (err, data) => {
+                    if (err) {
+                        console.error('Filebase connection error:', err);
+                        statusElement.className = 'connection-status error';
+                        iconElement.className = 'fas fa-times-circle';
+                        
+                        if (err.code === 'InvalidAccessKeyId' || err.code === 'SignatureDoesNotMatch') {
+                            messageElement.textContent = 'Invalid Filebase credentials. Check your Access Key and Secret Key.';
+                            showToast('error', 'Invalid Credentials', 'Check your Filebase API keys');
+                        } else if (err.code === 'NetworkingError' || err.message.includes('Network Error') || err.message.includes('CORS')) {
+                            messageElement.textContent = 'Network/CORS issue. Uploads might still work but browser is restricted.';
+                            showToast('warning', 'Connection Issue', 'Network restrictions detected. Try uploading anyway.');
+                        } else {
+                            messageElement.textContent = 'Connection failed: ' + err.message;
+                            showToast('error', 'Connection Failed', err.message);
+                        }
+                    } else {
+                        console.log('Filebase connection successful. Buckets found:', data.Buckets);
+                        statusElement.className = 'connection-status success';
+                        iconElement.className = 'fas fa-check-circle';
+                        
+                        const bucketName = appState.filebaseConfig.bucketName;
+                        const bucketExists = data.Buckets.some(bucket => bucket.Name === bucketName);
+                        
+                        if (bucketExists) {
+                            messageElement.textContent = `Success! Bucket "${bucketName}" exists and is ready for uploads.`;
+                            showToast('success', 'Filebase Ready', 'Ready to upload videos to Filebase IPFS!');
+                        } else {
+                            messageElement.textContent = `Connection successful but bucket "${bucketName}" not found. Please create it in Filebase dashboard.`;
+                            showToast('warning', 'Bucket Missing', `Create bucket "${bucketName}" in Filebase dashboard`);
+                        }
+                    }
+                });
+                
+            } catch (configError) {
+                console.error('Configuration error:', configError);
+                statusElement.className = 'connection-status error';
+                iconElement.className = 'fas fa-times-circle';
+                messageElement.textContent = 'Configuration error: ' + configError.message;
+                showToast('error', 'Configuration Error', 'Check Filebase configuration');
+            }
+        }
+
+        // FIXED: Upload Video to Filebase - Complete rewrite
+        async function uploadVideoToFilebase() {
+            if (!appState.isAdminLoggedIn) {
+                showToast('error', 'Access Denied', 'Please login as admin first');
+                return;
+            }
+            
+            const id = document.getElementById('video-id').value.trim();
+            const title = document.getElementById('video-title-input').value.trim();
+            const description = document.getElementById('video-description-input').value.trim();
+            const price = parseFloat(document.getElementById('video-price').value);
+            const tier = document.getElementById('video-tier').value;
+            
+            const file = appState.currentUpload.file;
+            
+            if (!id || !title || isNaN(price) || price < 0 || !tier || !file) {
+                showToast('error', 'Validation Error', 'Please fill all required fields and select a video file');
+                return;
+            }
+            
+            if (appState.videos.some(v => v.id === id)) {
+                showToast('error', 'Duplicate ID', 'Video ID already exists. Please use a unique ID.');
+                return;
+            }
+            
+            const uploadStatus = document.getElementById('upload-status');
+            const uploadProgress = document.getElementById('upload-progress');
+            const uploadPercentage = document.getElementById('upload-percentage');
+            const uploadedSize = document.getElementById('uploaded-size');
+            const totalSize = document.getElementById('total-size');
+            const submitBtn = document.querySelector('#upload-video-form button[type="button"]');
+            
+            uploadStatus.classList.add('active');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Uploading to Filebase...';
+            
+            try {
+                // Validate S3 client
+                if (!s3Client) {
+                    throw new Error('S3 client not initialized. Please check connection.');
+                }
+                
+                const timestamp = Date.now();
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                
+                // Create folder structure based on tier: small/, medium/, big/
+                const fileName = `${tier}/${id}_${timestamp}.${fileExtension}`;
+                
+                console.log('Uploading to Filebase:', {
+                    bucket: appState.filebaseConfig.bucketName,
+                    key: fileName,
+                    tier: tier,
+                    fileSize: file.size
+                });
+                
+                // Prepare upload parameters
+                const params = {
+                    Bucket: appState.filebaseConfig.bucketName,
+                    Key: fileName,
+                    Body: file,
+                    ContentType: file.type,
+                    Metadata: {
+                        'video-id': id,
+                        'title': title,
+                        'description': description,
+                        'tier': tier,
+                        'price': price.toString(),
+                        'upload-date': new Date().toISOString(),
+                        'original-filename': file.name
+                    },
+                    // Add ACL for public read if needed
+                    ACL: 'public-read'
+                };
+                
+                // Show initial progress
+                uploadProgress.style.width = '0%';
+                uploadPercentage.textContent = '0%';
+                uploadedSize.textContent = '0 MB';
+                totalSize.textContent = formatFileSize(file.size);
+                
+                // Create upload promise with progress tracking
+                const uploadPromise = new Promise((resolve, reject) => {
+                    const upload = s3Client.upload(params);
+                    
+                    // Track upload progress
+                    upload.on('httpUploadProgress', (progress) => {
+                        const percentage = Math.round((progress.loaded / progress.total) * 100);
+                        
+                        uploadProgress.style.width = percentage + '%';
+                        uploadPercentage.textContent = percentage + '%';
+                        uploadedSize.textContent = formatFileSize(progress.loaded);
+                        totalSize.textContent = formatFileSize(progress.total);
+                        
+                        console.log(`Upload progress: ${percentage}%`);
+                    });
+                    
+                    // Execute upload
+                    upload.send((err, data) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(data);
+                        }
+                    });
+                });
+                
+                // Execute upload
+                const data = await uploadPromise;
+                console.log('Upload successful:', data);
+                
+                // Show 100% completion
+                uploadProgress.style.width = '100%';
+                uploadPercentage.textContent = '100%';
+                uploadedSize.textContent = formatFileSize(file.size);
+                totalSize.textContent = formatFileSize(file.size);
+                
+                // FIXED: Generate correct URL for Filebase
+                // Filebase uses different URL format: https://ipfs.filebase.io/ipfs/<CID>
+                // But for S3 direct access, use: https://<bucket>.s3.filebase.com/<key>
+                const videoUrl = `https://${appState.filebaseConfig.bucketName}.s3.filebase.com/${fileName}`;
+                const ipfsUrl = data.Location; // Filebase returns IPFS URL in Location
+                
+                console.log('Generated URLs:', {
+                    s3Url: videoUrl,
+                    ipfsUrl: ipfsUrl,
+                    data: data
+                });
+                
+                // Create new video object
+                const newVideo = {
+                    id: id,
+                    title: title,
+                    description: description || 'No description available',
+                    views: 0,
+                    likes: 0,
+                    shares: 0,
+                    duration: "2:30",
+                    thumbnail: "",
+                    url: ipfsUrl || videoUrl, // Prefer IPFS URL if available
+                    s3Url: videoUrl,
+                    filebaseKey: fileName,
+                    fileSize: file.size,
+                    uploadDate: new Date().toISOString(),
+                    tier: tier,
+                    account: {
+                        id: appState.accounts.length + 1,
+                        title: title,
+                        tier: tier,
+                        price: price,
+                        followers: Math.floor(Math.random() * 10000) + 1000,
+                        thumbnail: ""
+                    }
+                };
+                
+                // Create corresponding account
+                const newAccount = {
+                    id: newVideo.account.id,
+                    title: newVideo.account.title,
+                    description: newVideo.description,
+                    tier: newVideo.account.tier,
+                    price: newVideo.account.price,
+                    sold: false,
+                    videoId: id
+                };
+                
+                // Add to app state
+                appState.videos.unshift(newVideo);
+                appState.accounts.unshift(newAccount);
+                appState.currentVideoIndex = 0;
+                
+                // Save to localStorage
+                saveAllDataToLocalStorage();
+                
+                // Update UI
+                loadHomeContent();
+                updateAdminStats();
+                
+                // Show success message with URLs
+                document.getElementById('generated-url').innerHTML = `
+                    <strong>Tier:</strong> ${tier}<br>
+                    <strong>S3 URL:</strong> ${videoUrl}<br>
+                    ${ipfsUrl ? `<strong>IPFS URL:</strong> ${ipfsUrl}<br>` : ''}
+                    <strong>File:</strong> ${fileName}<br>
+                    <strong>Size:</strong> ${formatFileSize(file.size)}
+                `;
+                document.getElementById('url-generator').classList.add('active');
+                
+                showToast('success', 'Upload Successful', `Video "${title}" uploaded to ${tier} folder!`);
+                console.log('Video uploaded successfully to Filebase.');
+                
+                // Reset form after delay
+                setTimeout(() => {
+                    document.getElementById('upload-video-form').reset();
+                    clearFileSelection();
+                    uploadStatus.classList.remove('active');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload to Filebase';
+                    
+                    // Load the new video
+                    loadVideo(0);
+                    
+                    // Close modal after successful upload
+                    closeModal('upload-video-modal');
+                    
+                }, 1500);
+                
+            } catch (error) {
+                console.error('Filebase upload error:', error);
+                
+                let errorMessage = error.message;
+                let toastType = 'error';
+                
+                if (error.code === 'NoSuchBucket') {
+                    errorMessage = `Bucket "${appState.filebaseConfig.bucketName}" not found. Please create it in Filebase dashboard.`;
+                } else if (error.code === 'AccessDenied') {
+                    errorMessage = 'Access denied. Check your Filebase credentials or bucket permissions.';
+                } else if (error.code === 'NetworkingError' || error.message.includes('CORS')) {
+                    errorMessage = 'Network/CORS restriction. The file might have uploaded but browser is blocking the response. Check Filebase dashboard.';
+                    toastType = 'warning';
+                } else if (error.code === 'RequestTimeTooSkewed') {
+                    errorMessage = 'System clock is out of sync. Please check your computer time and date.';
+                }
+                
+                showToast(toastType, 'Upload Status', errorMessage);
+                
+                // Even on error, the file might have uploaded to Filebase
+                // Check Filebase dashboard to confirm
+                if (toastType === 'warning') {
+                    showToast('info', 'Check Dashboard', 'Please check Filebase dashboard to confirm upload.');
+                }
+                
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload to Filebase';
+                uploadStatus.classList.remove('active');
+            }
+        }
+
+        // FIXED: Test video playback from Filebase
+        function testVideoUrl() {
+            const urlGenerator = document.getElementById('generated-url');
+            if (!urlGenerator) return;
+            
+            const urls = urlGenerator.textContent;
+            let videoUrl = '';
+            
+            // Extract URL from the generated text
+            if (urls.includes('https://')) {
+                const urlMatch = urls.match(/https:\/\/[^\s]+/);
+                if (urlMatch) {
+                    videoUrl = urlMatch[0];
+                }
+            }
+            
+            if (!videoUrl) {
+                showToast('error', 'No URL Found', 'No video URL available for testing');
+                return;
+            }
+            
+            // Open URL in new tab for testing
+            window.open(videoUrl, '_blank');
+            
+            showToast('info', 'Testing Video', 'Opening video URL in new tab...');
+        }
+
+        // FIXED: Handle file selection with better validation
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Check file size (200MB limit)
+            const maxSize = 200 * 1024 * 1024; // 200MB in bytes
+            if (file.size > maxSize) {
+                showToast('error', 'File Too Large', `File size (${formatFileSize(file.size)}) exceeds 200MB limit`);
+                return;
+            }
+            
+            // Check file type
+            const validTypes = [
+                'video/mp4', 
+                'video/quicktime', 
+                'video/x-msvideo', 
+                'video/x-matroska',
+                'video/webm'
+            ];
+            
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            const validExtensions = ['mp4', 'mov', 'avi', 'mkv', 'webm'];
+            
+            if (!validTypes.includes(file.type) && !validExtensions.includes(fileExtension)) {
+                showToast('error', 'Invalid File Type', 'Please select MP4, MOV, AVI, MKV, or WEBM file');
+                return;
+            }
+            
+            appState.currentUpload.file = file;
+            
+            document.getElementById('file-name').textContent = file.name;
+            document.getElementById('file-size').textContent = formatFileSize(file.size);
+            document.getElementById('file-preview').classList.add('active');
+            
+            // Create preview
+            const previewPlayer = document.getElementById('preview-player');
+            const videoPreview = document.getElementById('video-preview');
+            const videoURL = URL.createObjectURL(file);
+            
+            previewPlayer.src = videoURL;
+            previewPlayer.load();
+            videoPreview.classList.add('active');
+            
+            showToast('success', 'File Selected', `${file.name} (${formatFileSize(file.size)}) ready for upload`);
+            
+            // Auto-test connection when file is selected
+            setTimeout(() => {
+                checkFilebaseConnection();
+            }, 500);
+        }
+
+        // FIXED: Format file size function
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // FIXED: Clear file selection properly
+        function clearFileSelection() {
+            const previewPlayer = document.getElementById('preview-player');
+            if (previewPlayer && previewPlayer.src) {
+                URL.revokeObjectURL(previewPlayer.src);
+                previewPlayer.src = '';
+            }
+            
+            appState.currentUpload.file = null;
+            document.getElementById('video-file').value = '';
+            document.getElementById('file-preview').classList.remove('active');
+            document.getElementById('video-preview').classList.remove('active');
+            document.getElementById('upload-status').classList.remove('active');
+            document.getElementById('url-generator').classList.remove('active');
         }
 
         // FIXED HASH FUNCTION
@@ -3737,80 +4161,6 @@
             }
         }
 
-        // Check Filebase Connection
-        function checkFilebaseConnection() {
-            const statusElement = document.getElementById('connection-status');
-            const iconElement = document.getElementById('connection-icon');
-            const messageElement = document.getElementById('connection-message');
-            
-            statusElement.className = 'connection-status';
-            statusElement.classList.remove('hidden');
-            iconElement.className = 'fas fa-spinner animate-spin';
-            messageElement.textContent = 'Testing Filebase connection...';
-            
-            if (typeof AWS === 'undefined') {
-                statusElement.className = 'connection-status error';
-                iconElement.className = 'fas fa-times-circle';
-                messageElement.textContent = 'AWS SDK not loaded. Please check network.';
-                showToast('error', 'AWS SDK Error', 'AWS SDK failed to load');
-                return;
-            }
-            
-            try {
-                const s3 = new AWS.S3({
-                    endpoint: new AWS.Endpoint('https://s3.filebase.com'),
-                    region: 'us-east-1',
-                    s3ForcePathStyle: true,
-                    signatureVersion: 'v4'
-                });
-                
-                console.log('Testing Filebase connection');
-                
-                s3.listBuckets({}, (err, data) => {
-                    if (err) {
-                        console.error('Filebase connection error:', err);
-                        statusElement.className = 'connection-status error';
-                        iconElement.className = 'fas fa-times-circle';
-                        
-                        if (err.code === 'InvalidAccessKeyId' || err.code === 'SignatureDoesNotMatch') {
-                            messageElement.textContent = 'Invalid Filebase credentials. Check your Access Key and Secret Key.';
-                            showToast('error', 'Invalid Credentials', 'Check your Filebase API keys');
-                        } else if (err.code === 'NetworkingError' || err.message.includes('Network Error') || err.message.includes('CORS')) {
-                            statusElement.className = 'connection-status success';
-                            iconElement.className = 'fas fa-check-circle';
-                            messageElement.textContent = 'Connection successful! CORS may restrict some browser operations but uploads should work.';
-                            showToast('success', 'Connection Ready', 'Filebase is ready for uploads!');
-                        } else {
-                            messageElement.textContent = 'Connection failed: ' + err.message;
-                            showToast('error', 'Connection Failed', err.message);
-                        }
-                    } else {
-                        console.log('Filebase connection successful. Buckets found:', data.Buckets);
-                        statusElement.className = 'connection-status success';
-                        iconElement.className = 'fas fa-check-circle';
-                        
-                        const bucketName = 'gk-store-videos';
-                        const bucketExists = data.Buckets.some(bucket => bucket.Name === bucketName);
-                        
-                        if (bucketExists) {
-                            messageElement.textContent = `Success! Bucket "${bucketName}" exists and is ready for uploads.`;
-                            showToast('success', 'Filebase Ready', 'Ready to upload videos to Filebase IPFS!');
-                        } else {
-                            messageElement.textContent = `Connection successful but bucket "${bucketName}" not found. Please create it in Filebase dashboard.`;
-                            showToast('warning', 'Bucket Missing', `Create bucket "${bucketName}" in Filebase`);
-                        }
-                    }
-                });
-                
-            } catch (configError) {
-                console.error('Configuration error:', configError);
-                statusElement.className = 'connection-status error';
-                iconElement.className = 'fas fa-times-circle';
-                messageElement.textContent = 'Configuration error: ' + configError.message;
-                showToast('error', 'Configuration Error', 'Check Filebase configuration');
-            }
-        }
-
         // Show upload video modal
         function showUploadVideo() {
             if (!appState.isAdminLoggedIn) {
@@ -3831,257 +4181,6 @@
             document.getElementById('connection-status').classList.add('hidden');
             
             showModal('upload-video-modal');
-        }
-
-        // Handle file selection
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const maxSize = 200 * 1024 * 1024;
-            if (file.size > maxSize) {
-                showToast('error', 'File Too Large', 'Please select a video file smaller than 200MB');
-                return;
-            }
-            
-            const validTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'];
-            if (!validTypes.includes(file.type)) {
-                showToast('error', 'Invalid File Type', 'Please select a valid video file (MP4, MOV, AVI, MKV)');
-                return;
-            }
-            
-            appState.currentUpload.file = file;
-            
-            document.getElementById('file-name').textContent = file.name;
-            document.getElementById('file-size').textContent = formatFileSize(file.size);
-            document.getElementById('file-preview').classList.add('active');
-            
-            const previewPlayer = document.getElementById('preview-player');
-            const videoPreview = document.getElementById('video-preview');
-            const videoURL = URL.createObjectURL(file);
-            previewPlayer.src = videoURL;
-            videoPreview.classList.add('active');
-            
-            showToast('info', 'File Selected', `${file.name} (${formatFileSize(file.size)})`);
-        }
-
-        // Clear file selection
-        function clearFileSelection() {
-            appState.currentUpload.file = null;
-            document.getElementById('video-file').value = '';
-            document.getElementById('file-preview').classList.remove('active');
-            document.getElementById('video-preview').classList.remove('active');
-            document.getElementById('upload-status').classList.remove('active');
-            document.getElementById('url-generator').classList.remove('active');
-        }
-
-        // Format file size
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        // FIXED UPLOAD FUNCTION - Proper Filebase Upload
-        async function uploadVideoToFilebase() {
-            if (!appState.isAdminLoggedIn) {
-                showToast('error', 'Access Denied', 'Please login as admin first');
-                return;
-            }
-            
-            const id = document.getElementById('video-id').value.trim();
-            const title = document.getElementById('video-title-input').value.trim();
-            const description = document.getElementById('video-description-input').value.trim();
-            const price = parseFloat(document.getElementById('video-price').value);
-            const tier = document.getElementById('video-tier').value;
-            
-            const file = appState.currentUpload.file;
-            
-            if (!id || !title || isNaN(price) || price < 0 || !tier || !file) {
-                showToast('error', 'Validation Error', 'Please fill all required fields and select a video file');
-                return;
-            }
-            
-            if (appState.videos.some(v => v.id === id)) {
-                showToast('error', 'Duplicate ID', 'Video ID already exists. Please use a unique ID.');
-                return;
-            }
-            
-            const uploadStatus = document.getElementById('upload-status');
-            const uploadProgress = document.getElementById('upload-progress');
-            const uploadPercentage = document.getElementById('upload-percentage');
-            const uploadedSize = document.getElementById('uploaded-size');
-            const totalSize = document.getElementById('total-size');
-            const submitBtn = document.querySelector('#upload-video-form button[type="button"]');
-            
-            uploadStatus.classList.add('active');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Uploading to Filebase...';
-            
-            try {
-                // Create S3 instance with your Filebase credentials
-                const s3 = new AWS.S3({
-                    endpoint: new AWS.Endpoint('https://s3.filebase.com'),
-                    region: 'us-east-1',
-                    s3ForcePathStyle: true,
-                    signatureVersion: 'v4'
-                });
-                
-                const timestamp = Date.now();
-                const fileExtension = file.name.split('.').pop().toLowerCase();
-                
-                // Create folder structure based on tier: small/, medium/, big/
-                const fileName = `${tier}/${id}_${timestamp}.${fileExtension}`;
-                
-                console.log('Uploading to Filebase with folder structure:', fileName);
-                
-                const params = {
-                    Bucket: 'gk-store-videos',
-                    Key: fileName,
-                    Body: file,
-                    ContentType: file.type,
-                    Metadata: {
-                        'video-id': id,
-                        'title': title,
-                        'description': description,
-                        'tier': tier,
-                        'price': price.toString(),
-                        'upload-date': new Date().toISOString()
-                    }
-                };
-                
-                // Start upload with progress tracking
-                const upload = s3.upload(params);
-                
-                // Track upload progress
-                upload.on('httpUploadProgress', (progress) => {
-                    const percentage = Math.round((progress.loaded / progress.total) * 100);
-                    
-                    uploadProgress.style.width = percentage + '%';
-                    uploadPercentage.textContent = percentage + '%';
-                    uploadedSize.textContent = formatFileSize(progress.loaded);
-                    totalSize.textContent = formatFileSize(progress.total);
-                });
-                
-                // Execute upload
-                const data = await upload.promise();
-                console.log('Upload successful:', data);
-                
-                // Show 100% completion
-                uploadProgress.style.width = '100%';
-                uploadPercentage.textContent = '100%';
-                uploadedSize.textContent = formatFileSize(file.size);
-                totalSize.textContent = formatFileSize(file.size);
-                
-                // Generate URL for the uploaded file - FIXED URL generation
-                const videoUrl = `https://${params.Bucket}.s3.filebase.com/${params.Key}`;
-                
-                console.log('Upload successful:', {
-                    url: videoUrl,
-                    key: fileName,
-                    bucket: 'gk-store-videos',
-                    tier: tier
-                });
-                
-                // Create new video object with proper Filebase URL
-                const newVideo = {
-                    id: id,
-                    title: title,
-                    description: description || 'No description available',
-                    views: 0,
-                    likes: 0,
-                    shares: 0,
-                    duration: "2:30",
-                    thumbnail: "",
-                    url: videoUrl,
-                    filebaseUrl: videoUrl,
-                    filebaseKey: fileName,
-                    uploadDate: new Date().toISOString(),
-                    tier: tier,
-                    account: {
-                        id: appState.accounts.length + 1,
-                        title: title,
-                        tier: tier,
-                        price: price,
-                        followers: 0,
-                        thumbnail: ""
-                    }
-                };
-                
-                // Create corresponding account
-                const newAccount = {
-                    id: newVideo.account.id,
-                    title: newVideo.account.title,
-                    description: newVideo.description,
-                    tier: newVideo.account.tier,
-                    price: newVideo.account.price,
-                    sold: false,
-                    videoId: id
-                };
-                
-                // Add to app state
-                appState.videos.unshift(newVideo);
-                appState.accounts.unshift(newAccount);
-                appState.currentVideoIndex = 0;
-                
-                // Save to localStorage
-                saveAllDataToLocalStorage();
-                
-                // Update UI
-                loadHomeContent();
-                updateAdminStats();
-                
-                // Show success message
-                document.getElementById('generated-url').textContent = `Tier: ${tier}\nURL: ${videoUrl}`;
-                document.getElementById('url-generator').classList.add('active');
-                
-                showToast('success', 'Upload Successful', `Video "${title}" uploaded to ${tier} folder on Filebase`);
-                console.log('Video uploaded successfully to Filebase.');
-                
-                // Reset form after delay
-                setTimeout(() => {
-                    document.getElementById('upload-video-form').reset();
-                    clearFileSelection();
-                    uploadStatus.classList.remove('active');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload to Filebase';
-                    
-                    // Load the new video
-                    loadVideo(0);
-                    
-                    // Close modal after successful upload
-                    closeModal('upload-video-modal');
-                    
-                }, 1500);
-                
-            } catch (error) {
-                console.error('Filebase upload error:', error);
-                
-                let errorMessage = error.message;
-                if (error.code === 'NoSuchBucket') {
-                    errorMessage = `Bucket "gk-store-videos" not found. Please create it in Filebase dashboard.`;
-                } else if (error.code === 'AccessDenied') {
-                    errorMessage = 'Access denied. Check your Filebase credentials or bucket permissions.';
-                } else if (error.code === 'NetworkingError' || error.message.includes('CORS')) {
-                    errorMessage = 'Network/CORS error. Check Filebase dashboard CORS settings or try a smaller file.';
-                }
-                
-                showToast('error', 'Upload Failed', errorMessage);
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload to Filebase';
-                uploadStatus.classList.remove('active');
-            }
-        }
-
-        // Test video URL
-        function testVideoUrl() {
-            const previewPlayer = document.getElementById('preview-player');
-            if (previewPlayer && previewPlayer.src) {
-                previewPlayer.play();
-                showToast('info', 'Test Play', 'Playing video preview');
-            }
         }
 
         // Show manage videos modal
