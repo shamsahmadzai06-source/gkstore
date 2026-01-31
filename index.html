@@ -2678,9 +2678,7 @@
                 AWS.config.update({
                     accessKeyId: appState.filebaseConfig.accessKeyId,
                     secretAccessKey: appState.filebaseConfig.secretAccessKey,
-                    region: appState.filebaseConfig.region,
-                    s3ForcePathStyle: true,
-                    signatureVersion: 'v4'
+                    region: appState.filebaseConfig.region
                 });
                 
                 console.log('Filebase initialized successfully');
@@ -3763,11 +3761,7 @@
                     endpoint: new AWS.Endpoint('https://s3.filebase.com'),
                     region: 'us-east-1',
                     s3ForcePathStyle: true,
-                    signatureVersion: 'v4',
-                    credentials: new AWS.Credentials(
-                        appState.filebaseConfig.accessKeyId,
-                        appState.filebaseConfig.secretAccessKey
-                    )
+                    signatureVersion: 'v4'
                 });
                 
                 console.log('Testing Filebase connection');
@@ -3890,7 +3884,7 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // FIXED UPLOAD FUNCTION - Working Filebase Upload with proper folder structure
+        // FIXED UPLOAD FUNCTION - Proper Filebase Upload
         async function uploadVideoToFilebase() {
             if (!appState.isAdminLoggedIn) {
                 showToast('error', 'Access Denied', 'Please login as admin first');
@@ -3932,11 +3926,7 @@
                     endpoint: new AWS.Endpoint('https://s3.filebase.com'),
                     region: 'us-east-1',
                     s3ForcePathStyle: true,
-                    signatureVersion: 'v4',
-                    credentials: new AWS.Credentials(
-                        appState.filebaseConfig.accessKeyId,
-                        appState.filebaseConfig.secretAccessKey
-                    )
+                    signatureVersion: 'v4'
                 });
                 
                 const timestamp = Date.now();
@@ -3987,11 +3977,9 @@
                 
                 // Generate URL for the uploaded file - FIXED URL generation
                 const videoUrl = `https://${params.Bucket}.s3.filebase.com/${params.Key}`;
-                const ipfsUrl = `https://ipfs.filebase.io/ipfs/${data.Location}`;
                 
                 console.log('Upload successful:', {
                     url: videoUrl,
-                    ipfsUrl: ipfsUrl,
                     key: fileName,
                     bucket: 'gk-store-videos',
                     tier: tier
@@ -4007,7 +3995,7 @@
                     shares: 0,
                     duration: "2:30",
                     thumbnail: "",
-                    url: videoUrl, // Use the direct Filebase URL for better compatibility
+                    url: videoUrl,
                     filebaseUrl: videoUrl,
                     filebaseKey: fileName,
                     uploadDate: new Date().toISOString(),
