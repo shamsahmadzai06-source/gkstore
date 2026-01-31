@@ -8,7 +8,7 @@
     
     <title>GK Store - Video Marketplace</title>
     
-    <!-- Favicon and Apple Touch Icons -->
+    <!-- Favicon and Apple Touch Icons with absolute GitHub Pages URLs -->
     <link rel="icon" type="image/png" href="https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-96-96.png">
     <link rel="apple-touch-icon" href="https://shamsahmadzai06-source.github.io/GKStore/android-launchericon-192-192.png">
     
@@ -501,7 +501,7 @@
             font-weight: 500;
         }
 
-        /* TikTok Style Video Player - FIXED SOUND ISSUE */
+        /* TikTok Style Video Player */
         .video-container {
             position: relative;
             width: 100%;
@@ -1552,39 +1552,6 @@
         .auth-switch a:hover {
             text-decoration: underline;
         }
-
-        /* Upload optimization styles */
-        .upload-optimization {
-            background: var(--surface-light);
-            border-radius: 0.75rem;
-            padding: 1rem;
-            margin-top: 1rem;
-            font-size: 0.875rem;
-        }
-
-        .upload-optimization h4 {
-            margin-bottom: 0.5rem;
-            font-size: 1rem;
-        }
-
-        .upload-optimization ul {
-            padding-left: 1.5rem;
-            margin: 0.5rem 0;
-        }
-
-        .upload-optimization li {
-            margin-bottom: 0.25rem;
-        }
-
-        /* Memory management warning */
-        .memory-warning {
-            background: rgba(245, 158, 11, 0.1);
-            border: 1px solid rgba(245, 158, 11, 0.3);
-            border-radius: 0.75rem;
-            padding: 1rem;
-            margin-top: 1rem;
-            font-size: 0.875rem;
-        }
     </style>
 </head>
 <body>
@@ -2380,7 +2347,7 @@
         </div>
     </div>
 
-    <!-- Upload Video Modal - FIXED FOR LARGE FILES -->
+    <!-- Upload Video Modal -->
     <div id="upload-video-modal" class="modal-overlay hidden">
         <div class="modal" style="max-width: 500px;">
             <div class="modal-header">
@@ -2426,30 +2393,13 @@
                         </select>
                     </div>
                     
-                    <!-- File Upload Optimization Tips -->
-                    <div class="upload-optimization">
-                        <h4>📱 Upload Tips for Mobile Devices:</h4>
-                        <ul>
-                            <li>Compress videos to under 50MB for better mobile performance</li>
-                            <li>Use MP4 format with H.264 codec for compatibility</li>
-                            <li>Close other apps before uploading large files</li>
-                            <li>Stay on the upload screen until complete</li>
-                        </ul>
-                    </div>
-                    
-                    <!-- Memory Warning for Large Files -->
-                    <div id="memory-warning" class="memory-warning hidden">
-                        <i class="fas fa-exclamation-triangle text-warning mr-2"></i>
-                        <span>Large file detected. This may take longer on mobile devices.</span>
-                    </div>
-                    
                     <!-- File Upload Section (Filebase Storage) -->
                     <div class="input-group">
                         <label class="input-label">Choose Video File <span class="text-danger">*</span></label>
                         <div class="file-upload-area" id="file-upload-area" onclick="document.getElementById('video-file').click()">
                             <i class="fas fa-cloud-upload-alt text-3xl text-primary mb-2"></i>
                             <p class="font-medium">Click to select video or drag & drop</p>
-                            <p class="text-sm text-zinc-400 mt-1">Supported: MP4, MOV, AVI, MKV (max 500MB)</p>
+                            <p class="text-sm text-zinc-400 mt-1">Supported: MP4, MOV, AVI, MKV (max 200MB)</p>
                             <input type="file" id="video-file" accept="video/*" class="hidden" onchange="handleFileSelect(event)">
                         </div>
                         
@@ -2468,7 +2418,7 @@
                             
                             <!-- Video Preview -->
                             <div id="video-preview" class="video-preview">
-                                <video id="preview-player" controls playsinline>
+                                <video id="preview-player" controls>
                                     Your browser does not support the video tag.
                                 </video>
                             </div>
@@ -2488,7 +2438,6 @@
                             <span id="uploaded-size">0 MB</span>
                             <span id="total-size">0 MB</span>
                         </div>
-                        <div id="upload-speed" class="text-xs text-zinc-400 mt-2 text-center"></div>
                     </div>
                     
                     <!-- Generated URL -->
@@ -2522,7 +2471,7 @@
                         </div>
                     </div>
                     
-                    <button type="button" class="btn btn-primary w-full" onclick="uploadVideoToFilebase()" id="upload-button">
+                    <button type="button" class="btn btn-primary w-full" onclick="uploadVideoToFilebase()">
                         <i class="fas fa-cloud-upload-alt"></i> Upload to Filebase
                     </button>
                 </form>
@@ -2667,8 +2616,7 @@
             currentUpload: {
                 file: null,
                 progress: 0,
-                url: '',
-                startTime: null
+                url: ''
             },
             users: [],
             
@@ -2690,7 +2638,6 @@
         let currentVideoPlayer = null;
         let playPauseTimeout = null;
         let isVideoPlaying = true;
-        let isUploading = false;
 
         // Initialize App
         function initApp() {
@@ -2761,12 +2708,6 @@
                 const savedVideos = localStorage.getItem('gkStoreVideos');
                 if (savedVideos) {
                     appState.videos = JSON.parse(savedVideos);
-                    // Fix video URLs if they're blob URLs
-                    appState.videos.forEach(video => {
-                        if (video.url && video.url.startsWith('blob:')) {
-                            video.url = ''; // Clear blob URLs to avoid issues
-                        }
-                    });
                 }
                 
                 // Load accounts
@@ -2954,7 +2895,7 @@
             }
         }
 
-        // Register Service Worker - FIXED FOR UPLOADS
+        // Register Service Worker
         function registerServiceWorker() {
             if ('serviceWorker' in navigator) {
                 const serviceWorkerCode = `
@@ -2994,14 +2935,16 @@
                     });
 
                     self.addEventListener('fetch', (event) => {
-                        // Don't cache POST/PUT requests (like file uploads)
-                        if (event.request.method !== 'GET') {
-                            return;
-                        }
+                        if (event.request.method !== 'GET') return;
                         
-                        // Don't intercept Filebase uploads
-                        if (event.request.url.includes('s3.filebase.com') || 
-                            event.request.url.includes('ipfs.filebase.io')) {
+                        if (event.request.url.includes('filebase.io') || event.request.url.includes('ipfs.filebase.io')) {
+                            event.respondWith(
+                                fetch(event.request)
+                                    .then(response => response)
+                                    .catch(() => {
+                                        return new Response('Cannot access Filebase.');
+                                    })
+                            );
                             return;
                         }
 
@@ -3313,15 +3256,6 @@
                 document.getElementById('offline-indicator').classList.add('show');
                 showToast('error', 'Offline', 'Connection lost. Some features may not work.');
             });
-
-            // Prevent app reload during upload
-            window.addEventListener('beforeunload', (e) => {
-                if (isUploading) {
-                    e.preventDefault();
-                    e.returnValue = 'You have an upload in progress. Are you sure you want to leave?';
-                    return e.returnValue;
-                }
-            });
         }
 
         // Show page
@@ -3401,7 +3335,7 @@
             loadVideoGrid();
         }
 
-        // Load video - FIXED SOUND ISSUE
+        // Load video
         function loadVideo(index) {
             const video = appState.videos[index];
             if (!video) return;
@@ -3443,10 +3377,8 @@
                 videoPlayer.src = video.url;
                 videoPlayer.controls = false;
                 videoPlayer.autoplay = true;
-                videoPlayer.muted = false; // FIX: Enable sound by default
+                videoPlayer.muted = false;
                 videoPlayer.loop = true;
-                videoPlayer.playsinline = true; // FIX: For iOS
-                videoPlayer.preload = "auto";
                 
                 videoPlayer.addEventListener('play', () => {
                     isVideoPlaying = true;
@@ -3458,11 +3390,6 @@
                     updatePlayPauseIcon();
                 });
                 
-                videoPlayer.addEventListener('error', (e) => {
-                    console.error('Video error:', e);
-                    showToast('error', 'Video Error', 'Could not load video. Please try again.');
-                });
-                
                 videoSection.innerHTML = '';
                 videoSection.appendChild(videoPlayer);
                 videoSection.appendChild(videoOverlay);
@@ -3470,13 +3397,6 @@
                 currentVideoPlayer = videoPlayer;
                 isVideoPlaying = true;
                 updatePlayPauseIcon();
-                
-                // Try to play with sound (might be blocked by browser)
-                videoPlayer.play().catch(error => {
-                    console.log('Autoplay blocked, waiting for user interaction');
-                    videoPlayer.muted = true;
-                    videoPlayer.play();
-                });
             } else {
                 videoSection.style.background = 'linear-gradient(135deg, #ec4899, #8b5cf6)';
                 videoSection.style.backgroundSize = 'cover';
@@ -3915,7 +3835,6 @@
             clearFileSelection();
             
             document.getElementById('connection-status').classList.add('hidden');
-            document.getElementById('memory-warning').classList.add('hidden');
             
             showModal('upload-video-modal');
         }
@@ -3925,15 +3844,10 @@
             const file = event.target.files[0];
             if (!file) return;
             
-            const maxSize = 500 * 1024 * 1024; // Increased to 500MB
+            const maxSize = 200 * 1024 * 1024;
             if (file.size > maxSize) {
-                showToast('error', 'File Too Large', 'Please select a video file smaller than 500MB');
+                showToast('error', 'File Too Large', 'Please select a video file smaller than 200MB');
                 return;
-            }
-            
-            // Show warning for large files on mobile
-            if (file.size > 50 * 1024 * 1024) { // > 50MB
-                document.getElementById('memory-warning').classList.remove('hidden');
             }
             
             const validTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'];
@@ -3965,7 +3879,6 @@
             document.getElementById('video-preview').classList.remove('active');
             document.getElementById('upload-status').classList.remove('active');
             document.getElementById('url-generator').classList.remove('active');
-            document.getElementById('memory-warning').classList.add('hidden');
         }
 
         // Format file size
@@ -3977,24 +3890,10 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // Calculate upload speed
-        function calculateUploadSpeed(loaded, startTime) {
-            const timeElapsed = (Date.now() - startTime) / 1000; // in seconds
-            const speed = loaded / timeElapsed; // bytes per second
-            return speed > 1024 * 1024 ? 
-                (speed / (1024 * 1024)).toFixed(2) + ' MB/s' :
-                (speed / 1024).toFixed(2) + ' KB/s';
-        }
-
-        // FIXED UPLOAD FUNCTION - Optimized for mobile and large files
+        // FIXED UPLOAD FUNCTION - Working Filebase Upload with proper folder structure
         async function uploadVideoToFilebase() {
             if (!appState.isAdminLoggedIn) {
                 showToast('error', 'Access Denied', 'Please login as admin first');
-                return;
-            }
-            
-            if (isUploading) {
-                showToast('warning', 'Upload in Progress', 'Please wait for the current upload to complete');
                 return;
             }
             
@@ -4021,16 +3920,11 @@
             const uploadPercentage = document.getElementById('upload-percentage');
             const uploadedSize = document.getElementById('uploaded-size');
             const totalSize = document.getElementById('total-size');
-            const uploadSpeed = document.getElementById('upload-speed');
-            const uploadButton = document.getElementById('upload-button');
+            const submitBtn = document.querySelector('#upload-video-form button[type="button"]');
             
             uploadStatus.classList.add('active');
-            isUploading = true;
-            uploadButton.disabled = true;
-            uploadButton.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Uploading...';
-            
-            // Record start time for speed calculation
-            appState.currentUpload.startTime = Date.now();
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Uploading to Filebase...';
             
             try {
                 // Create S3 instance with your Filebase credentials
@@ -4046,8 +3940,12 @@
                 });
                 
                 const timestamp = Date.now();
-                const fileExtension = file.name.split('.').pop();
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                
+                // Create folder structure based on tier: small/, medium/, big/
                 const fileName = `${tier}/${id}_${timestamp}.${fileExtension}`;
+                
+                console.log('Uploading to Filebase with folder structure:', fileName);
                 
                 const params = {
                     Bucket: 'gk-store-videos',
@@ -4064,14 +3962,6 @@
                     }
                 };
                 
-                console.log('Uploading to Filebase:', {
-                    bucket: params.Bucket,
-                    key: params.Key,
-                    size: file.size,
-                    type: file.type,
-                    tier: tier
-                });
-                
                 // Start upload with progress tracking
                 const upload = s3.upload(params);
                 
@@ -4083,10 +3973,6 @@
                     uploadPercentage.textContent = percentage + '%';
                     uploadedSize.textContent = formatFileSize(progress.loaded);
                     totalSize.textContent = formatFileSize(progress.total);
-                    
-                    // Calculate and display upload speed
-                    const speed = calculateUploadSpeed(progress.loaded, appState.currentUpload.startTime);
-                    uploadSpeed.textContent = `Speed: ${speed}`;
                 });
                 
                 // Execute upload
@@ -4099,8 +3985,8 @@
                 uploadedSize.textContent = formatFileSize(file.size);
                 totalSize.textContent = formatFileSize(file.size);
                 
-                // Generate URL for the uploaded file
-                const videoUrl = `https://s3.filebase.com/gk-store-videos/${fileName}`;
+                // Generate URL for the uploaded file - FIXED URL generation
+                const videoUrl = `https://${params.Bucket}.s3.filebase.com/${params.Key}`;
                 const ipfsUrl = `https://ipfs.filebase.io/ipfs/${data.Location}`;
                 
                 console.log('Upload successful:', {
@@ -4111,6 +3997,7 @@
                     tier: tier
                 });
                 
+                // Create new video object with proper Filebase URL
                 const newVideo = {
                     id: id,
                     title: title,
@@ -4120,7 +4007,7 @@
                     shares: 0,
                     duration: "2:30",
                     thumbnail: "",
-                    url: ipfsUrl,
+                    url: videoUrl, // Use the direct Filebase URL for better compatibility
                     filebaseUrl: videoUrl,
                     filebaseKey: fileName,
                     uploadDate: new Date().toISOString(),
@@ -4135,6 +4022,7 @@
                     }
                 };
                 
+                // Create corresponding account
                 const newAccount = {
                     id: newVideo.account.id,
                     title: newVideo.account.title,
@@ -4145,36 +4033,38 @@
                     videoId: id
                 };
                 
+                // Add to app state
                 appState.videos.unshift(newVideo);
                 appState.accounts.unshift(newAccount);
                 appState.currentVideoIndex = 0;
                 
+                // Save to localStorage
                 saveAllDataToLocalStorage();
                 
-                // Clear any blob URLs to free memory
-                if (appState.currentUpload.url) {
-                    URL.revokeObjectURL(appState.currentUpload.url);
-                }
+                // Update UI
+                loadHomeContent();
+                updateAdminStats();
                 
-                document.getElementById('generated-url').textContent = `Tier: ${tier}\nURL: ${ipfsUrl}`;
+                // Show success message
+                document.getElementById('generated-url').textContent = `Tier: ${tier}\nURL: ${videoUrl}`;
                 document.getElementById('url-generator').classList.add('active');
                 
-                showToast('success', 'Upload Successful', `Video "${title}" uploaded to ${tier} tier on Filebase IPFS`);
-                console.log('Video uploaded successfully to Filebase IPFS.');
+                showToast('success', 'Upload Successful', `Video "${title}" uploaded to ${tier} folder on Filebase`);
+                console.log('Video uploaded successfully to Filebase.');
                 
+                // Reset form after delay
                 setTimeout(() => {
-                    // Reset form and close modal
                     document.getElementById('upload-video-form').reset();
                     clearFileSelection();
                     uploadStatus.classList.remove('active');
-                    isUploading = false;
-                    uploadButton.disabled = false;
-                    uploadButton.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload to Filebase';
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload to Filebase';
                     
-                    // Close modal and refresh content
-                    closeModal('upload-video-modal');
-                    showPage('home');
+                    // Load the new video
                     loadVideo(0);
+                    
+                    // Close modal after successful upload
+                    closeModal('upload-video-modal');
                     
                 }, 1500);
                 
@@ -4188,14 +4078,11 @@
                     errorMessage = 'Access denied. Check your Filebase credentials or bucket permissions.';
                 } else if (error.code === 'NetworkingError' || error.message.includes('CORS')) {
                     errorMessage = 'Network/CORS error. Check Filebase dashboard CORS settings or try a smaller file.';
-                } else if (error.message.includes('timeout') || error.message.includes('Network request failed')) {
-                    errorMessage = 'Upload timeout. Please check your internet connection and try again with a smaller file.';
                 }
                 
                 showToast('error', 'Upload Failed', errorMessage);
-                isUploading = false;
-                uploadButton.disabled = false;
-                uploadButton.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload to Filebase';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload to Filebase';
                 uploadStatus.classList.remove('active');
             }
         }
