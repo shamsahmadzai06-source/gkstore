@@ -3230,9 +3230,18 @@
             const videoPlaceholder = document.getElementById('video-placeholder');
             const videoOverlay = document.getElementById('video-overlay');
             
+            // Clear previous video if exists
+            if (currentVideoPlayer) {
+                currentVideoPlayer.pause();
+                currentVideoPlayer.remove();
+                currentVideoPlayer = null;
+            }
+            
+            // Hide placeholder and show overlay
             if (videoPlaceholder) videoPlaceholder.classList.add('hidden');
             if (videoOverlay) videoOverlay.classList.remove('hidden');
             
+            // Update video info
             document.getElementById('video-title').textContent = video.title;
             document.getElementById('video-description').textContent = video.description;
             
@@ -3249,13 +3258,6 @@
             
             appState.currentAccount = video.account;
             
-            // Clear previous video if exists
-            if (currentVideoPlayer) {
-                currentVideoPlayer.pause();
-                currentVideoPlayer.remove();
-                currentVideoPlayer = null;
-            }
-            
             // Create video element if video has a URL
             if (video.url) {
                 const videoPlayer = document.createElement('video');
@@ -3266,28 +3268,61 @@
                 videoPlayer.muted = false;
                 videoPlayer.loop = true;
                 videoPlayer.playsInline = true; // Important for mobile
+                videoPlayer.preload = 'auto';
                 
-                // FIXED: Add error handling for video playback
+                // Clear video section
+                videoSection.innerHTML = '';
+                videoSection.appendChild(videoPlayer);
+                videoSection.appendChild(videoOverlay);
+                
+                // FIXED: Add better error handling for video playback
                 videoPlayer.addEventListener('error', function(e) {
                     console.error('Video playback error:', videoPlayer.error);
-                    showToast('error', 'Video Error', 'Failed to load video. It may not be publicly accessible.');
                     
-                    // Show error state
-                    videoSection.innerHTML = `
-                        <div class="flex items-center justify-center h-full">
-                            <div class="text-center">
-                                <i class="fas fa-video-slash text-4xl text-zinc-600 mb-4"></i>
-                                <h3 class="text-xl font-semibold mb-2">Video Unavailable</h3>
-                                <p class="text-zinc-400 mb-4">The video cannot be played at the moment.</p>
-                                <p class="text-xs text-zinc-500">URL: ${video.url.substring(0, 50)}...</p>
+                    // Try alternative methods to play the video
+                    if (videoPlayer.error && videoPlayer.error.code === 4) {
+                        // MEDIA_ERR_SRC_NOT_SUPPORTED
+                        console.log('Trying alternative playback method...');
+                        
+                        // Try to play with controls enabled
+                        videoPlayer.controls = true;
+                        videoPlayer.autoplay = false;
+                        
+                        showToast('warning', 'Video Format', 'Video format may require manual playback. Try clicking play.');
+                    } else {
+                        // Show error state with more helpful message
+                        videoSection.innerHTML = `
+                            <div class="flex items-center justify-center h-full">
+                                <div class="text-center">
+                                    <i class="fas fa-video-slash text-4xl text-zinc-600 mb-4"></i>
+                                    <h3 class="text-xl font-semibold mb-2">Video Unavailable</h3>
+                                    <p class="text-zinc-400 mb-4">The video cannot be played at the moment.</p>
+                                    <p class="text-xs text-zinc-500">URL: ${video.url.substring(0, 50)}...</p>
+                                    <button class="btn btn-primary mt-4" onclick="window.open('${video.url}', '_blank')">
+                                        <i class="fas fa-external-link-alt"></i> Open in New Tab
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    `;
-                    videoSection.appendChild(videoOverlay);
+                        `;
+                        videoSection.appendChild(videoOverlay);
+                        showToast('error', 'Video Error', 'Failed to load video. Try opening in new tab.');
+                    }
                 });
                 
                 videoPlayer.addEventListener('loadeddata', function() {
                     console.log('Video loaded successfully:', video.url);
+                    // Try to play the video
+                    videoPlayer.play().catch(error => {
+                        console.log('Auto-play blocked:', error);
+                        // Show play button overlay
+                        document.getElementById('video-play-pause').classList.add('show');
+                        isVideoPlaying = false;
+                        updatePlayPauseIcon();
+                    });
+                });
+                
+                videoPlayer.addEventListener('canplay', function() {
+                    console.log('Video can play:', video.url);
                 });
                 
                 videoPlayer.addEventListener('play', () => {
@@ -3300,26 +3335,17 @@
                     updatePlayPauseIcon();
                 });
                 
-                // FIXED: Try to play with error handling
-                videoPlayer.play().catch(error => {
-                    console.log('Auto-play blocked:', error);
-                    // Show play button overlay
-                    document.getElementById('video-play-pause').classList.add('show');
-                    isVideoPlaying = false;
-                    updatePlayPauseIcon();
-                });
-                
-                videoSection.innerHTML = '';
-                videoSection.appendChild(videoPlayer);
-                videoSection.appendChild(videoOverlay);
-                
                 currentVideoPlayer = videoPlayer;
                 isVideoPlaying = true;
                 updatePlayPauseIcon();
+                
             } else {
+                // If no URL, show gradient background
                 videoSection.style.background = 'linear-gradient(135deg, #ec4899, #8b5cf6)';
                 videoSection.style.backgroundSize = 'cover';
                 videoSection.style.backgroundPosition = 'center';
+                videoSection.innerHTML = '';
+                videoSection.appendChild(videoOverlay);
             }
         }
 
@@ -4181,7 +4207,7 @@
                     <div class="col-span-3 text-center py-12">
                         <i class="fas fa-box-open text-4xl text-zinc-600 mb-4"></i>
                         <h3 class="text-xl font-semibold mb-2">No ${tier} Tier Accounts</h3>
-                        <p class="text-zinc-400 mb-4">No accounts available in the ${tier} tier.</p>
+                        <p class="text-zinc-400">No accounts available in the ${tier} tier.</p>
                         <button class="btn btn-primary" onclick="filterAccounts('all')">
                             <i class="fas fa-list"></i> View All Accounts
                         </button>
