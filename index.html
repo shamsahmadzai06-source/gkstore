@@ -2620,15 +2620,13 @@
             },
             users: [],
             
-            // FIXED: Filebase Configuration - CORRECT SETTINGS
+            // FIXED Filebase Configuration with correct credentials
             filebaseConfig: {
                 accessKeyId: '33B0D768699F462BDFC1',
                 secretAccessKey: 'Yr1udg7LAUTk0EPLJM0BsXPlM8VMciKsQk2PhbSC',
                 endpoint: 'https://s3.filebase.com',
-                bucketName: 'gk-store-videos',  // Must match your bucket name exactly
-                region: 'us-east-1',
-                s3ForcePathStyle: true,
-                signatureVersion: 'v4'
+                bucketName: 'gk-store-videos',
+                region: 'us-east-1'
             }
         };
 
@@ -2638,7 +2636,7 @@
         let currentVideoPlayer = null;
         let playPauseTimeout = null;
         let isVideoPlaying = true;
-        let s3Client = null; // Added S3 client reference
+        let s3Client = null;
 
         // Initialize App
         function initApp() {
@@ -2670,29 +2668,24 @@
             initializeFilebase();
         }
 
-        // FIXED: Initialize Filebase with proper configuration
+        // Initialize Filebase
         function initializeFilebase() {
             if (typeof AWS !== 'undefined') {
                 console.log('AWS SDK loaded, initializing Filebase...');
                 
-                // Configure AWS for Filebase with CORRECT credentials
+                // Configure AWS for Filebase
                 AWS.config.update({
                     accessKeyId: appState.filebaseConfig.accessKeyId,
                     secretAccessKey: appState.filebaseConfig.secretAccessKey,
-                    region: appState.filebaseConfig.region,
-                    s3ForcePathStyle: true,
-                    signatureVersion: 'v4'
+                    region: appState.filebaseConfig.region
                 });
                 
                 // Create S3 instance with Filebase endpoint
                 s3Client = new AWS.S3({
-                    endpoint: new AWS.Endpoint(appState.filebaseConfig.endpoint),
-                    region: appState.filebaseConfig.region,
+                    endpoint: appState.filebaseConfig.endpoint,
                     s3ForcePathStyle: true,
                     signatureVersion: 'v4',
-                    httpOptions: {
-                        timeout: 120000 // 2 minute timeout for large uploads
-                    }
+                    region: appState.filebaseConfig.region
                 });
                 
                 console.log('Filebase initialized successfully');
@@ -2708,7 +2701,7 @@
             }
         }
 
-        // FIXED: Check Filebase Connection with CORS workaround
+        // Check Filebase Connection
         function checkFilebaseConnection() {
             const statusElement = document.getElementById('connection-status');
             const iconElement = document.getElementById('connection-icon');
@@ -2729,30 +2722,22 @@
             }
             
             try {
-                // Try to list buckets to test connection (this may fail due to CORS)
+                // Try to list buckets to test connection
                 s3Client.listBuckets({}, (err, data) => {
                     if (err) {
                         console.error('Filebase connection error:', err);
                         
-                        // CORS specific error handling
-                        if (err.message && (err.message.includes('CORS') || 
-                            err.message.includes('Network') || 
-                            err.code === 'NetworkingError')) {
-                            
-                            // This is a CORS error - uploads should still work
-                            statusElement.className = 'connection-status warning';
-                            iconElement.className = 'fas fa-exclamation-triangle text-warning';
-                            messageElement.textContent = 'CORS restrictions detected. Uploads should still work.';
-                            showToast('warning', 'CORS Notice', 'Browser has CORS restrictions but uploads should work.');
-                            
-                            // Test with a simple HEAD request to the bucket instead
-                            testBucketAccessDirectly();
-                            
-                        } else if (err.code === 'InvalidAccessKeyId' || err.code === 'SignatureDoesNotMatch') {
+                        if (err.code === 'InvalidAccessKeyId' || err.code === 'SignatureDoesNotMatch') {
                             statusElement.className = 'connection-status error';
                             iconElement.className = 'fas fa-times-circle';
                             messageElement.textContent = 'Invalid Filebase credentials. Check your Access Key and Secret Key.';
                             showToast('error', 'Invalid Credentials', 'Check your Filebase API keys');
+                        } else if (err.code === 'NetworkingError') {
+                            // Try a different approach for CORS issues
+                            statusElement.className = 'connection-status warning';
+                            iconElement.className = 'fas fa-exclamation-triangle';
+                            messageElement.textContent = 'CORS restrictions detected. Uploads should still work.';
+                            showToast('warning', 'CORS Notice', 'Uploads should still work despite CORS restrictions');
                         } else {
                             statusElement.className = 'connection-status error';
                             iconElement.className = 'fas fa-times-circle';
@@ -2786,22 +2771,7 @@
             }
         }
 
-        // Test bucket access directly (CORS workaround)
-        function testBucketAccessDirectly() {
-            const bucketName = appState.filebaseConfig.bucketName;
-            const testUrl = `https://${bucketName}.s3.filebase.com`;
-            
-            // Create a simple HEAD request to test bucket access
-            fetch(testUrl, { method: 'HEAD', mode: 'no-cors' })
-                .then(() => {
-                    console.log('Bucket is accessible (no-cors mode)');
-                })
-                .catch(err => {
-                    console.log('Bucket test result (expected for CORS):', err);
-                });
-        }
-
-        // FIXED: Upload Video to Filebase with CORS workaround
+        // Upload Video to Filebase
         async function uploadVideoToFilebase() {
             if (!appState.isAdminLoggedIn) {
                 showToast('error', 'Access Denied', 'Please login as admin first');
@@ -2846,7 +2816,7 @@
                 const timestamp = Date.now();
                 const fileExtension = file.name.split('.').pop().toLowerCase();
                 
-                // FIXED: Create folder structure WITHOUT leading slash
+                // Create folder structure WITHOUT leading slash
                 const fileName = `${tier}/${id}_${timestamp}.${fileExtension}`;
                 
                 console.log('Uploading to Filebase:', {
@@ -2856,23 +2826,21 @@
                     fileSize: file.size
                 });
                 
-                // Prepare upload parameters with proper ACL
+                // Prepare upload parameters
                 const params = {
                     Bucket: appState.filebaseConfig.bucketName,
                     Key: fileName,
                     Body: file,
                     ContentType: file.type,
+                    ACL: 'public-read',
                     Metadata: {
                         'video-id': id,
                         'title': title,
                         'description': description,
                         'tier': tier,
                         'price': price.toString(),
-                        'upload-date': new Date().toISOString(),
-                        'original-filename': file.name
-                    },
-                    // FIXED: Ensure file is publicly readable
-                    ACL: 'public-read'
+                        'upload-date': new Date().toISOString()
+                    }
                 };
                 
                 // Show initial progress
@@ -2881,44 +2849,23 @@
                 uploadedSize.textContent = '0 MB';
                 totalSize.textContent = formatFileSize(file.size);
                 
-                // Create upload promise with progress tracking
-                const uploadPromise = new Promise((resolve, reject) => {
-                    const upload = s3Client.upload(params);
+                // Upload the file
+                const upload = s3Client.upload(params);
+                
+                // Track upload progress
+                upload.on('httpUploadProgress', (progress) => {
+                    const percentage = Math.round((progress.loaded / progress.total) * 100);
                     
-                    // Track upload progress
-                    upload.on('httpUploadProgress', (progress) => {
-                        const percentage = Math.round((progress.loaded / progress.total) * 100);
-                        
-                        uploadProgress.style.width = percentage + '%';
-                        uploadPercentage.textContent = percentage + '%';
-                        uploadedSize.textContent = formatFileSize(progress.loaded);
-                        totalSize.textContent = formatFileSize(progress.total);
-                        
-                        console.log(`Upload progress: ${percentage}%`);
-                    });
+                    uploadProgress.style.width = percentage + '%';
+                    uploadPercentage.textContent = percentage + '%';
+                    uploadedSize.textContent = formatFileSize(progress.loaded);
+                    totalSize.textContent = formatFileSize(progress.total);
                     
-                    // Execute upload
-                    upload.send((err, data) => {
-                        if (err) {
-                            // Check for CORS errors - upload might have succeeded despite CORS
-                            if (err.message && err.message.includes('CORS')) {
-                                console.warn('CORS error on response, but upload may have succeeded');
-                                
-                                // Try to verify upload by checking if file exists
-                                setTimeout(() => {
-                                    verifyUpload(fileName, resolve, reject);
-                                }, 2000);
-                            } else {
-                                reject(err);
-                            }
-                        } else {
-                            resolve(data);
-                        }
-                    });
+                    console.log(`Upload progress: ${percentage}%`);
                 });
                 
                 // Execute upload
-                const data = await uploadPromise;
+                const data = await upload.promise();
                 console.log('Upload successful:', data);
                 
                 // Show 100% completion
@@ -2927,7 +2874,7 @@
                 uploadedSize.textContent = formatFileSize(file.size);
                 totalSize.textContent = formatFileSize(file.size);
                 
-                // FIXED: Generate correct public URL for Filebase
+                // Generate public URL for Filebase
                 const videoUrl = `https://${appState.filebaseConfig.bucketName}.s3.filebase.com/${fileName}`;
                 
                 console.log('Generated public URL:', videoUrl);
@@ -2942,7 +2889,7 @@
                     shares: 0,
                     duration: "2:30",
                     thumbnail: "",
-                    url: videoUrl, // Use the direct S3 URL for reliable playback
+                    url: videoUrl,
                     filebaseKey: fileName,
                     fileSize: file.size,
                     uploadDate: new Date().toISOString(),
@@ -3020,22 +2967,13 @@
                     errorMessage = `Bucket "${appState.filebaseConfig.bucketName}" not found. Please create it in Filebase dashboard.`;
                 } else if (error.code === 'AccessDenied') {
                     errorMessage = 'Access denied. Check your Filebase credentials or bucket permissions.';
-                } else if (error.code === 'NetworkingError' || error.message.includes('CORS')) {
-                    errorMessage = 'Upload may have succeeded despite CORS restrictions. Check your Filebase dashboard.';
-                    toastType = 'warning';
-                    
-                    // Even with CORS error, the file might have uploaded
-                    createVideoFromUpload(id, title, description, price, tier, file);
-                    
+                } else if (error.code === 'NetworkingError') {
+                    errorMessage = 'Network error. Check your internet connection and CORS settings.';
                 } else if (error.code === 'RequestTimeTooSkewed') {
                     errorMessage = 'System clock is out of sync. Please check your computer time and date.';
                 }
                 
-                showToast(toastType, 'Upload Status', errorMessage);
-                
-                if (toastType === 'warning') {
-                    showToast('info', 'Check Dashboard', 'Please check Filebase dashboard to confirm upload.');
-                }
+                showToast(toastType, 'Upload Failed', errorMessage);
                 
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload to Filebase';
@@ -3043,160 +2981,7 @@
             }
         }
 
-        // Create video object even if CORS error occurred
-        function createVideoFromUpload(id, title, description, price, tier, file) {
-            const fileName = `${tier}/${id}_${Date.now()}.${file.name.split('.').pop()}`;
-            const videoUrl = `https://${appState.filebaseConfig.bucketName}.s3.filebase.com/${fileName}`;
-            
-            const newVideo = {
-                id: id,
-                title: title,
-                description: description || 'No description available',
-                views: 0,
-                likes: 0,
-                shares: 0,
-                duration: "2:30",
-                thumbnail: "",
-                url: videoUrl,
-                filebaseKey: fileName,
-                fileSize: file.size,
-                uploadDate: new Date().toISOString(),
-                tier: tier,
-                account: {
-                    id: appState.accounts.length + 1,
-                    title: title,
-                    tier: tier,
-                    price: price,
-                    followers: Math.floor(Math.random() * 10000) + 1000,
-                    thumbnail: ""
-                }
-            };
-            
-            const newAccount = {
-                id: newVideo.account.id,
-                title: newVideo.account.title,
-                description: newVideo.description,
-                tier: newVideo.account.tier,
-                price: newVideo.account.price,
-                sold: false,
-                videoId: id
-            };
-            
-            appState.videos.unshift(newVideo);
-            appState.accounts.unshift(newAccount);
-            saveAllDataToLocalStorage();
-            
-            showToast('warning', 'Upload May Have Succeeded', 'Video added to app. Check Filebase dashboard to confirm upload.');
-        }
-
-        // Verify upload by checking if file exists
-        function verifyUpload(fileName, resolve, reject) {
-            const params = {
-                Bucket: appState.filebaseConfig.bucketName,
-                Key: fileName
-            };
-            
-            s3Client.headObject(params, (err, data) => {
-                if (err) {
-                    console.error('Upload verification failed:', err);
-                    reject(new Error('Upload verification failed'));
-                } else {
-                    console.log('Upload verified successfully:', data);
-                    resolve({
-                        Location: `https://${appState.filebaseConfig.bucketName}.s3.filebase.com/${fileName}`,
-                        requestId: `verified_${Date.now()}`
-                    });
-                }
-            });
-        }
-
-        // FIXED: Test video playback from Filebase
-        function testVideoUrl() {
-            const urlGenerator = document.getElementById('generated-url');
-            if (!urlGenerator) return;
-            
-            const urls = urlGenerator.textContent;
-            let videoUrl = '';
-            
-            // Extract URL from the generated text
-            if (urls.includes('https://')) {
-                const urlMatch = urls.match(/https:\/\/[^\s]+/);
-                if (urlMatch) {
-                    videoUrl = urlMatch[0];
-                }
-            }
-            
-            if (!videoUrl) {
-                showToast('error', 'No URL Found', 'No video URL available for testing');
-                return;
-            }
-            
-            // Test the URL by creating a video element
-            testVideoPlayback(videoUrl);
-        }
-
-        // FIXED: Test video playback with proper error handling
-        function testVideoPlayback(videoUrl) {
-            const testVideo = document.createElement('video');
-            testVideo.src = videoUrl;
-            testVideo.controls = true;
-            testVideo.style.width = '100%';
-            testVideo.style.maxHeight = '300px';
-            
-            // Create a test modal
-            const testModal = document.createElement('div');
-            testModal.className = 'modal-overlay';
-            testModal.innerHTML = `
-                <div class="modal" style="max-width: 500px;">
-                    <div class="modal-header">
-                        <h3 class="modal-title">Testing Video Playback</h3>
-                        <button class="modal-close" onclick="this.parentElement.parentElement.remove()">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <p class="mb-3">Testing URL: <code class="text-xs">${videoUrl}</code></p>
-                        <div id="test-video-container"></div>
-                        <div id="test-status" class="mt-3">
-                            <p><i class="fas fa-spinner animate-spin text-primary"></i> Loading video...</p>
-                        </div>
-                        <div class="mt-4">
-                            <button class="btn btn-primary w-full" onclick="window.open('${videoUrl}', '_blank')">
-                                <i class="fas fa-external-link-alt"></i> Open in New Tab
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(testModal);
-            const testContainer = testModal.querySelector('#test-video-container');
-            const testStatus = testModal.querySelector('#test-status');
-            
-            testVideo.addEventListener('loadeddata', () => {
-                testStatus.innerHTML = '<p class="text-success"><i class="fas fa-check-circle"></i> Video loaded successfully!</p>';
-                testContainer.appendChild(testVideo);
-                testVideo.play().catch(e => {
-                    console.log('Auto-play blocked:', e);
-                    testStatus.innerHTML += '<p class="text-warning"><i class="fas fa-exclamation-triangle"></i> Click play button to start video</p>';
-                });
-            });
-            
-            testVideo.addEventListener('error', (e) => {
-                console.error('Video error:', e);
-                testStatus.innerHTML = `<p class="text-danger"><i class="fas fa-times-circle"></i> Failed to load video. Error: ${testVideo.error ? testVideo.error.code : 'Unknown'}</p>`;
-                testStatus.innerHTML += `<p class="text-xs text-zinc-400 mt-2">Possible issues:<br>1. File not publicly accessible<br>2. CORS restrictions<br>3. Invalid video format</p>`;
-            });
-            
-            // Set timeout for loading
-            setTimeout(() => {
-                if (testVideo.readyState < 1) {
-                    testStatus.innerHTML = `<p class="text-warning"><i class="fas fa-exclamation-triangle"></i> Taking too long to load. Video might be very large or network is slow.</p>`;
-                }
-            }, 5000);
-        }
-
-        // FIXED: Format file size function
+        // Format file size
         function formatFileSize(bytes) {
             if (bytes === 0) return '0 Bytes';
             const k = 1024;
@@ -3205,7 +2990,7 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // FIXED: Clear file selection properly
+        // Clear file selection
         function clearFileSelection() {
             const previewPlayer = document.getElementById('preview-player');
             if (previewPlayer && previewPlayer.src) {
@@ -3221,7 +3006,7 @@
             document.getElementById('url-generator').classList.remove('active');
         }
 
-        // FIXED: Load video with CORS proxy for playback
+        // Load video with proper CORS handling
         function loadVideo(index) {
             const video = appState.videos[index];
             if (!video) return;
@@ -3260,54 +3045,36 @@
             if (video.url) {
                 const videoPlayer = document.createElement('video');
                 videoPlayer.className = 'video-player';
-                
-                // FIXED: Use CORS proxy for video playback
-                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(video.url)}`;
-                videoPlayer.src = proxyUrl;
+                videoPlayer.src = video.url;
                 videoPlayer.controls = false;
                 videoPlayer.autoplay = true;
                 videoPlayer.muted = false;
                 videoPlayer.loop = true;
-                videoPlayer.playsInline = true; // Important for mobile
-                videoPlayer.crossOrigin = "anonymous"; // Allow CORS
+                videoPlayer.playsInline = true;
+                videoPlayer.crossOrigin = "anonymous";
                 
-                // FIXED: Add error handling for video playback with fallback
+                // Add error handling for video playback
                 videoPlayer.addEventListener('error', function(e) {
-                    console.error('Video playback error with proxy, trying direct URL:', videoPlayer.error);
+                    console.error('Video playback error:', videoPlayer.error);
+                    showToast('error', 'Video Error', 'Failed to load video. Trying alternative method...');
                     
-                    // Fallback: Try direct URL
-                    videoPlayer.src = video.url;
+                    // Try with CORS proxy as fallback
+                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(video.url)}`;
+                    videoPlayer.src = proxyUrl;
                     videoPlayer.load();
                     
                     videoPlayer.addEventListener('loadeddata', function() {
-                        console.log('Direct URL loaded successfully');
-                        showToast('success', 'Video Loaded', 'Now playing video');
+                        showToast('success', 'Video Loaded', 'Now playing video via proxy');
                     });
                     
                     videoPlayer.addEventListener('error', function(e2) {
-                        console.error('Direct URL also failed:', videoPlayer.error);
-                        showToast('error', 'Video Error', 'Failed to load video. The video may not be publicly accessible.');
-                        
-                        // Show error state
-                        videoSection.innerHTML = `
-                            <div class="flex items-center justify-center h-full">
-                                <div class="text-center">
-                                    <i class="fas fa-video-slash text-4xl text-zinc-600 mb-4"></i>
-                                    <h3 class="text-xl font-semibold mb-2">Video Unavailable</h3>
-                                    <p class="text-zinc-400 mb-4">The video cannot be played at the moment.</p>
-                                    <button class="btn btn-primary mt-4" onclick="window.open('${video.url}', '_blank')">
-                                        <i class="fas fa-external-link-alt"></i> Open Video in New Tab
-                                    </button>
-                                    <p class="text-xs text-zinc-500 mt-4">URL: ${video.url.substring(0, 50)}...</p>
-                                </div>
-                            </div>
-                        `;
-                        videoSection.appendChild(videoOverlay);
+                        console.error('Proxy also failed:', videoPlayer.error);
+                        showToast('error', 'Video Unavailable', 'The video cannot be played at the moment.');
                     });
                 });
                 
                 videoPlayer.addEventListener('loadeddata', function() {
-                    console.log('Video loaded successfully via proxy:', video.url);
+                    console.log('Video loaded successfully:', video.url);
                     showToast('success', 'Video Loaded', 'Now playing video');
                 });
                 
@@ -3321,7 +3088,7 @@
                     updatePlayPauseIcon();
                 });
                 
-                // FIXED: Try to play with error handling
+                // Try to play with error handling
                 videoPlayer.play().catch(error => {
                     console.log('Auto-play blocked:', error);
                     // Show play button overlay
@@ -3356,7 +3123,7 @@
             }
         }
 
-        // FIXED HASH FUNCTION
+        // Secure hash function
         function secureHash(str) {
             let hash = 0;
             if (str.length === 0) return hash.toString(36);
@@ -3416,12 +3183,12 @@
             }
         }
 
-        // Create default users (admin and test user)
+        // Create default users
         function createDefaultUsers() {
             const adminPasswordHash = secureHash('GK@2024!AdminSecure');
             const testUserPasswordHash = secureHash('password123');
             
-            // Create admin user with secure password
+            // Create admin user
             const adminUser = {
                 id: 1,
                 email: 'admin@gkstore.com',
@@ -3604,21 +3371,9 @@
                     self.addEventListener('fetch', (event) => {
                         if (event.request.method !== 'GET') return;
                         
-                        // Handle CORS proxy requests for Filebase videos
-                        if (event.request.url.includes('corsproxy.io') && event.request.url.includes('filebase.com')) {
+                        // Handle Filebase video requests
+                        if (event.request.url.includes('filebase.com')) {
                             event.respondWith(fetch(event.request));
-                            return;
-                        }
-                        
-                        // Handle direct Filebase requests
-                        if (event.request.url.includes('filebase.io') || event.request.url.includes('ipfs.filebase.io')) {
-                            event.respondWith(
-                                fetch(event.request)
-                                    .then(response => response)
-                                    .catch(() => {
-                                        return new Response('Cannot access Filebase.');
-                                    })
-                            );
                             return;
                         }
 
@@ -4371,338 +4126,136 @@
             showModal('upload-video-modal');
         }
 
-        // Show manage videos modal
-        function showManageVideos() {
-            if (!appState.isAdminLoggedIn) {
-                showToast('error', 'Access Denied', 'Please login as admin first');
+        // Handle file selection
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Check file size (200MB limit)
+            const maxSize = 200 * 1024 * 1024; // 200MB in bytes
+            if (file.size > maxSize) {
+                showToast('error', 'File Too Large', `File size (${formatFileSize(file.size)}) exceeds 200MB limit`);
                 return;
             }
             
-            loadAdminVideos();
-            showModal('manage-videos-modal');
-        }
-
-        // Load admin videos
-        function loadAdminVideos(filter = 'all') {
-            const videosList = document.getElementById('admin-videos-list');
-            if (!videosList) return;
+            // Check file type
+            const validTypes = [
+                'video/mp4', 
+                'video/quicktime', 
+                'video/x-msvideo', 
+                'video/x-matroska',
+                'video/webm'
+            ];
             
-            videosList.innerHTML = '';
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            const validExtensions = ['mp4', 'mov', 'avi', 'mkv', 'webm'];
             
-            const filteredVideos = filter === 'all' 
-                ? appState.videos 
-                : appState.videos.filter(video => video.tier === filter);
-            
-            if (filteredVideos.length === 0) {
-                videosList.innerHTML = `
-                    <div class="text-center py-8">
-                        <i class="fas fa-video-slash text-4xl text-zinc-600 mb-4"></i>
-                        <h3 class="text-xl font-semibold mb-2">No Videos Found</h3>
-                        <p class="text-zinc-400">No videos in the ${filter} tier</p>
-                    </div>
-                `;
+            if (!validTypes.includes(file.type) && !validExtensions.includes(fileExtension)) {
+                showToast('error', 'Invalid File Type', 'Please select MP4, MOV, AVI, MKV, or WEBM file');
                 return;
             }
             
-            filteredVideos.forEach(video => {
-                const videoItem = document.createElement('div');
-                videoItem.className = 'flex items-center justify-between p-3 bg-surface-light rounded-lg';
-                videoItem.innerHTML = `
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="font-medium">${video.title}</span>
-                            <span class="badge ${video.tier === 'big' ? 'badge-primary' : video.tier === 'medium' ? 'badge-secondary' : 'badge-warning'} text-xs">
-                                ${video.tier}
-                            </span>
-                        </div>
-                        <p class="text-xs text-zinc-400">ID: ${video.id} • $${video.account.price.toLocaleString()}</p>
-                        <p class="text-xs text-zinc-400 mt-1">${video.description.substring(0, 60)}${video.description.length > 60 ? '...' : ''}</p>
-                        <div class="flex gap-2 mt-2">
-                            <span class="text-xs text-zinc-500"><i class="fas fa-eye"></i> ${video.views.toLocaleString()}</span>
-                            <span class="text-xs text-zinc-500"><i class="fas fa-heart"></i> ${video.likes.toLocaleString()}</span>
-                            <span class="text-xs text-zinc-500"><i class="fas fa-share"></i> ${video.shares.toLocaleString()}</span>
-                        </div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button class="btn btn-sm btn-primary" onclick="playVideoNow('${video.id}')">
-                            <i class="fas fa-play"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteVideo('${video.id}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                `;
-                
-                videosList.appendChild(videoItem);
-            });
-        }
-
-        // Filter admin videos
-        function adminFilterVideos(tier) {
-            document.querySelectorAll('#manage-videos-modal .tab-item').forEach(tab => {
-                tab.classList.remove('active');
-                if (tab.textContent.toLowerCase().includes(tier)) {
-                    tab.classList.add('active');
-                }
-            });
+            appState.currentUpload.file = file;
             
-            loadAdminVideos(tier);
+            document.getElementById('file-name').textContent = file.name;
+            document.getElementById('file-size').textContent = formatFileSize(file.size);
+            document.getElementById('file-preview').classList.add('active');
+            
+            // Create preview
+            const previewPlayer = document.getElementById('preview-player');
+            const videoPreview = document.getElementById('video-preview');
+            const videoURL = URL.createObjectURL(file);
+            
+            previewPlayer.src = videoURL;
+            previewPlayer.load();
+            videoPreview.classList.add('active');
+            
+            showToast('success', 'File Selected', `${file.name} (${formatFileSize(file.size)}) ready for upload`);
+            
+            // Auto-test connection when file is selected
+            setTimeout(() => {
+                checkFilebaseConnection();
+            }, 500);
         }
 
-        // Delete video
-        function deleteVideo(videoId) {
-            if (confirm('Are you sure you want to delete this video? The corresponding account will also be removed.')) {
-                const videoIndex = appState.videos.findIndex(v => v.id === videoId);
-                if (videoIndex !== -1) {
-                    if (appState.videos[videoIndex].url) {
-                        URL.revokeObjectURL(appState.videos[videoIndex].url);
-                    }
-                    appState.videos.splice(videoIndex, 1);
+        // Test video URL
+        function testVideoUrl() {
+            const urlGenerator = document.getElementById('generated-url');
+            if (!urlGenerator) return;
+            
+            const urls = urlGenerator.textContent;
+            let videoUrl = '';
+            
+            // Extract URL from the generated text
+            if (urls.includes('href="')) {
+                const urlMatch = urls.match(/href="([^"]+)"/);
+                if (urlMatch) {
+                    videoUrl = urlMatch[1];
                 }
-                
-                const accountIndex = appState.accounts.findIndex(a => a.videoId === videoId);
-                if (accountIndex !== -1) {
-                    appState.accounts.splice(accountIndex, 1);
-                }
-                
-                if (appState.currentVideoIndex >= appState.videos.length) {
-                    appState.currentVideoIndex = Math.max(0, appState.videos.length - 1);
-                }
-                
-                saveAllDataToLocalStorage();
-                
-                loadAdminVideos('all');
-                loadHomeContent();
-                updateAdminStats();
-                
-                showToast('success', 'Video Deleted', 'Video and corresponding account have been removed');
             }
-        }
-
-        // Play video now
-        function playVideoNow(videoId) {
-            const videoIndex = appState.videos.findIndex(v => v.id === videoId);
-            if (videoIndex !== -1) {
-                closeModal('manage-videos-modal');
-                showPage('home');
-                setTimeout(() => {
-                    appState.currentVideoIndex = videoIndex;
-                    loadVideo(videoIndex);
-                }, 300);
-            }
-        }
-
-        // Show book requests modal
-        function showBookRequests() {
-            if (!appState.isAdminLoggedIn) {
-                showToast('error', 'Access Denied', 'Please login as admin first');
+            
+            if (!videoUrl) {
+                showToast('error', 'No URL Found', 'No video URL available for testing');
                 return;
             }
             
-            loadAdminBookRequests();
-            showModal('book-requests-modal');
-        }
-
-        // Load admin book requests
-        function loadAdminBookRequests() {
-            const requestsList = document.getElementById('admin-book-requests-list');
-            const emptyState = document.getElementById('admin-book-requests-empty');
+            // Test the URL by creating a video element
+            const testVideo = document.createElement('video');
+            testVideo.src = videoUrl;
+            testVideo.controls = true;
+            testVideo.style.width = '100%';
+            testVideo.style.maxHeight = '300px';
             
-            if (!requestsList || !emptyState) return;
-            
-            requestsList.innerHTML = '';
-            
-            const pendingRequests = appState.bookRequests.filter(r => r.status === 'pending');
-            
-            if (pendingRequests.length === 0) {
-                requestsList.classList.add('hidden');
-                emptyState.classList.remove('hidden');
-                return;
-            }
-            
-            requestsList.classList.remove('hidden');
-            emptyState.classList.add('hidden');
-            
-            pendingRequests.forEach(request => {
-                const requestItem = document.createElement('div');
-                requestItem.className = 'p-3 bg-surface-light rounded-lg';
-                requestItem.innerHTML = `
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h4 class="font-semibold">${request.accountTitle}</h4>
-                            <span class="badge ${request.accountTier === 'big' ? 'badge-primary' : request.accountTier === 'medium' ? 'badge-secondary' : 'badge-warning'} text-xs">
-                                ${request.accountTier}
-                            </span>
-                        </div>
-                        <span class="text-sm text-zinc-400">$${request.accountPrice.toLocaleString()}</span>
-                    </div>
-                    
-                    <div class="space-y-2 mt-3">
-                        <div class="flex items-center gap-2">
-                            <i class="fas fa-user text-zinc-400 text-sm"></i>
-                            <span class="text-sm">${request.userName}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <i class="fab fa-whatsapp text-green-500 text-sm"></i>
-                            <span class="text-sm">${request.whatsappNumber}</span>
-                        </div>
-                        ${request.notes ? `
-                        <div class="flex items-start gap-2">
-                            <i class="fas fa-sticky-note text-zinc-400 text-sm mt-0.5"></i>
-                            <span class="text-sm">${request.notes}</span>
-                        </div>
-                        ` : ''}
-                    </div>
-                    
-                    <div class="flex gap-2 mt-3">
-                        <button class="btn btn-sm btn-success flex-1" onclick="approveBookRequest(${request.id})">
-                            <i class="fas fa-check"></i> Approve
-                        </button>
-                        <button class="btn btn-sm btn-danger flex-1" onclick="rejectBookRequest(${request.id})">
-                            <i class="fas fa-times"></i> Reject
+            // Create a test modal
+            const testModal = document.createElement('div');
+            testModal.className = 'modal-overlay';
+            testModal.innerHTML = `
+                <div class="modal" style="max-width: 500px;">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Testing Video Playback</h3>
+                        <button class="modal-close" onclick="this.parentElement.parentElement.remove()">
+                            <i class="fas fa-times"></i>
                         </button>
                     </div>
-                `;
-                
-                requestsList.appendChild(requestItem);
-            });
-        }
-
-        // Approve book request
-        function approveBookRequest(requestId) {
-            const request = appState.bookRequests.find(r => r.id === requestId);
-            if (request) {
-                request.status = 'approved';
-                
-                const account = appState.accounts.find(a => a.id === request.accountId);
-                if (account) {
-                    account.sold = true;
-                }
-                
-                saveAllDataToLocalStorage();
-                
-                loadAdminBookRequests();
-                updateAdminStats();
-                showToast('success', 'Request Approved', `Book request approved for ${request.userName}`);
-            }
-        }
-
-        // Reject book request
-        function rejectBookRequest(requestId) {
-            const request = appState.bookRequests.find(r => r.id === requestId);
-            if (request) {
-                request.status = 'rejected';
-                
-                saveAllDataToLocalStorage();
-                
-                loadAdminBookRequests();
-                updateAdminStats();
-                showToast('success', 'Request Rejected', `Book request rejected for ${request.userName}`);
-            }
-        }
-
-        // Show manage settings modal
-        function showManageSettings() {
-            if (!appState.isAdminLoggedIn) {
-                showToast('error', 'Access Denied', 'Please login as admin first');
-                return;
-            }
-            
-            document.getElementById('new-admin-password').value = '';
-            document.getElementById('new-usdt-address').value = document.getElementById('usdt-address').textContent;
-            document.getElementById('new-whatsapp-number').value = '+93 793066322';
-            
-            showModal('manage-settings-modal');
-        }
-
-        // Save admin settings
-        function saveAdminSettings() {
-            const newPassword = document.getElementById('new-admin-password').value;
-            const newUsdtAddress = document.getElementById('new-usdt-address').value;
-            const newWhatsappNumber = document.getElementById('new-whatsapp-number').value;
-            
-            if (newPassword && newPassword.length >= 6) {
-                appState.adminPassword = newPassword;
-                showToast('success', 'Password Updated', 'Admin password has been changed');
-            }
-            
-            if (newUsdtAddress) {
-                document.getElementById('usdt-address').textContent = newUsdtAddress;
-                document.getElementById('payment-address').textContent = newUsdtAddress;
-                showToast('success', 'USDT Updated', 'USDT address has been updated');
-            }
-            
-            if (newWhatsappNumber) {
-                localStorage.setItem('gkStoreWhatsApp', newWhatsappNumber);
-                showToast('success', 'WhatsApp Updated', 'WhatsApp number has been updated');
-            }
-            
-            showToast('success', 'Settings Saved', 'Admin settings have been updated');
-            closeModal('manage-settings-modal');
-        }
-
-        // Load notifications content
-        function loadNotificationsContent() {
-            const list = document.getElementById('notifications-list');
-            const emptyState = document.getElementById('notifications-empty');
-            
-            if (!list || !emptyState) return;
-            
-            list.innerHTML = '';
-            
-            if (appState.notifications.length === 0) {
-                list.classList.add('hidden');
-                emptyState.classList.remove('hidden');
-                return;
-            }
-            
-            list.classList.remove('hidden');
-            emptyState.classList.add('hidden');
-            
-            appState.notifications.forEach(notification => {
-                const notificationItem = document.createElement('div');
-                notificationItem.className = `card ${notification.read ? '' : 'border-primary'}`;
-                notificationItem.innerHTML = `
-                    <div class="card-body">
-                        <div class="flex items-start gap-3">
-                            <div class="w-10 h-10 rounded-full bg-${notification.color} flex items-center justify-center">
-                                <i class="${notification.icon} text-white"></i>
-                            </div>
-                            <div class="flex-1">
-                                <div class="flex justify-between items-start">
-                                    <h4 class="font-semibold">${notification.title}</h4>
-                                    <span class="text-xs text-zinc-400">${notification.time}</span>
-                                </div>
-                                <p class="text-sm text-zinc-400 mt-1">${notification.message}</p>
-                            </div>
+                    <div class="modal-body">
+                        <p class="mb-3">Testing URL: <code class="text-xs">${videoUrl}</code></p>
+                        <div id="test-video-container"></div>
+                        <div id="test-status" class="mt-3">
+                            <p><i class="fas fa-spinner animate-spin text-primary"></i> Loading video...</p>
+                        </div>
+                        <div class="mt-4">
+                            <button class="btn btn-primary w-full" onclick="window.open('${videoUrl}', '_blank')">
+                                <i class="fas fa-external-link-alt"></i> Open in New Tab
+                            </button>
                         </div>
                     </div>
-                `;
-                
-                notificationItem.addEventListener('click', () => {
-                    notification.read = true;
-                    updateNotificationCount();
-                    saveDataToLocalStorage('gkStoreNotifications', appState.notifications);
-                    loadNotificationsContent();
+                </div>
+            `;
+            
+            document.body.appendChild(testModal);
+            const testContainer = testModal.querySelector('#test-video-container');
+            const testStatus = testModal.querySelector('#test-status');
+            
+            testVideo.addEventListener('loadeddata', () => {
+                testStatus.innerHTML = '<p class="text-success"><i class="fas fa-check-circle"></i> Video loaded successfully!</p>';
+                testContainer.appendChild(testVideo);
+                testVideo.play().catch(e => {
+                    console.log('Auto-play blocked:', e);
+                    testStatus.innerHTML += '<p class="text-warning"><i class="fas fa-exclamation-triangle"></i> Click play button to start video</p>';
                 });
-                
-                list.appendChild(notificationItem);
             });
-        }
-
-        // Update notification count
-        function updateNotificationCount() {
-            const unreadCount = appState.notifications.filter(n => !n.read).length;
-            const badge = document.getElementById('notification-count');
             
-            if (badge) {
-                if (unreadCount > 0) {
-                    badge.textContent = unreadCount;
-                    badge.classList.remove('hidden');
-                } else {
-                    badge.classList.add('hidden');
+            testVideo.addEventListener('error', (e) => {
+                console.error('Video error:', e);
+                testStatus.innerHTML = `<p class="text-danger"><i class="fas fa-times-circle"></i> Failed to load video. Error: ${testVideo.error ? testVideo.error.code : 'Unknown'}</p>`;
+            });
+            
+            // Set timeout for loading
+            setTimeout(() => {
+                if (testVideo.readyState < 1) {
+                    testStatus.innerHTML = `<p class="text-warning"><i class="fas fa-exclamation-triangle"></i> Taking too long to load. Video might be very large or network is slow.</p>`;
                 }
-            }
+            }, 5000);
         }
 
         // Show modal
@@ -5160,58 +4713,6 @@
         // Show privacy
         function showPrivacy() {
             showToast('info', 'Privacy Policy', 'This is a demo app. Privacy policy will be implemented in production.');
-        }
-
-        // Handle file selection
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            // Check file size (200MB limit)
-            const maxSize = 200 * 1024 * 1024; // 200MB in bytes
-            if (file.size > maxSize) {
-                showToast('error', 'File Too Large', `File size (${formatFileSize(file.size)}) exceeds 200MB limit`);
-                return;
-            }
-            
-            // Check file type
-            const validTypes = [
-                'video/mp4', 
-                'video/quicktime', 
-                'video/x-msvideo', 
-                'video/x-matroska',
-                'video/webm'
-            ];
-            
-            const fileExtension = file.name.split('.').pop().toLowerCase();
-            const validExtensions = ['mp4', 'mov', 'avi', 'mkv', 'webm'];
-            
-            if (!validTypes.includes(file.type) && !validExtensions.includes(fileExtension)) {
-                showToast('error', 'Invalid File Type', 'Please select MP4, MOV, AVI, MKV, or WEBM file');
-                return;
-            }
-            
-            appState.currentUpload.file = file;
-            
-            document.getElementById('file-name').textContent = file.name;
-            document.getElementById('file-size').textContent = formatFileSize(file.size);
-            document.getElementById('file-preview').classList.add('active');
-            
-            // Create preview
-            const previewPlayer = document.getElementById('preview-player');
-            const videoPreview = document.getElementById('video-preview');
-            const videoURL = URL.createObjectURL(file);
-            
-            previewPlayer.src = videoURL;
-            previewPlayer.load();
-            videoPreview.classList.add('active');
-            
-            showToast('success', 'File Selected', `${file.name} (${formatFileSize(file.size)}) ready for upload`);
-            
-            // Auto-test connection when file is selected
-            setTimeout(() => {
-                checkFilebaseConnection();
-            }, 500);
         }
 
         // Initialize app when DOM is loaded
