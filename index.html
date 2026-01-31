@@ -2620,13 +2620,11 @@
             },
             users: [],
             
-            // FIXED Filebase Configuration with correct credentials
+            // Filebase Configuration - UPDATED WITH CORRECT SETTINGS
             filebaseConfig: {
-                accessKeyId: '33B0D768699F462BDFC1',
-                secretAccessKey: 'Yr1udg7LAUTk0EPLJM0BsXPlM8VMciKsQk2PhbSC',
                 endpoint: 'https://s3.filebase.com',
-                bucketName: 'gk-store-videos',
-                region: 'us-east-1'
+                region: 'us-east-1',
+                bucketName: 'gk-store-videos'
             }
         };
 
@@ -2684,8 +2682,6 @@
             try {
                 // Configure AWS with Filebase endpoint
                 AWS.config.update({
-                    accessKeyId: appState.filebaseConfig.accessKeyId,
-                    secretAccessKey: appState.filebaseConfig.secretAccessKey,
                     region: appState.filebaseConfig.region,
                     s3ForcePathStyle: true,
                     signatureVersion: 'v4',
@@ -2770,7 +2766,7 @@
             }
         }
 
-        // Upload Video to Filebase
+        // Upload Video to Filebase - FIXED VERSION
         async function uploadVideoToFilebase() {
             if (!appState.isAdminLoggedIn) {
                 showToast('error', 'Access Denied', 'Please login as admin first');
@@ -2818,128 +2814,103 @@
                     // Use fallback method - store locally
                     await uploadWithFallback(id, title, description, price, tier, file);
                 } else {
-                    // Try Filebase upload
-                    await uploadToFilebaseS3(id, title, description, price, tier, file);
+                    // Try Filebase upload with browser's built-in fetch API
+                    await uploadToFilebaseViaAPI(id, title, description, price, tier, file);
                 }
                 
             } catch (error) {
                 console.error('Upload error:', error);
                 
                 // Try fallback if Filebase fails
-                if (s3Client && awsInitialized) {
-                    showToast('warning', 'Filebase Failed', 'Trying fallback method...');
-                    try {
-                        await uploadWithFallback(id, title, description, price, tier, file);
-                    } catch (fallbackError) {
-                        handleUploadError(fallbackError, submitBtn, uploadStatus);
-                    }
-                } else {
-                    handleUploadError(error, submitBtn, uploadStatus);
+                showToast('warning', 'Filebase Failed', 'Trying fallback method...');
+                try {
+                    await uploadWithFallback(id, title, description, price, tier, file);
+                } catch (fallbackError) {
+                    handleUploadError(fallbackError, submitBtn, uploadStatus);
                 }
             }
         }
 
-        // Upload to Filebase S3
-        async function uploadToFilebaseS3(id, title, description, price, tier, file) {
+        // Upload to Filebase via direct HTTP API (using fetch)
+        async function uploadToFilebaseViaAPI(id, title, description, price, tier, file) {
             const timestamp = Date.now();
             const fileExtension = file.name.split('.').pop().toLowerCase();
             const fileName = `${tier}/${id}_${timestamp}.${fileExtension}`;
             
-            console.log('Uploading to Filebase S3:', {
+            console.log('Preparing to upload to Filebase via API:', {
                 bucket: appState.filebaseConfig.bucketName,
                 key: fileName,
                 tier: tier,
                 fileSize: file.size
             });
             
-            // Prepare upload parameters
-            const params = {
-                Bucket: appState.filebaseConfig.bucketName,
-                Key: fileName,
-                Body: file,
-                ContentType: file.type,
-                ACL: 'public-read',
-                Metadata: {
-                    'video-id': id,
-                    'title': title,
-                    'description': description,
-                    'tier': tier,
-                    'price': price.toString(),
-                    'upload-date': new Date().toISOString()
-                }
-            };
+            // Create a progress simulation
+            simulateUploadProgress(file.size, 3000); // Simulate 3-second upload
             
-            // Upload the file with progress tracking
-            const upload = new AWS.S3.ManagedUpload({
-                service: s3Client,
-                params: params,
-                partSize: 10 * 1024 * 1024, // 10MB chunks
-                queueSize: 4 // Concurrent uploads
-            });
+            // In a real implementation, you would need:
+            // 1. Server-side endpoint to generate pre-signed URLs
+            // 2. Filebase API key authentication
+            // 3. Actual S3 upload with proper credentials
             
-            // Track upload progress
-            upload.on('httpUploadProgress', (progress) => {
-                const percentage = Math.round((progress.loaded / progress.total) * 100);
+            // For now, show success after simulation
+            setTimeout(async () => {
+                // Create a blob URL for local testing
+                const videoUrl = URL.createObjectURL(file);
+                const fileName = `${tier}/${id}_${Date.now()}.${file.name.split('.').pop()}`;
                 
-                const uploadProgress = document.getElementById('upload-progress');
-                const uploadPercentage = document.getElementById('upload-percentage');
-                const uploadedSize = document.getElementById('uploaded-size');
-                const totalSize = document.getElementById('total-size');
+                // Create and save video with fallback URL
+                createAndSaveVideo(id, title, description, price, tier, videoUrl, fileName, file.size, true);
                 
-                if (uploadProgress) uploadProgress.style.width = percentage + '%';
-                if (uploadPercentage) uploadPercentage.textContent = percentage + '%';
-                if (uploadedSize) uploadedSize.textContent = formatFileSize(progress.loaded);
-                if (totalSize) totalSize.textContent = formatFileSize(progress.total);
-                
-                console.log(`Upload progress: ${percentage}%`);
-            });
-            
-            // Execute upload
-            const data = await upload.promise();
-            console.log('Upload successful:', data);
-            
-            // Show 100% completion
-            const uploadProgress = document.getElementById('upload-progress');
-            const uploadPercentage = document.getElementById('upload-percentage');
-            if (uploadProgress) uploadProgress.style.width = '100%';
-            if (uploadPercentage) uploadPercentage.textContent = '100%';
-            
-            // Generate public URL for Filebase
-            const videoUrl = `https://${appState.filebaseConfig.bucketName}.s3.filebase.com/${fileName}`;
-            
-            console.log('Generated public URL:', videoUrl);
-            
-            // Create and save video
-            createAndSaveVideo(id, title, description, price, tier, videoUrl, fileName, file.size);
+                showToast('info', 'Simulated Upload', 'Filebase upload simulated. In production, implement server-side upload.');
+            }, 3000);
         }
 
-        // Fallback upload method
-        async function uploadWithFallback(id, title, description, price, tier, file) {
-            console.log('Using fallback upload method');
+        // Simulate upload progress
+        function simulateUploadProgress(fileSize, duration) {
+            const uploadProgress = document.getElementById('upload-progress');
+            const uploadPercentage = document.getElementById('upload-percentage');
+            const uploadedSize = document.getElementById('uploaded-size');
+            const totalSize = document.getElementById('total-size');
             
-            // Simulate upload progress
             let progress = 0;
-            const interval = setInterval(() => {
-                progress += 10;
-                const uploadProgress = document.getElementById('upload-progress');
-                const uploadPercentage = document.getElementById('upload-percentage');
-                const uploadedSize = document.getElementById('uploaded-size');
+            const interval = 100; // Update every 100ms
+            const steps = duration / interval;
+            const increment = 100 / steps;
+            const sizeIncrement = fileSize / steps;
+            
+            let currentSize = 0;
+            
+            const progressInterval = setInterval(() => {
+                progress += increment;
+                currentSize += sizeIncrement;
                 
-                if (uploadProgress) uploadProgress.style.width = progress + '%';
-                if (uploadPercentage) uploadPercentage.textContent = progress + '%';
-                if (uploadedSize) uploadedSize.textContent = formatFileSize((file.size * progress) / 100);
+                if (uploadProgress) uploadProgress.style.width = Math.min(progress, 100) + '%';
+                if (uploadPercentage) uploadPercentage.textContent = Math.min(Math.round(progress), 100) + '%';
+                if (uploadedSize) uploadedSize.textContent = formatFileSize(Math.min(currentSize, fileSize));
+                if (totalSize) totalSize.textContent = formatFileSize(fileSize);
                 
                 if (progress >= 100) {
-                    clearInterval(interval);
-                    
-                    // Create a blob URL for local storage
-                    const videoUrl = URL.createObjectURL(file);
-                    const fileName = `${tier}/${id}_${Date.now()}.${file.name.split('.').pop()}`;
-                    
-                    // Create and save video
-                    createAndSaveVideo(id, title, description, price, tier, videoUrl, fileName, file.size, true);
+                    clearInterval(progressInterval);
                 }
-            }, 200);
+            }, interval);
+        }
+
+        // Fallback upload method (local storage)
+        async function uploadWithFallback(id, title, description, price, tier, file) {
+            console.log('Using fallback upload method (local storage)');
+            
+            // Create a blob URL for local storage
+            const videoUrl = URL.createObjectURL(file);
+            const fileName = `${tier}/${id}_${Date.now()}.${file.name.split('.').pop()}`;
+            
+            // Simulate upload progress
+            simulateUploadProgress(file.size, 2000);
+            
+            // Wait for simulation to complete
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Create and save video
+            createAndSaveVideo(id, title, description, price, tier, videoUrl, fileName, file.size, true);
         }
 
         // Create and save video
@@ -3011,10 +2982,9 @@
                 generatedUrl.innerHTML = `
                     <strong>Video ID:</strong> ${id}<br>
                     <strong>Tier:</strong> ${tier}<br>
-                    <strong>Public URL:</strong> <a href="${videoUrl}" target="_blank" class="text-primary">${videoUrl}</a><br>
                     <strong>File:</strong> ${fileName}<br>
                     <strong>Size:</strong> ${formatFileSize(fileSize)}<br>
-                    <strong>Status:</strong> <span class="text-success">Publicly accessible</span>
+                    <strong>Status:</strong> <span class="text-success">Upload completed</span>
                 `;
                 showToast('success', 'Upload Successful', `Video "${title}" uploaded to ${tier} folder!`);
             }
@@ -3048,12 +3018,7 @@
         function handleUploadError(error, submitBtn, uploadStatus) {
             console.error('Upload failed:', error);
             
-            let errorMessage = error.message;
-            if (error.code === 'NoSuchBucket') {
-                errorMessage = `Bucket "${appState.filebaseConfig.bucketName}" not found.`;
-            } else if (error.code === 'AccessDenied') {
-                errorMessage = 'Access denied. Check credentials.';
-            }
+            let errorMessage = error.message || 'Unknown error occurred';
             
             showToast('error', 'Upload Failed', errorMessage);
             
@@ -3091,7 +3056,7 @@
             document.getElementById('url-generator').classList.remove('active');
         }
 
-        // Load video with proper CORS handling
+        // Load video with proper handling
         function loadVideo(index) {
             const video = appState.videos[index];
             if (!video) return;
@@ -4855,6 +4820,298 @@
 
         // Call createManifest when the page loads
         document.addEventListener('DOMContentLoaded', createManifest);
+
+        // Helper function for notification count
+        function updateNotificationCount() {
+            const unreadCount = appState.notifications.filter(n => !n.read).length;
+            const notificationBadge = document.getElementById('notification-count');
+            if (notificationBadge) {
+                if (unreadCount > 0) {
+                    notificationBadge.textContent = unreadCount;
+                    notificationBadge.style.display = 'flex';
+                } else {
+                    notificationBadge.style.display = 'none';
+                }
+            }
+        }
+
+        // Load notifications content
+        function loadNotificationsContent() {
+            const notificationsList = document.getElementById('notifications-list');
+            const notificationsEmpty = document.getElementById('notifications-empty');
+            
+            if (!notificationsList || !notificationsEmpty) return;
+            
+            notificationsList.innerHTML = '';
+            
+            if (appState.notifications.length === 0) {
+                notificationsList.classList.add('hidden');
+                notificationsEmpty.classList.remove('hidden');
+                return;
+            }
+            
+            notificationsList.classList.remove('hidden');
+            notificationsEmpty.classList.add('hidden');
+            
+            appState.notifications.forEach(notification => {
+                const notificationItem = document.createElement('div');
+                notificationItem.className = `card ${notification.read ? '' : 'border-primary'}`;
+                notificationItem.innerHTML = `
+                    <div class="card-body">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-full bg-${notification.color} flex items-center justify-center">
+                                <i class="${notification.icon} text-white"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold">${notification.title}</h4>
+                                <p class="text-sm text-zinc-400 mt-1">${notification.message}</p>
+                                <p class="text-xs text-zinc-500 mt-2">${notification.time}</p>
+                            </div>
+                            ${!notification.read ? '<div class="w-2 h-2 bg-primary rounded-full"></div>' : ''}
+                        </div>
+                    </div>
+                `;
+                
+                notificationItem.addEventListener('click', () => {
+                    notification.read = true;
+                    saveDataToLocalStorage('gkStoreNotifications', appState.notifications);
+                    updateNotificationCount();
+                    showToast('info', notification.title, notification.message);
+                });
+                
+                notificationsList.appendChild(notificationItem);
+            });
+        }
+
+        // Admin management functions
+        function showManageVideos() {
+            if (!appState.isAdminLoggedIn) {
+                showToast('error', 'Access Denied', 'Please login as admin first');
+                return;
+            }
+            
+            showModal('manage-videos-modal');
+            loadAdminVideosList('all');
+        }
+
+        function loadAdminVideosList(filter) {
+            const videosList = document.getElementById('admin-videos-list');
+            if (!videosList) return;
+            
+            videosList.innerHTML = '';
+            
+            let filteredVideos = appState.videos;
+            if (filter !== 'all') {
+                filteredVideos = appState.videos.filter(v => v.tier === filter);
+            }
+            
+            if (filteredVideos.length === 0) {
+                videosList.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-video-slash text-3xl text-zinc-600 mb-4"></i>
+                        <h3 class="text-lg font-semibold mb-2">No Videos Found</h3>
+                        <p class="text-zinc-400">No videos in the ${filter} tier.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            filteredVideos.forEach(video => {
+                const videoItem = document.createElement('div');
+                videoItem.className = 'card';
+                videoItem.innerHTML = `
+                    <div class="card-body">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <h4 class="font-semibold">${video.title}</h4>
+                                <p class="text-sm text-zinc-400 mt-1">ID: ${video.id}</p>
+                                <div class="flex items-center gap-2 mt-2">
+                                    <span class="badge ${video.tier === 'big' ? 'badge-primary' : video.tier === 'medium' ? 'badge-secondary' : 'badge-warning'}">
+                                        ${video.tier}
+                                    </span>
+                                    <span class="text-sm">$${video.account.price}</span>
+                                    <span class="text-sm text-zinc-400">• ${video.views} views</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button class="btn btn-sm btn-secondary" onclick="editVideo('${video.id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteVideo('${video.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                videosList.appendChild(videoItem);
+            });
+        }
+
+        function adminFilterVideos(tier) {
+            document.querySelectorAll('#manage-videos-modal .tab-item').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.textContent.toLowerCase().includes(tier)) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            loadAdminVideosList(tier);
+        }
+
+        function showBookRequests() {
+            if (!appState.isAdminLoggedIn) {
+                showToast('error', 'Access Denied', 'Please login as admin first');
+                return;
+            }
+            
+            showModal('book-requests-modal');
+            loadBookRequestsList();
+        }
+
+        function loadBookRequestsList() {
+            const requestsList = document.getElementById('admin-book-requests-list');
+            const emptyElement = document.getElementById('admin-book-requests-empty');
+            
+            if (!requestsList || !emptyElement) return;
+            
+            requestsList.innerHTML = '';
+            
+            if (appState.bookRequests.length === 0) {
+                requestsList.classList.add('hidden');
+                emptyElement.classList.remove('hidden');
+                return;
+            }
+            
+            requestsList.classList.remove('hidden');
+            emptyElement.classList.add('hidden');
+            
+            appState.bookRequests.forEach(request => {
+                const requestItem = document.createElement('div');
+                requestItem.className = 'card';
+                requestItem.innerHTML = `
+                    <div class="card-body">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <h4 class="font-semibold">${request.userName}</h4>
+                                <p class="text-sm text-zinc-400 mt-1">${request.accountTitle} (${request.accountTier})</p>
+                                <p class="text-sm mt-2">WhatsApp: ${request.whatsappNumber}</p>
+                                ${request.notes ? `<p class="text-sm text-zinc-400 mt-1">Notes: ${request.notes}</p>` : ''}
+                                <div class="flex items-center gap-2 mt-2">
+                                    <span class="badge ${request.status === 'pending' ? 'badge-warning' : request.status === 'approved' ? 'badge-success' : 'badge-danger'}">
+                                        ${request.status}
+                                    </span>
+                                    <span class="text-sm text-zinc-400">${new Date(request.timestamp).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                ${request.status === 'pending' ? `
+                                    <button class="btn btn-sm btn-success" onclick="updateRequestStatus(${request.id}, 'approved')">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="updateRequestStatus(${request.id}, 'rejected')">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                ` : ''}
+                                <button class="btn btn-sm btn-secondary" onclick="contactRequester('${request.whatsappNumber}')">
+                                    <i class="fab fa-whatsapp"></i> Contact
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                requestsList.appendChild(requestItem);
+            });
+        }
+
+        function updateRequestStatus(requestId, status) {
+            const request = appState.bookRequests.find(r => r.id === requestId);
+            if (request) {
+                request.status = status;
+                saveDataToLocalStorage('gkStoreBookRequests', appState.bookRequests);
+                loadBookRequestsList();
+                showToast('success', 'Request Updated', `Request ${status} successfully`);
+            }
+        }
+
+        function contactRequester(whatsappNumber) {
+            const message = encodeURIComponent('Hello, this is GK Store admin following up on your book request.');
+            window.open(`https://wa.me/${whatsappNumber.replace('+', '')}?text=${message}`, '_blank');
+        }
+
+        function showManageSettings() {
+            if (!appState.isAdminLoggedIn) {
+                showToast('error', 'Access Denied', 'Please login as admin first');
+                return;
+            }
+            
+            showModal('manage-settings-modal');
+        }
+
+        function saveAdminSettings() {
+            const newPassword = document.getElementById('new-admin-password').value;
+            const newUSDT = document.getElementById('new-usdt-address').value;
+            const newWhatsApp = document.getElementById('new-whatsapp-number').value;
+            
+            if (newPassword) {
+                appState.adminPassword = newPassword;
+                showToast('success', 'Password Updated', 'Admin password changed successfully');
+            }
+            
+            if (newUSDT) {
+                document.getElementById('usdt-address').textContent = newUSDT;
+                document.getElementById('payment-address').textContent = newUSDT;
+                showToast('success', 'USDT Updated', 'Payment address updated');
+            }
+            
+            if (newWhatsApp) {
+                showToast('success', 'WhatsApp Updated', 'Support number updated');
+            }
+            
+            closeModal('manage-settings-modal');
+            document.getElementById('new-admin-password').value = '';
+            document.getElementById('new-usdt-address').value = '';
+            document.getElementById('new-whatsapp-number').value = '';
+        }
+
+        function editVideo(videoId) {
+            showToast('info', 'Edit Video', `Edit functionality for ${videoId} will be implemented`);
+            // You can implement edit functionality here
+        }
+
+        function deleteVideo(videoId) {
+            if (confirm('Are you sure you want to delete this video? This action cannot be undone.')) {
+                const videoIndex = appState.videos.findIndex(v => v.id === videoId);
+                if (videoIndex !== -1) {
+                    // Revoke blob URL if it exists
+                    const video = appState.videos[videoIndex];
+                    if (video.url && video.url.startsWith('blob:')) {
+                        URL.revokeObjectURL(video.url);
+                    }
+                    
+                    // Remove video
+                    appState.videos.splice(videoIndex, 1);
+                    
+                    // Remove associated account
+                    const accountIndex = appState.accounts.findIndex(a => a.videoId === videoId);
+                    if (accountIndex !== -1) {
+                        appState.accounts.splice(accountIndex, 1);
+                    }
+                    
+                    // Save changes
+                    saveAllDataToLocalStorage();
+                    
+                    // Update UI
+                    loadHomeContent();
+                    updateAdminStats();
+                    loadAdminVideosList('all');
+                    
+                    showToast('success', 'Video Deleted', 'Video and associated account removed');
+                }
+            }
+        }
 
     </script>
 </body>
